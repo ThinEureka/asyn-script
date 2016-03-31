@@ -1,0 +1,5 @@
+*.tlog
+*.ib_pdb_index
+*.idb
+*.opensdf
+*.sdf
