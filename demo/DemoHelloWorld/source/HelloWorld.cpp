@@ -6,8 +6,6 @@
 * \author cs 04nycs@gmail.com
 */
 
-
-#include "Windows.h"
 #include <iostream>
 #include "../../../lib-asyn-script/source/Function.h"
 
@@ -46,12 +44,6 @@ asys::FunctionCode* createAsysFunction()
 	return pMain;
 }
 
-bool update(asys::Executable* executable)
-{
-	auto retcode = executable->run();
-	return (retcode == asys::RetCode::code_continue) ? true: false;
-}
-
 int main()
 {
 	auto fun = createAsysFunction();
@@ -61,7 +53,8 @@ int main()
 	while (executable->run() == asys::RetCode::code_continue);
 	executable->release();
 
-	system("pause");
+	char c{};
+	std::cin >> c;
 
 	return 0;
 }

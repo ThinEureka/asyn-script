@@ -17,23 +17,23 @@ asys::FunctionCode* createAsysFunction()
 
 	auto platformLogin = f = new asys::FunctionCode();
 	{
-		f->ASSIGN("$device_id", asys::getInputVariableName(0));
+		f->ASSIGN("$device_id", asys::getInputVariableName(0))_;
 		f->ASSIGN("$index", "0")_;
 
 		f->EXPRESS([](asys::Executable* executable){
 			auto index = executable->getValue("$index")->toInt();
 			if (index < 5)
 			{
-				std::cout << "platform  login... " << "device_id " << executable->getValue("$device_id")->content() << std::endl;
+				std::cout << "platform  login... " << "device_id=" << executable->getValue("$device_id")->content() << std::endl;
 				executable->setValue("$index", index + 1);
 				return asys::RetCode::code_continue;
 			}
 			else
 			{
-				std::cout << "platform login succeeded " << "device_id " << executable->getValue("$device_id") << std::endl;
+				std::cout << "platform login succeeded " << "device_id=" << executable->getValue("$device_id") << std::endl;
 				executable->setValue("$index", index + 1);
-				executable->setValue("$user_id", (executable->getValue("$device_id")->content() + "-user_id"));
-				executable->setValue("$access_token", (executable->getValue("$device_id")->content() + "-acccessToken"));
+				executable->setValue("$user_id", "user_172034");
+				executable->setValue("$access_token", "6534B029C4FA65");
 				return asys::RetCode::code_done;
 			}
 		})_;
@@ -43,16 +43,16 @@ asys::FunctionCode* createAsysFunction()
 
 	auto loginServerLogin = f = new asys::FunctionCode();
 	{
-		f->ASSIGN("$user_id", asys::getInputVariableName(0));
-		f->ASSIGN("$access_token", asys::getInputVariableName(1));
+		f->ASSIGN("$user_id", asys::getInputVariableName(0))_;
+		f->ASSIGN("$access_token", asys::getInputVariableName(1))_;
 		f->ASSIGN("$index", "0")_;
 
 		f->EXPRESS([](asys::Executable* executable){
 			auto index = executable->getValue("$index")->toInt();
 			if (index < 5)
 			{
-				std::cout << "login-server login... " << "$user_id " << executable->getValue("$user_id") << std::endl
-					<< "$access_token"  << executable->getValue("$access_token")->content() << std::endl;
+				std::cout << "login-server login... " << "$user_id=" << executable->getValue("$user_id") << std::endl
+					<< "$access_token="  << executable->getValue("$access_token")->content() << std::endl;
 				executable->setValue("$index", index + 1);
 				return asys::RetCode::code_continue;
 			}
@@ -80,8 +80,8 @@ asys::FunctionCode* createAsysFunction()
 			auto index = executable->getValue("$index")->toInt();
 			if (index < 5)
 			{
-				std::cout << "game-server login... " << "$user_id " << executable->getValue("$user_id")->content() << std::endl
-					<< "$session_id " << executable->getValue("$session_id")->content() << std::endl;
+				std::cout << "game-server login... " << "$user_id=" << executable->getValue("$user_id")->content() << std::endl
+					<< "$session_id=" << executable->getValue("$session_id")->content() << std::endl;
 				executable->setValue("$gameserver_ip", index + 1);
 				executable->setValue("$index", index + 1);
 				return asys::RetCode::code_continue;
@@ -101,7 +101,7 @@ asys::FunctionCode* createAsysFunction()
 	{
 		f->WHILE_NOT("$game_end")_
 		{
-			f->CALL({ "$success", "$user_id", "$access_token" }, { "device_id=test123" }, platformLogin)_;
+			f->CALL({ "$success", "$user_id", "$access_token" }, { "SAMSUM_NT7100__123" }, platformLogin)_;
 			f->IF_NOT("$success")_
 			{
 				f->CONTINUE()_;
@@ -134,12 +134,6 @@ asys::FunctionCode* createAsysFunction()
 	}
 
 	return mainFun;
-}
-
-bool update(asys::Executable* executable)
-{
-	auto retcode = executable->run();
-	return (retcode == asys::RetCode::code_continue) ? true: false;
 }
 
 int main()
