@@ -72,7 +72,7 @@ asys::FunctionCode* createAsysFunction()
 	{
 		f->ASSIGN("$user_id", asys::getInputVariableName(0))_;
 		f->ASSIGN("$session_id", asys::getInputVariableName(1))_;
-		f->ASSIGN("$gameserver_ip", asys::getInputVariableName(1))_;
+		f->ASSIGN("$gameserver_ip", asys::getInputVariableName(2))_;
 
 		f->ASSIGN("$index", "0")_;
 
@@ -82,7 +82,6 @@ asys::FunctionCode* createAsysFunction()
 			{
 				std::cout << "game-server login... " << "$user_id=" << executable->getValue("$user_id")->content() << std::endl
 					<< "$session_id=" << executable->getValue("$session_id")->content() << std::endl;
-				executable->setValue("$gameserver_ip", index + 1);
 				executable->setValue("$index", index + 1);
 				return asys::RetCode::code_continue;
 			}
