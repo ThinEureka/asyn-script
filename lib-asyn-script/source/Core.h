@@ -68,11 +68,17 @@ namespace asys
 			return &(it->second);
 		}
 
-		void setOutputValues(const std::vector<const Value*>& values);
+		//void setOutputValues(const std::vector<const Value*>& values);
 		void setOutputValues(const std::vector<Value>& values);
 
 		void setOutoutValue(int index, const Value* pValue) { setValue(getOutputVariableName(index), pValue); }
 		void setOutoutValue(int index, const Value& value) { setValue(getOutputVariableName(index), value); }
+
+		//void setInputValues(const std::vector<const Value*>& values);
+		void setInputValues(const std::vector<Value>& values);
+
+		void setInputValue(int index, const Value* pValue) { setValue(getInputVariableName(index), pValue); }
+		void setInputValue(int index, const Value& value) { setValue(getInputVariableName(index), value); }
 
 		const Value* getOutputValue(int index) const { return getValue(getOutputVariableName(index)); }
 		const Value* getInputValue(int index) const { return getValue(getInputVariableName(index)); }

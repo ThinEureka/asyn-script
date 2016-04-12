@@ -328,7 +328,7 @@ bool asys::Value::isInteger(long long& llValue) const
 
 	errno = 0;
 	char *end{};
-	llValue = strtol(start, &end, 10);
+	llValue = strtoll(start, &end, 10);
 
 	if (errno == ERANGE ||
 		(end - start) != m_strContent.length())
