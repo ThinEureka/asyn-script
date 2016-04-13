@@ -48,7 +48,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 		ASYS_VAR(index);
 		f->ASSIGN(index, "0")_;
 
-		f->WHILE_NOT_EQUAL(index, "100")_;
+		f->WHILE_NOT_EQUAL(index, n)_;
 		{
 			ASYS_VAR(v_sum);
 			f->CALL({v_sum}, { index }, sum())_;
