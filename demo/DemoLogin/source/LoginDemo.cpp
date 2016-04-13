@@ -11,129 +11,211 @@
 #include <iostream>
 #include "../../../lib-asyn-script/source/Function.h"
 
-asys::FunctionCode* createAsysFunction()
+class Game
 {
-	asys::FunctionCode* f{};
-
-	auto platformLogin = f = new asys::FunctionCode();
+public:
+	Game(){}
+	virtual ~Game()
 	{
-		f->ASSIGN("$device_id", asys::getInputVariableName(0))_;
-		f->ASSIGN("$index", "0")_;
-
-		f->EXPRESS([](asys::Executable* executable){
-			auto index = executable->getValue("$index")->toInt();
-			if (index < 5)
-			{
-				std::cout << "platform  login... " << "device_id=" << executable->getValue("$device_id")->content() << std::endl;
-				executable->setValue("$index", index + 1);
-				return asys::RetCode::code_continue;
-			}
-			else
-			{
-				std::cout << "platform login succeeded " << "device_id=" << executable->getValue("$device_id") << std::endl;
-				executable->setValue("$index", index + 1);
-				executable->setValue("$user_id", "user_172034");
-				executable->setValue("$access_token", "6534B029C4FA65");
-				return asys::RetCode::code_done;
-			}
-		})_;
-		
-		f->RETURN({"true", "$user_id", "$access_token"})_;
+		delete m_pExecutable;
+		delete m_login;
+		delete m_gameServerLogin;
+		delete m_platformLogin;
+		delete m_userServerLogin;
 	}
 
-	auto loginServerLogin = f = new asys::FunctionCode();
+	bool run(const std::string& deviceId)
 	{
-		f->ASSIGN("$user_id", asys::getInputVariableName(0))_;
-		f->ASSIGN("$access_token", asys::getInputVariableName(1))_;
-		f->ASSIGN("$index", "0")_;
-
-		f->EXPRESS([](asys::Executable* executable){
-			auto index = executable->getValue("$index")->toInt();
-			if (index < 5)
-			{
-				std::cout << "login-server login... " << "$user_id=" << executable->getValue("$user_id") << std::endl
-					<< "$access_token="  << executable->getValue("$access_token")->content() << std::endl;
-				executable->setValue("$index", index + 1);
-				return asys::RetCode::code_continue;
-			}
-			else
-			{
-				std::cout << "login-server login succeeded " << std::endl;
-				executable->setValue("$index", index + 1);
-				executable->setValue("$session_id", "123456");
-				return asys::RetCode::code_done;
-			}
-		})_;
-
-		f->RETURN({ "true", "$session_id", "127.0.0.1:3697" })_;
-	}
-
-	auto gameServerLogin = f = new asys::FunctionCode();
-	{
-		f->ASSIGN("$user_id", asys::getInputVariableName(0))_;
-		f->ASSIGN("$session_id", asys::getInputVariableName(1))_;
-		f->ASSIGN("$gameserver_ip", asys::getInputVariableName(2))_;
-
-		f->ASSIGN("$index", "0")_;
-
-		f->EXPRESS([](asys::Executable* executable){
-			auto index = executable->getValue("$index")->toInt();
-			if (index < 5)
-			{
-				std::cout << "game-server login... " << "$user_id=" << executable->getValue("$user_id")->content() << std::endl
-					<< "$session_id=" << executable->getValue("$session_id")->content() << std::endl;
-				executable->setValue("$index", index + 1);
-				return asys::RetCode::code_continue;
-			}
-			else
-			{
-				std::cout << "game-server login succeeded " << std::endl;
-				executable->setValue("$player_info", "player-123");
-				return asys::RetCode::code_done;
-			}
-		})_;
-
-		f->RETURN({ "true", "$player_info"})_;
-	}
-
-	auto mainFun = f = new asys::FunctionCode();
-	{
-		f->WHILE_NOT("$game_end")_
+		if (!m_pExecutable)
 		{
-			f->CALL({ "$success", "$user_id", "$access_token" }, { "SAMSUM_NT7100__123" }, platformLogin)_;
-			f->IF_NOT("$success")_
-			{
-				f->CONTINUE()_;
-			}f->END_IF()_;
+			m_pExecutable = login()->compile();
+			m_pExecutable->setInputValue(0, deviceId);
+		}
 
-			f->CALL({ "$success", "$session_id", "$gameserver_ip" }, { "$user_id", "$access_token" }, loginServerLogin)_;
-			f->IF_NOT("$success")_
-			{
-				f->CONTINUE()_;
-			}f->END_IF()_;
-
-			f->CALL({ "$success", "$player_info" }, { "$user_id", "$session_id", "$gameserver_ip" }, gameServerLogin)_;
-			f->IF_NOT("$success")_
-			{
-				f->CONTINUE()_;
-			}f->END_IF()_;
-
-			f->EXPRESS([](asys::Executable* executable){
-				std::cout << "login-success: " << executable->getValue("$player_info")->content() << std::endl;
-				return asys::RetCode::code_done;
-			})_;
-
-			f->EXPRESS([](asys::Executable* executable){
-				//return continue to indicate that next time executable is run, it will continue here.
-				std::cout << executable->getValue("$player_info")->content() << " is playing the game." << std::endl;
-				return asys::RetCode::code_continue;
-			})_;
-
-		}f->END_WHILE()_;
+		auto retCode = m_pExecutable->run();
+		return retCode == asys::RetCode::code_continue;
 	}
 
-	return mainFun;
-}
+private:
+	//ret success user_id access_token
+	asys::FunctionCode* platformLogin(ASYS_PARAM(device_id))
+	{
+		if (m_platformLogin) return m_platformLogin;
+		
+		auto f = m_platformLogin = new asys::FunctionCode;
+		{
+			f->ASSIGN(device_id, asys::getInputVariableName(0))_;
+
+			ASYS_VAR(index);
+			f->ASSIGN(index, "0")_;
+
+			ASYS_VAR(user_id);
+			ASYS_VAR(access_token);
+
+			f->EXPRESS([index, user_id, access_token, device_id](asys::Executable* executable){
+				auto nIndex = executable->getValue(index)->toInt();
+				if (nIndex < 5)
+				{
+					std::cout << "user-server  login... " << "device_id=" << executable->getValue(device_id)->content() << std::endl;
+					executable->setValue(index, nIndex + 1);
+					return asys::RetCode::code_continue;
+				}
+				else
+				{
+					std::cout << "platform login succeeded " << "device_id=" << executable->getValue(device_id) << std::endl;
+					executable->setValue(index, nIndex + 1);
+					executable->setValue(user_id, "user_172034");
+					executable->setValue(access_token, "6534B029C4FA65");
+					return asys::RetCode::code_done;
+				}
+			})_;
+
+			f->RETURN({ asys::True, user_id, access_token })_;
+		}
+
+		return f;
+	}
+
+	//ret success session_id gameserver_ip
+	asys::FunctionCode* userServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(access_token))
+	{
+		if (m_userServerLogin) return m_userServerLogin;
+
+		auto f = m_userServerLogin = new asys::FunctionCode;
+		{
+			f->ASSIGN(user_id, asys::getInputVariableName(0))_;
+			f->ASSIGN(access_token, asys::getInputVariableName(1))_;
+
+			ASYS_VAR(index);
+			f->ASSIGN(index, "0")_;
+
+			ASYS_VAR(session_id);
+			f->EXPRESS([index, session_id, user_id, access_token](asys::Executable* executable){
+				auto nIndex = executable->getValue(index)->toInt();
+				if (nIndex < 5)
+				{
+					std::cout << "login-server login... " << "$user_id=" << executable->getValue(user_id) << std::endl
+						<< "$access_token=" << executable->getValue(access_token)->content() << std::endl;
+					executable->setValue(index, nIndex + 1);
+					return asys::RetCode::code_continue;
+				}
+				else
+				{
+					std::cout << "login-server login succeeded " << std::endl;
+					executable->setValue(index, nIndex + 1);
+					executable->setValue(session_id, "123456");
+					return asys::RetCode::code_done;
+				}
+			})_;
+
+			f->RETURN({ asys::True, session_id, "127.0.0.1:3697" })_;
+		}
+
+		return f;
+	}
+
+	//ret success player_info
+	asys::FunctionCode* gameServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(session_id), ASYS_PARAM(gameserver_ip))
+	{
+		if (m_gameServerLogin) return m_gameServerLogin;
+
+		auto f = m_gameServerLogin = new asys::FunctionCode;
+		{
+			f->ASSIGN(user_id, asys::getInputVariableName(0))_;
+			f->ASSIGN(session_id, asys::getInputVariableName(1))_;
+			f->ASSIGN(gameserver_ip, asys::getInputVariableName(2))_;
+
+			ASYS_VAR(index);
+			f->ASSIGN(index, "0")_;
+
+			ASYS_VAR(player_info);
+			f->EXPRESS([index, user_id, session_id, player_info](asys::Executable* executable){
+				auto nIndex = executable->getValue(index)->toInt();
+				if (nIndex < 5)
+				{
+					std::cout << "game-server login... " << "$user_id=" << executable->getValue(user_id)->content() << std::endl
+						<< "$session_id=" << executable->getValue(session_id)->content() << std::endl;
+					executable->setValue(index, nIndex + 1);
+					return asys::RetCode::code_continue;
+				}
+				else
+				{
+					std::cout << "game-server login succeeded " << std::endl;
+					executable->setValue(player_info, "player-123");
+					return asys::RetCode::code_done;
+				}
+			})_;
+
+			f->RETURN({ asys::True, player_info })_;
+		}
+
+		return f;
+	}
+
+	//ret success player_info
+	asys::FunctionCode* login(ASYS_PARAM(device_id))
+	{
+		if (m_login) return m_login;
+
+		auto f = m_login = new asys::FunctionCode;
+		{
+			f->ASSIGN(device_id, asys::getInputVariableName(0))_;
+
+			ASYS_VAR(game_end);
+			f->WHILE_NOT(game_end)_
+			{
+				ASYS_VAR(success);
+				ASYS_VAR(user_id);
+				ASYS_VAR(access_token);
+				f->CALL({ success, user_id, access_token }, { device_id }, platformLogin())_;
+
+				f->IF_NOT(success)_
+				{
+					f->CONTINUE()_;
+				}f->END_IF()_;
+
+				ASYS_VAR(session_id);
+				ASYS_VAR(gameserver_ip);
+				f->CALL({ success, session_id, gameserver_ip }, { user_id, access_token }, userServerLogin())_;
+
+				f->IF_NOT(success)_
+				{
+					f->CONTINUE()_;
+				}f->END_IF()_;
+
+				ASYS_VAR(player_info);
+				f->CALL({ success, player_info }, { user_id, session_id, gameserver_ip }, gameServerLogin())_;
+
+				f->IF_NOT(success)_
+				{
+					f->CONTINUE()_;
+				}f->END_IF()_;
+
+				f->EXPRESS([player_info](asys::Executable* executable){
+					std::cout << "login-success: " << executable->getValue(player_info)->content() << std::endl;
+					return asys::RetCode::code_done;
+				})_;
+
+				f->EXPRESS([player_info](asys::Executable* executable){
+					//return continue to indicate that next time executable is run, it will continue here.
+					std::cout << executable->getValue(player_info)->content() << " is playing the game." << std::endl;
+					return asys::RetCode::code_continue;
+				})_;
+
+			}f->END_WHILE()_;
+		}
+
+		return f;
+	}
+
+private:
+	asys::FunctionCode* m_login{};
+	asys::FunctionCode* m_platformLogin{};
+	asys::FunctionCode* m_userServerLogin{};
+	asys::FunctionCode* m_gameServerLogin{};
+
+	asys::Executable* m_pExecutable{};
+};
 
 int main()
 {
@@ -164,17 +246,11 @@ int main()
 	};
 
 
-	auto fun = createAsysFunction();
-	auto executable = fun->compile();
-	delete fun; fun = nullptr;
-
+	Game game;
+	std::cout << "Start game" << GetLastError() << std::endl;
 	while (WaitForSingleObject(hTimer, 5000) == WAIT_OBJECT_0){    // Wait for timer event
-
-		auto retCode = executable->run();
-		if (retCode == asys::RetCode::code_done) break;
+		if (!game.run("SAMSUM_NT7100__123")) break;;
 	}
-
-	executable->release();
 
 	CancelWaitableTimer(hTimer);    // Stop timer
 	CloseHandle(hTimer);            // Delete handle
