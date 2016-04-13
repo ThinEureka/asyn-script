@@ -55,4 +55,6 @@ namespace asys
 
 	inline std::string getOutputVariableName(int index) { return OUTPUT_VARIABLE_PREFIX + patch::to_string(index); }
 	inline std::string getInputVariableName(int index) { return INPUT_VARIABLE_PREFIX + patch::to_string(index); }
+
+	inline std::string toAsysVarName(const char* name) { return std::string("$") + name; }
 }

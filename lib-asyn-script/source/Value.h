@@ -73,4 +73,7 @@ namespace asys
 	private:
 		std::string m_strContent;
 	};
+
+	const std::string True = "true";
+	const std::string False = "false";
 }

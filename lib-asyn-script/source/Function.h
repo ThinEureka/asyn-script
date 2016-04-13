@@ -25,6 +25,9 @@
 #define _ ;
 #endif
 
+#define ASYS_VAR(name) std::string name(asys::toAsysVarName(#name))
+#define ASYS_PARAM(name) const std::string& name = asys::toAsysVarName(#name)
+#define D_ASYS_PARAM(name) const std::string& name
 
 namespace asys
 {
