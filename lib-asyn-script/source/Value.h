@@ -16,6 +16,9 @@
 
 namespace asys
 {
+	const std::string True = "true";
+	const std::string False = "false";
+
 	class Value
 	{
 	public:
@@ -46,7 +49,7 @@ namespace asys
 
 		Value(const char* pchar) { m_strContent = pchar; }
 
-		Value(bool boolValue) { m_strContent = (boolValue ? "true" : "false"); }
+		Value(bool boolValue) { m_strContent = (boolValue ? asys::True : asys::False); }
 
 		Value(int intValue) { m_strContent = asys::toString(intValue); }
 		Value(long long llValue) { m_strContent = asys::toString(llValue); }
@@ -59,21 +62,18 @@ namespace asys
 
 		const std::string& toString() const { return m_strContent; }
 
-		bool toBool() const { return m_strContent != "false" && m_strContent != "0" && m_strContent != "null"; }
+		bool toBool() const { return m_strContent != asys::False && m_strContent != "0"; }
 		int toInt() const;
 		long long toLongLong() const;
 		float toFloat() const;
 		double toDouble() const;
 		long double toLongDouble() const;
 
-		bool isBoolean() const { return m_strContent == "true" || m_strContent == "false"; }
+		bool isBoolean() const { return m_strContent == asys::True || m_strContent == asys::False; }
 		bool isInteger(long long& llValue) const;
 		bool isNumeric(long double& ldValue) const;
 
 	private:
 		std::string m_strContent;
 	};
-
-	const std::string True = "true";
-	const std::string False = "false";
 }
