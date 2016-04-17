@@ -9,3 +9,5 @@
 *.pdb
 *.obj
 *.lib
+*.suo
+*.cache

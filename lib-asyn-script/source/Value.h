@@ -48,16 +48,16 @@ namespace asys
 
 		Value(bool boolValue) { m_strContent = (boolValue ? "true" : "false"); }
 
-		Value(int intValue) { m_strContent = toString(intValue); }
-		Value(long long llValue) { m_strContent = toString(llValue); }
+		Value(int intValue) { m_strContent = asys::toString(intValue); }
+		Value(long long llValue) { m_strContent = asys::toString(llValue); }
 
-		Value(float floatValue) { m_strContent = toString(floatValue); }
-		Value(double doubleValue) { m_strContent = toString(doubleValue); }
-		Value(long double ldValue) { m_strContent = toString(ldValue); }
+		Value(float floatValue) { m_strContent = asys::toString(floatValue); }
+		Value(double doubleValue) { m_strContent = asys::toString(doubleValue); }
+		Value(long double ldValue) { m_strContent = asys::toString(ldValue); }
 
 		virtual ~Value(){}
 
-		const std::string& content() const { return m_strContent; }
+		const std::string& toString() const { return m_strContent; }
 
 		bool toBool() const { return m_strContent != "false" && m_strContent != "0" && m_strContent != "null"; }
 		int toInt() const;

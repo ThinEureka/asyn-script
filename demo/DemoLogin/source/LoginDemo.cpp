@@ -56,7 +56,7 @@ private:
 				auto nIndex = executable->getValue(index)->toInt();
 				if (nIndex < 5)
 				{
-					std::cout << "user-server  login... " << "device_id=" << executable->getValue(device_id)->content() << std::endl;
+					std::cout << "user-server  login... " << "device_id=" << executable->getValue(device_id)->toString() << std::endl;
 					executable->setValue(index, nIndex + 1);
 					return asys::RetCode::code_continue;
 				}
@@ -95,7 +95,7 @@ private:
 				if (nIndex < 5)
 				{
 					std::cout << "login-server login... " << "$user_id=" << executable->getValue(user_id) << std::endl
-						<< "$access_token=" << executable->getValue(access_token)->content() << std::endl;
+						<< "$access_token=" << executable->getValue(access_token)->toString() << std::endl;
 					executable->setValue(index, nIndex + 1);
 					return asys::RetCode::code_continue;
 				}
@@ -133,8 +133,8 @@ private:
 				auto nIndex = executable->getValue(index)->toInt();
 				if (nIndex < 5)
 				{
-					std::cout << "game-server login... " << "$user_id=" << executable->getValue(user_id)->content() << std::endl
-						<< "$session_id=" << executable->getValue(session_id)->content() << std::endl;
+					std::cout << "game-server login... " << "$user_id=" << executable->getValue(user_id)->toString() << std::endl
+						<< "$session_id=" << executable->getValue(session_id)->toString() << std::endl;
 					executable->setValue(index, nIndex + 1);
 					return asys::RetCode::code_continue;
 				}
@@ -192,13 +192,13 @@ private:
 				}f->END_IF()_;
 
 				f->EXPRESS([player_info](asys::Executable* executable){
-					std::cout << "login-success: " << executable->getValue(player_info)->content() << std::endl;
+					std::cout << "login-success: " << executable->getValue(player_info)->toString() << std::endl;
 					return asys::RetCode::code_done;
 				})_;
 
 				f->EXPRESS([player_info](asys::Executable* executable){
 					//return continue to indicate that next time executable is run, it will continue here.
-					std::cout << executable->getValue(player_info)->content() << " is playing the game." << std::endl;
+					std::cout << executable->getValue(player_info)->toString() << " is playing the game." << std::endl;
 					return asys::RetCode::code_continue;
 				})_;
 
