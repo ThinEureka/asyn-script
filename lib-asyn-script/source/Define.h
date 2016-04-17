@@ -12,16 +12,6 @@
 #include <string>
 #include <sstream>
 
-namespace patch
-{
-	template < typename T > std::string to_string(const T& n)
-	{
-		std::ostringstream stm;
-		stm << n;
-		return stm.str();
-	}
-}
-
 namespace asys
 {
 	enum class RetCode
@@ -50,11 +40,19 @@ namespace asys
 	extern const std::string OUTPUT_VARIABLE_PREFIX;
 	extern const std::string INPUT_VARIABLE_PREFIX;
 
+	template < typename T > std::string toString(const T& n)
+	{
+		std::ostringstream stm;
+		stm << n;
+		return stm.str();
+	}
+
 	inline bool isValidVariableName(const std::string& var) { return var.size() > 0 && var[0] == '$'; }
 	inline bool isSystemReservedVariableName(const std::string& var) { return var.size() > 1 && var[0] == '$' && var[1] == '$'; }
 
-	inline std::string getOutputVariableName(int index) { return OUTPUT_VARIABLE_PREFIX + patch::to_string(index); }
-	inline std::string getInputVariableName(int index) { return INPUT_VARIABLE_PREFIX + patch::to_string(index); }
+	inline std::string getOutputVariableName(int index) { return OUTPUT_VARIABLE_PREFIX + toString(index); }
+	inline std::string getInputVariableName(int index) { return INPUT_VARIABLE_PREFIX + toString(index); }
 
 	inline std::string toAsysVarName(const char* name) { return std::string("$") + name; }
+
 }

@@ -48,12 +48,12 @@ namespace asys
 
 		Value(bool boolValue) { m_strContent = (boolValue ? "true" : "false"); }
 
-		Value(int intValue) { m_strContent = patch::to_string(intValue); }
-		Value(long long llValue) { m_strContent = patch::to_string(llValue); }
+		Value(int intValue) { m_strContent = toString(intValue); }
+		Value(long long llValue) { m_strContent = toString(llValue); }
 
-		Value(float floatValue) { m_strContent = patch::to_string(floatValue); }
-		Value(double doubleValue) { m_strContent = patch::to_string(doubleValue); }
-		Value(long double ldValue) { m_strContent = patch::to_string(ldValue); }
+		Value(float floatValue) { m_strContent = toString(floatValue); }
+		Value(double doubleValue) { m_strContent = toString(doubleValue); }
+		Value(long double ldValue) { m_strContent = toString(ldValue); }
 
 		virtual ~Value(){}
 
