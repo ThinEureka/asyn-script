@@ -150,7 +150,7 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 
 asys::BreakPoint& asys::FunctionCode::IF(const std::string& var)
 {
-	return IF_EX([=](Executable* executable){
+	return IF_EX([var](Executable* executable){
 		if (asys::isValidVariableName(var))
 		{
 			auto val = executable->getValue(var);
@@ -165,7 +165,7 @@ asys::BreakPoint& asys::FunctionCode::IF(const std::string& var)
 
 asys::BreakPoint& asys::FunctionCode::IF_NOT(const std::string& var)
 {
-	return IF_EX([=](Executable* executable){
+	return IF_EX([var](Executable* executable){
 		if (asys::isValidVariableName(var))
 		{
 			auto val = executable->getValue(var);
@@ -179,7 +179,7 @@ asys::BreakPoint& asys::FunctionCode::IF_NOT(const std::string& var)
 
 asys::BreakPoint& asys::FunctionCode::IF_EQUAL(const std::string& var1, const std::string& var2)
 {
-	return IF_EX([=](Executable* executable){
+	return IF_EX([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -222,7 +222,7 @@ asys::BreakPoint& asys::FunctionCode::IF_EQUAL(const std::string& var1, const st
 
 asys::BreakPoint& asys::FunctionCode::IF_NOT_EQUAL(const std::string& var1, const std::string& var2)
 {
-	return IF_EX([=](Executable* executable){
+	return IF_EX([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -323,7 +323,7 @@ asys::BreakPoint& asys::FunctionCode::END_IF()
 
 asys::BreakPoint& asys::FunctionCode::WHILE(const std::string& var)
 {
-	return WHILE_EX([=](Executable* executable){
+	return WHILE_EX([var](Executable* executable){
 		if (asys::isValidVariableName(var)){
 			auto val = executable->getValue(var);
 			if (!val) return false;
@@ -336,7 +336,7 @@ asys::BreakPoint& asys::FunctionCode::WHILE(const std::string& var)
 
 asys::BreakPoint& asys::FunctionCode::WHILE_NOT(const std::string& var)
 {
-	return WHILE_EX([=](Executable* executable){
+	return WHILE_EX([var](Executable* executable){
 		if (asys::isValidVariableName(var)){
 			auto val = executable->getValue(var);
 			if (!val) return true;
@@ -349,7 +349,7 @@ asys::BreakPoint& asys::FunctionCode::WHILE_NOT(const std::string& var)
 
 asys::BreakPoint& asys::FunctionCode::WHILE_EQUAL(const std::string& var1, const std::string& var2)
 {
-	return WHILE_EX([=](Executable* executable){
+	return WHILE_EX([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -392,7 +392,7 @@ asys::BreakPoint& asys::FunctionCode::WHILE_EQUAL(const std::string& var1, const
 
 asys::BreakPoint& asys::FunctionCode::WHILE_NOT_EQUAL(const std::string& var1, const std::string& var2)
 {
-	return WHILE_EX([=](Executable* executable){
+	return WHILE_EX([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
