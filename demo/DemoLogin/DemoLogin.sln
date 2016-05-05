@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoLogin", "DemoLogin.vcxproj", "{3F519292-5E40-42B2-9EDA-95E06F2E6C30}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib-asyn-script", "..\..\lib-asyn-script\lib-asyn-script.vcxproj", "{7EA8EE28-521D-4200-B631-FFC321321925}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib-asyn-script", "..\..\lib-asyn-script\proj.win32\lib-asyn-script.vcxproj", "{7EA8EE28-521D-4200-B631-FFC321321925}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

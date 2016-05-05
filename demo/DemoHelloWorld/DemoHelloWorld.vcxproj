@@ -81,7 +81,7 @@
     <ClCompile Include="source\HelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\lib-asyn-script\lib-asyn-script.vcxproj">
+    <ProjectReference Include="..\..\lib-asyn-script\proj.win32\lib-asyn-script.vcxproj">
       <Project>{7ea8ee28-521d-4200-b631-ffc321321925}</Project>
     </ProjectReference>
   </ItemGroup>
