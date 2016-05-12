@@ -15,14 +15,7 @@ class Game
 {
 public:
 	Game(){}
-	virtual ~Game()
-	{
-		delete m_pExecutable;
-		delete m_login;
-		delete m_gameServerLogin;
-		delete m_platformLogin;
-		delete m_userServerLogin;
-	}
+	virtual ~Game(){}
 
 	bool run(const std::string& deviceId)
 	{
@@ -40,9 +33,10 @@ private:
 	//ret success user_id access_token
 	asys::FunctionCode* platformLogin(ASYS_PARAM(device_id))
 	{
-		if (m_platformLogin) return m_platformLogin;
+		auto& f = m_asynFunctions[__FUNCTION__];
+		if (f) return f;
 		
-		auto f = m_platformLogin = new asys::FunctionCode;
+		f = new asys::FunctionCode;
 		{
 			f->INPUT({device_id})_;
 
@@ -79,9 +73,10 @@ private:
 	//ret success session_id gameserver_ip
 	asys::FunctionCode* userServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(access_token))
 	{
-		if (m_userServerLogin) return m_userServerLogin;
+		auto& f = m_asynFunctions[__FUNCTION__];
+		if (f) return f;
 
-		auto f = m_userServerLogin = new asys::FunctionCode;
+		f = new asys::FunctionCode;
 		{
 			f->INPUT({user_id, access_token})_;
 
@@ -116,9 +111,10 @@ private:
 	//ret success player_info
 	asys::FunctionCode* gameServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(session_id), ASYS_PARAM(gameserver_ip))
 	{
-		if (m_gameServerLogin) return m_gameServerLogin;
+		auto& f = m_asynFunctions[__FUNCTION__];
+		if (f) return f;
 
-		auto f = m_gameServerLogin = new asys::FunctionCode;
+		f = new asys::FunctionCode;
 		{
 			f->INPUT({ user_id, session_id, gameserver_ip })_;
 
@@ -152,9 +148,10 @@ private:
 	//ret success player_info
 	asys::FunctionCode* login(ASYS_PARAM(device_id))
 	{
-		if (m_login) return m_login;
+		auto& f = m_asynFunctions[__FUNCTION__];
+		if (f) return f;
 
-		auto f = m_login = new asys::FunctionCode;
+		f = new asys::FunctionCode;
 		{
 			f->INPUT({ device_id })_;
 
@@ -206,11 +203,7 @@ private:
 	}
 
 private:
-	asys::FunctionCode* m_login{};
-	asys::FunctionCode* m_platformLogin{};
-	asys::FunctionCode* m_userServerLogin{};
-	asys::FunctionCode* m_gameServerLogin{};
-
+	asys::FunctionMap m_asynFunctions;
 	asys::Executable* m_pExecutable{};
 };
 

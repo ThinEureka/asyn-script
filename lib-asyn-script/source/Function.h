@@ -444,4 +444,21 @@ namespace asys
 		int m_nCurIp{ INVALID_IP  + 1};
 		std::map<std::string, Code*> m_dynamicCodes;
 	};
+
+	class FunctionMap : public std::map <std::string, asys::FunctionCode*>
+	{
+	public:
+		virtual ~FunctionMap()
+		{
+			for (auto& pair : *this)
+			{
+				if (pair.second)
+				{
+					delete pair.second;
+				}
+			}
+
+			clear();
+		}
+	};
 }

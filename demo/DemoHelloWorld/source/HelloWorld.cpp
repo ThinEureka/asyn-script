@@ -9,14 +9,14 @@
 #include <iostream>
 #include "../../../lib-asyn-script/source/Function.h"
 
-asys::FunctionCode* g_sum{};
-asys::FunctionCode* g_print_sum{};
+asys::FunctionMap m_asynFunctions;
 
 asys::FunctionCode* sum(ASYS_PARAM(n))
 {
-	if (g_sum) return g_sum;
+	auto& f = m_asynFunctions[__FUNCTION__];
+	if (f) return f;
 
-	auto f = g_sum = new asys::FunctionCode;
+	f = new asys::FunctionCode;
 	{
 		f->INPUT({n})_;
 
@@ -39,9 +39,10 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 
 asys::FunctionCode* print_sum(ASYS_PARAM(n))
 {
-	if (g_print_sum) return g_print_sum;
+	auto& f = m_asynFunctions[__FUNCTION__];
+	if (f) return f;
 
-	auto f = g_print_sum = new asys::FunctionCode;
+	f = new asys::FunctionCode;
 	{
 		f->INPUT({n})_;
 
@@ -72,9 +73,6 @@ int main()
 
 	while (executable->run() == asys::RetCode::code_continue);
 	executable->release();
-
-	delete g_print_sum;
-	delete g_sum;
 
 	char c{};
 	std::cin >> c;
