@@ -97,6 +97,21 @@ asys::BreakPoint& asys::FunctionCode::CALL_EX(const std::vector<std::pair<std::s
 	return instructor->breakPoint();
 }
 
+asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inputParams)
+{
+	return EXPRESS([inputParams](Executable* executable){
+
+		for (size_t i = 0; i < inputParams.size(); ++i)
+		{
+			auto& param = inputParams[i];
+			assert(isValidVariableName(param));
+			executable->setValue(param, executable->getValue(asys::getInputVariableName(i)));
+		}
+
+		return RetCode::code_done;
+	});
+}
+
 asys::BreakPoint& asys::FunctionCode::ASSIGN(const std::string& var1, const std::string& var2)
 {
 	// can not assign to const variable.

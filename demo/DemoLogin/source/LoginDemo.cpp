@@ -44,7 +44,7 @@ private:
 		
 		auto f = m_platformLogin = new asys::FunctionCode;
 		{
-			f->ASSIGN(device_id, asys::getInputVariableName(0))_;
+			f->INPUT({device_id})_;
 
 			ASYS_VAR(index);
 			f->ASSIGN(index, "0")_;
@@ -83,8 +83,7 @@ private:
 
 		auto f = m_userServerLogin = new asys::FunctionCode;
 		{
-			f->ASSIGN(user_id, asys::getInputVariableName(0))_;
-			f->ASSIGN(access_token, asys::getInputVariableName(1))_;
+			f->INPUT({user_id, access_token})_;
 
 			ASYS_VAR(index);
 			f->ASSIGN(index, "0")_;
@@ -121,9 +120,7 @@ private:
 
 		auto f = m_gameServerLogin = new asys::FunctionCode;
 		{
-			f->ASSIGN(user_id, asys::getInputVariableName(0))_;
-			f->ASSIGN(session_id, asys::getInputVariableName(1))_;
-			f->ASSIGN(gameserver_ip, asys::getInputVariableName(2))_;
+			f->INPUT({ user_id, session_id, gameserver_ip })_;
 
 			ASYS_VAR(index);
 			f->ASSIGN(index, "0")_;
@@ -159,7 +156,7 @@ private:
 
 		auto f = m_login = new asys::FunctionCode;
 		{
-			f->ASSIGN(device_id, asys::getInputVariableName(0))_;
+			f->INPUT({ device_id })_;
 
 			ASYS_VAR(game_end);
 			f->WHILE_NOT(game_end)_

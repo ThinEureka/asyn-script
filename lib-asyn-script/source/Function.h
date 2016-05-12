@@ -337,6 +337,8 @@ namespace asys
 		//stored in the code Name variable when the call instructor is executed.
 		BreakPoint& CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName);
 
+		BreakPoint& INPUT(const std::vector<std::string>& inputParams);
+
 		BreakPoint& IF(const std::string& var);
 		BreakPoint& IF_EX(const std::function<bool(Executable*)>& express);
 		BreakPoint& IF_NOT(const std::string& var);

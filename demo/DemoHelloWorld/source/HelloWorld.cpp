@@ -18,7 +18,7 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 
 	auto f = g_sum = new asys::FunctionCode;
 	{
-		f->ASSIGN(n, asys::getInputVariableName(0))_;
+		f->INPUT({n})_;
 
 		ASYS_VAR(sum);
 		f->ASSIGN(sum, "0")_;
