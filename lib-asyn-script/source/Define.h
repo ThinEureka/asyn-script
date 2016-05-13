@@ -47,6 +47,15 @@ namespace asys
 		return stm.str();
 	}
 
+	template <typename T> T toType(const std::string& str)
+	{
+		T value;
+		std::istringstream stm(str);
+		stm >> value;
+
+		return value;
+	}
+
 	inline bool isValidVariableName(const std::string& var) { return var.size() > 0 && var[0] == '$'; }
 	inline bool isSystemReservedVariableName(const std::string& var) { return var.size() > 1 && var[0] == '$' && var[1] == '$'; }
 
