@@ -62,7 +62,7 @@ namespace asys
 
 		const std::string& toString() const { return m_strContent; }
 
-		bool toBool() const { return m_strContent != asys::False && m_strContent != "0"; }
+		bool toBool() const { return m_strContent != asys::False && m_strContent != "0" && !m_strContent.empty(); }
 		int toInt() const;
 		long long toLongLong() const;
 		float toFloat() const;
