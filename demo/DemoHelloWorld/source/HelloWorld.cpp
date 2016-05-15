@@ -55,7 +55,8 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 			f->CALL({v_sum}, { index }, sum())_;
 
 			f->EXPRESS([v_sum](asys::Executable* executable){
-				std::cout << "sum = " << executable->getValue(v_sum)->toString().c_str() << std::endl;
+				asys_value(v_sum);
+				std::cout << "sum = " << v_sum.toString() << std::endl;
 				return asys::RetCode::code_done;
 			})_;
 
