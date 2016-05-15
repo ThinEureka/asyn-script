@@ -9,14 +9,14 @@
 
 #include "Simple.h"
 
-asys::RetCode asys::SimpleLamdaExecutable::run()
+asys::CodeFlow asys::SimpleLamdaExecutable::run()
 {
 	if (m_callback)
 	{
 		return m_callback(this);
 	}
 
-	return RetCode::code_done;
+	return CodeFlow::next;
 }
 
 asys::Executable* asys::SimpleLamdaCode::compile()

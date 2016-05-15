@@ -38,9 +38,9 @@ asys::ConcurrencyAllExecutable::~ConcurrencyAllExecutable()
 	m_excutableStates.clear();
 }
 
-asys::RetCode asys::ConcurrencyAllExecutable::run()
+asys::CodeFlow asys::ConcurrencyAllExecutable::run()
 {
-	auto retCode = RetCode::code_done;
+	auto retCode = CodeFlow::next;
 	for (auto& state : m_excutableStates)
 	{
 		if (!state.finished)
@@ -53,7 +53,7 @@ asys::RetCode asys::ConcurrencyAllExecutable::run()
 
 			auto ret = state.extutable->run();
 
-			if (ret == RetCode::code_done)
+			if (ret == CodeFlow::next)
 			{
 				state.extutable->release();
 				state.extutable = nullptr;
@@ -61,7 +61,7 @@ asys::RetCode asys::ConcurrencyAllExecutable::run()
 			}
 			else
 			{
-				retCode = RetCode::code_continue;
+				retCode = CodeFlow::retry;
 			}
 		}
 	}
@@ -98,9 +98,9 @@ asys::ConcurrencyAnyExecutable::~ConcurrencyAnyExecutable()
 	m_excutableStates.clear();
 }
 
-asys::RetCode asys::ConcurrencyAnyExecutable::run()
+asys::CodeFlow asys::ConcurrencyAnyExecutable::run()
 {
-	auto retCode = RetCode::code_done;
+	auto retCode = CodeFlow::next;
 	for (auto& state : m_excutableStates)
 	{
 		if (!state.executable)
@@ -111,16 +111,16 @@ asys::RetCode asys::ConcurrencyAnyExecutable::run()
 
 		auto ret = state.executable->run();
 
-		if (ret == RetCode::code_done)
+		if (ret == CodeFlow::next)
 		{
 			state.executable->release();
 			state.executable = nullptr;
 
-			return RetCode::code_done;
+			return CodeFlow::next;
 		}
 		else
 		{
-			retCode = RetCode::code_continue;
+			retCode = CodeFlow::retry;
 		}
 	}
 

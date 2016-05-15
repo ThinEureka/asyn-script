@@ -27,7 +27,7 @@ namespace asys
 	class Executable
 	{
 	public:
-		virtual RetCode run() = 0;
+		virtual CodeFlow run() = 0;
 
 		void release()
 		{

@@ -17,18 +17,18 @@ namespace asys
 	class SimpleLamdaExecutable : public Executable
 	{
 	public:
-		SimpleLamdaExecutable(const std::function<RetCode(Executable*)>& callback) : m_callback(callback) {};
+		SimpleLamdaExecutable(const std::function<CodeFlow(Executable*)>& callback) : m_callback(callback) {};
 
-		RetCode run() override;
+		CodeFlow run() override;
 
 	private:
-		std::function<RetCode(Executable*)> m_callback{};
+		std::function<CodeFlow(Executable*)> m_callback{};
 	};
 
 	class SimpleLamdaCode : public Code
 	{
 	public:
-		SimpleLamdaCode(const std::function<RetCode(Executable*)>& callback)
+		SimpleLamdaCode(const std::function<CodeFlow(Executable*)>& callback)
 		{
 			m_excutable = new SimpleLamdaExecutable(callback);
 			m_excutable->retain();

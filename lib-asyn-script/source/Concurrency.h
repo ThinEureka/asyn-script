@@ -37,7 +37,7 @@ namespace asys
 		ConcurrencyAllExecutable(const std::vector<Code*>& codes);
 		virtual ~ConcurrencyAllExecutable();
 
-		RetCode run() override;
+		CodeFlow run() override;
 
 	private:
 		std::vector<ExcutableState> m_excutableStates;
@@ -65,7 +65,7 @@ namespace asys
 		ConcurrencyAnyExecutable(const std::vector<Code*>& codes);
 		virtual ~ConcurrencyAnyExecutable();
 
-		RetCode run() override;
+		CodeFlow run() override;
 
 	private:
 		std::vector<ExcutableState> m_excutableStates;

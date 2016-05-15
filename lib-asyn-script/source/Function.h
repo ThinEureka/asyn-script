@@ -112,7 +112,7 @@ namespace asys
 	class ExpressInstructor : public Instructor
 	{
 	public:
-		ExpressInstructor(const std::function<RetCode(Executable*)>& express) : Instructor(InstructorType::type_express), express(express){}
+		ExpressInstructor(const std::function<CodeFlow(Executable*)>& express) : Instructor(InstructorType::type_express), express(express){}
 
 		Instructor* clone() const override 
 		{ 
@@ -122,7 +122,7 @@ namespace asys
 		}
 
 	public:
-		std::function<RetCode(Executable*)> express{};
+		std::function<CodeFlow(Executable*)> express{};
 	};
 
 	class CallInstructor : public Instructor
@@ -327,7 +327,7 @@ namespace asys
 
 		//It's easier to debug the code using EXPRESS and lamda expression than using ASSIGN or OPERATE
 		//and the expressions written in C++ in the lamda expression are more expressive than pure asyn-script codes.
-		BreakPoint& EXPRESS(const std::function<RetCode(Executable*)>& express);
+		BreakPoint& EXPRESS(const std::function<CodeFlow(Executable*)>& express);
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
 		BreakPoint& CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code);
@@ -400,13 +400,13 @@ namespace asys
 		FunctionExecutable(const std::vector<Instructor*> instructors, const std::map<std::string, Code*> dynamicCodes);
 		virtual ~FunctionExecutable();
 
-		RetCode run() override;
+		CodeFlow run() override;
 
 	private:
 		int processNullInstructor(int curIp) {return curIp + 1;}
 
-		int processExpressInstructor(RetCode& retCode, int curIp, ExpressInstructor* expressInstructor);
-		int processCallInstructor(RetCode& retCode, int curIp, CallInstructor* callInstructor);
+		int processExpressInstructor(CodeFlow& retCode, int curIp, ExpressInstructor* expressInstructor);
+		int processCallInstructor(CodeFlow& retCode, int curIp, CallInstructor* callInstructor);
 
 		int processIfInstructor(int curIp, IfInstructor* ifInstructor)
 		{

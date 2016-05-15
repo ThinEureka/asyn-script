@@ -29,7 +29,7 @@ namespace asys
 		SequenceExecutable(const std::vector<Code*>& codes);
 		virtual ~SequenceExecutable();
 
-		RetCode run() override;
+		CodeFlow run() override;
 
 	private:
 		std::vector<Code*> m_codes;

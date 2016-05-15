@@ -29,7 +29,7 @@ asys::SequenceExecutable::~SequenceExecutable()
 	m_codes.clear();
 }
 
-asys::RetCode asys::SequenceExecutable::run()
+asys::CodeFlow asys::SequenceExecutable::run()
 {
 	while (true)
 	{
@@ -45,21 +45,21 @@ asys::RetCode asys::SequenceExecutable::run()
 			}
 			else
 			{
-				return RetCode::code_done;
+				return CodeFlow::next;
 			}
 		}
 
 		auto retValue = m_currentExe->run();
-		if (retValue == RetCode::code_done)
+		if (retValue == CodeFlow::next)
 		{
 			m_currentExe->release();
 			m_currentExe = nullptr;
 		}
 		else
 		{
-			return RetCode::code_continue;
+			return CodeFlow::retry;
 		}
 	}
 
-	return RetCode::code_done;
+	return CodeFlow::next;
 }
