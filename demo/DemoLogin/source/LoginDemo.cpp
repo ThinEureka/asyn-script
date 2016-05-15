@@ -131,12 +131,12 @@ private:
 
 			ASYS_VAR(player_info);
 			f->EXPRESS([index, user_id, session_id, player_info](asys::Executable* executable){
-				auto nIndex = executable->getValue(index)->toInt();
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(session_id);
 				asys_value(player_info);
-				if (nIndex < 5)
+
+				if (index.toInt() < 5)
 				{
 					std::cout << "game-server login... " << "$user_id=" << user_id.toString() << std::endl
 						<< "$session_id=" << session_id.toString() << std::endl;
