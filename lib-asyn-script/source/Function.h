@@ -28,6 +28,7 @@
 #define ASYS_VAR(name) const std::string name("$"#name)
 #define ASYS_PARAM(name) const std::string& name = "$"#name
 #define D_ASYS_PARAM(name) const std::string& name
+#define asys_value(name) const auto& tmp_##name = name; auto& name = (*executable)[tmp_##name];
 
 namespace asys
 {

@@ -357,3 +357,14 @@ bool asys::Value::isNumeric(long double& ldValue) const
 
 	return true;
 }
+
+asys::Value& asys::Value::operator =(const std::string& str)
+{
+	m_strContent = str; return *this;
+}
+
+asys::Value& asys::Value::operator=(const char* pchar)
+{
+	m_strContent = pchar; return *this;
+}
+

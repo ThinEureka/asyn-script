@@ -52,6 +52,8 @@ namespace asys
 			}
 		}
 
+		asys::Value& operator [](const std::string& name) { return m_varTable[name]; }
+
 		void setValue(const std::string& name, const Value& value) { m_varTable[name] = value; }
 		void setValue(const std::string& name, const std::string& value) { m_varTable[name] = Value(value); }
 		void setValue(const std::string& name, const char* pchar) { m_varTable[name] = Value(std::string(pchar)); }

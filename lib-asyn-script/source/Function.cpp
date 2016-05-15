@@ -533,7 +533,7 @@ asys::Executable* asys::FunctionCode::compile()
 		if (instructor->instructorType() == InstructorType::type_call)
 		{
 			auto callInstructor = dynamic_cast<CallInstructor*>(instructor);
-			if (!callInstructor->codeName.empty())
+			if (!callInstructor->codeName.empty()) 
 			{
 				if (!asys::isValidVariableName(callInstructor->codeName))
 				{

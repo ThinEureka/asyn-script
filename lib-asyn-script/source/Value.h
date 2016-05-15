@@ -60,6 +60,17 @@ namespace asys
 
 		virtual ~Value(){}
 
+		Value& operator = (const std::string& str);
+		Value& operator = (const char* pchar);
+		Value& operator = (bool boolValue) { m_strContent = (boolValue ? asys::True : asys::False); return *this; }
+
+		Value& operator = (int intValue) { m_strContent = asys::toString(intValue); return *this; }
+		Value& operator = (long long llValue) { m_strContent = asys::toString(llValue); return *this; }
+
+		Value& operator = (float floatValue) { m_strContent = asys::toString(floatValue); return *this; }
+		Value& operator = (double doubleValue) { m_strContent = asys::toString(doubleValue); return *this; }
+		Value& operator = (long double ldValue) { m_strContent = asys::toString(ldValue); return *this; }
+
 		const std::string& toString() const { return m_strContent; }
 
 		bool toBool() const { return m_strContent != asys::False && m_strContent != "0" && !m_strContent.empty(); }
