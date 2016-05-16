@@ -632,7 +632,7 @@ int asys::FunctionExecutable::processExpressInstructor(CodeFlow& retCode, int cu
 {
 	if (!expressInstructor->express)
 	{
-		retCode = CodeFlow::retry;
+		retCode = CodeFlow::next;
 		return curIp + 1;
 	}
 
