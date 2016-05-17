@@ -16,8 +16,8 @@ namespace asys
 {
 	enum class CodeFlow
 	{
-		retry, // the virtual machine will start from the same instructor next time it's invoked.
-		next, // the virtual machine moves to the next instructor
+		yield_, // the virtual machine will start from the same instructor next time it's invoked.
+		next_, // the virtual machine moves to the next instructor
 		break_, // function as break in a while loop
 		continue_, //function as continue in a while loop
 		return_, //function as return in a function

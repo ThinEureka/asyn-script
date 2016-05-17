@@ -26,7 +26,7 @@ public:
 		}
 
 		auto retCode = m_pExecutable->run();
-		return retCode == asys::CodeFlow::retry;
+		return retCode == asys::CodeFlow::yield_;
 	}
 
 private:
@@ -56,7 +56,7 @@ private:
 				{
 					std::cout << "user-server  login... " << "device_id=" << device_id.toString() << std::endl;
 					index = index.toInt() + 1;
-					return asys::CodeFlow::retry;
+					return asys::CodeFlow::yield_;
 				}
 				else
 				{
@@ -64,7 +64,7 @@ private:
 					index = index.toInt() + 1;
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
-					return asys::CodeFlow::next;
+					return asys::CodeFlow::next_;
 				}
 			})_;
 
@@ -99,14 +99,14 @@ private:
 					std::cout << "login-server login... " << "$user_id=" << user_id.toString() << std::endl
 						<< "$access_token=" << access_token.toString() << std::endl;
 					index = index.toInt() + 1;
-					return asys::CodeFlow::retry;
+					return asys::CodeFlow::yield_;
 				}
 				else
 				{
 					std::cout << "login-server login succeeded " << std::endl;
 					index = index.toInt() + 1;
 					session_id = "123456";
-					return asys::CodeFlow::next;
+					return asys::CodeFlow::next_;
 				}
 			})_;
 
@@ -141,13 +141,13 @@ private:
 					std::cout << "game-server login... " << "$user_id=" << user_id.toString() << std::endl
 						<< "$session_id=" << session_id.toString() << std::endl;
 					index = index.toInt() + 1;
-					return asys::CodeFlow::retry;
+					return asys::CodeFlow::yield_;
 				}
 				else
 				{
 					std::cout << "game-server login succeeded " << std::endl;
 					player_info = "player-123";
-					return asys::CodeFlow::next;
+					return asys::CodeFlow::next_;
 				}
 			})_;
 
@@ -200,14 +200,14 @@ private:
 				f->EXPRESS([player_info](asys::Executable* executable){
 					asys_value(player_info);
 					std::cout << "login-success: " << player_info.toString() << std::endl;
-					return asys::CodeFlow::next;
+					return asys::CodeFlow::next_;
 				})_;
 
 				f->EXPRESS([player_info](asys::Executable* executable){
 					//return continue to indicate that next time executable is run, it will continue here.
 					asys_value(player_info);
 					std::cout << player_info.toString() << " is playing the game." << std::endl;
-					return asys::CodeFlow::retry;
+					return asys::CodeFlow::yield_;
 				})_;
 
 			}f->END_WHILE()_;

@@ -57,7 +57,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 			f->EXPRESS([v_sum](asys::Executable* executable){
 				asys_value(v_sum);
 				std::cout << "sum = " << v_sum.toString() << std::endl;
-				return asys::CodeFlow::next;
+				return asys::CodeFlow::next_;
 			})_;
 
 			f->OPERATE(index, index, "1", asys::Operator::plus)_;
@@ -72,7 +72,7 @@ int main()
 	auto executable = print_sum()->compile();
 	executable->setInputValue(0, 100);
 
-	while (executable->run() == asys::CodeFlow::retry);
+	while (executable->run() == asys::CodeFlow::yield_);
 	executable->release();
 
 	char c{};

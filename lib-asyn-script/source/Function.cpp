@@ -108,7 +108,7 @@ asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inpu
 			executable->setValue(param, executable->getValue(asys::getInputVariableName(i)));
 		}
 
-		return CodeFlow::next;
+		return CodeFlow::next_;
 	});
 }
 
@@ -128,7 +128,7 @@ asys::BreakPoint& asys::FunctionCode::ASSIGN(const std::string& var1, const std:
 		{
 			executable->setValue(var1, var2);
 		}
-		return CodeFlow::next;
+		return CodeFlow::next_;
 	});
 }
 
@@ -138,13 +138,13 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 
 	return EXPRESS([output, var1, eOperator, var2](Executable* executable){
 		const auto& callback = Value::getBinaryOperator(eOperator);
-		if (!callback) return CodeFlow::next;
+		if (!callback) return CodeFlow::next_;
 
 		//none of the operands allows to be null.
 		executable->setValue(output, callback(isValidVariableName(var1) ? *executable->getValue(var1) : var1,
 			isValidVariableName(var2) ? *executable->getValue(var2) : var2));
 
-		return CodeFlow::next;
+		return CodeFlow::next_;
 	});
 }
 
@@ -154,12 +154,12 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 
 	return EXPRESS([output, eOperator, var](Executable* executable){
 		const auto& callback = Value::getUnaryOperator(eOperator);
-		if (!callback) return CodeFlow::next;
+		if (!callback) return CodeFlow::next_;
 
 		//the operand must not be null.
 		executable->setValue(output, callback(isValidVariableName(var) ? *executable->getValue(var) : var));
 
-		return CodeFlow::next;
+		return CodeFlow::next_;
 	});
 }
 
@@ -569,12 +569,12 @@ asys::FunctionExecutable::~FunctionExecutable()
 
 asys::CodeFlow asys::FunctionExecutable::run()
 {
-	CodeFlow retCode = CodeFlow::next;
+	CodeFlow retCode = CodeFlow::next_;
 
 	while (true)
 	{
 		if (m_nCurIp >= static_cast<int>(m_instructors.size()) || 
-			retCode == CodeFlow::retry) break;
+			retCode == CodeFlow::yield_) break;
 
 		auto instructor = m_instructors[m_nCurIp];
 
@@ -632,18 +632,18 @@ int asys::FunctionExecutable::processExpressInstructor(CodeFlow& retCode, int cu
 {
 	if (!expressInstructor->express)
 	{
-		retCode = CodeFlow::next;
+		retCode = CodeFlow::next_;
 		return curIp + 1;
 	}
 
 	retCode = expressInstructor->express(this);
 
-	if (retCode == CodeFlow::retry)
+	if (retCode == CodeFlow::yield_)
 	{
 		return curIp;
 	}
 
-	if (retCode == CodeFlow::next)
+	if (retCode == CodeFlow::next_)
 	{
 		return curIp + 1;
 	}
@@ -676,7 +676,7 @@ int asys::FunctionExecutable::processExpressInstructor(CodeFlow& retCode, int cu
 
 int asys::FunctionExecutable::processCallInstructor(CodeFlow& retCode, int curIp, CallInstructor* callInstructor)
 {
-	retCode = CodeFlow::next;
+	retCode = CodeFlow::next_;
 
 	if (!callInstructor->executable)
 	{
@@ -711,7 +711,7 @@ int asys::FunctionExecutable::processCallInstructor(CodeFlow& retCode, int curIp
 
 	retCode = callInstructor->executable->run();
 
-	if (retCode == CodeFlow::retry) return curIp;
+	if (retCode == CodeFlow::yield_) return curIp;
 
 	//fetch outputs from invoked code.
 	for (const auto& pair : callInstructor->outputParams)

@@ -16,7 +16,7 @@ asys::CodeFlow asys::SimpleLamdaExecutable::run()
 		return m_callback(this);
 	}
 
-	return CodeFlow::next;
+	return CodeFlow::next_;
 }
 
 asys::Executable* asys::SimpleLamdaCode::compile()

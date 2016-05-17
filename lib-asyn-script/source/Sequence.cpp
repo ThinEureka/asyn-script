@@ -45,21 +45,21 @@ asys::CodeFlow asys::SequenceExecutable::run()
 			}
 			else
 			{
-				return CodeFlow::next;
+				return CodeFlow::next_;
 			}
 		}
 
 		auto retValue = m_currentExe->run();
-		if (retValue == CodeFlow::next)
+		if (retValue == CodeFlow::next_)
 		{
 			m_currentExe->release();
 			m_currentExe = nullptr;
 		}
 		else
 		{
-			return CodeFlow::retry;
+			return CodeFlow::yield_;
 		}
 	}
 
-	return CodeFlow::next;
+	return CodeFlow::next_;
 }
