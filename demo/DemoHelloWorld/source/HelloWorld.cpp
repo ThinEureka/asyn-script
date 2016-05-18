@@ -37,6 +37,30 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 	return f;
 }
 
+asys::FunctionCode* sum2(ASYS_PARAM(n))
+{
+	auto& f = m_asynFunctions[__FUNCTION__];
+	if (f) return f;
+
+	f = new asys::FunctionCode;
+	{
+		f->INPUT({ n })_;
+
+		f->EXPRESS([n](asys::Executable* executable){
+			asys_value(n);
+			int v_sum = 0;
+			for (int i = 0; i != n.toInt(); ++i)
+			{
+				v_sum += i;
+			}
+			executable->setOutputValues({ v_sum });
+			return asys::CodeFlow::return_;
+		})_;
+	}
+
+	return f;
+}
+
 asys::FunctionCode* print_sum(ASYS_PARAM(n))
 {
 	auto& f = m_asynFunctions[__FUNCTION__];
@@ -57,6 +81,15 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 			f->EXPRESS([v_sum](asys::Executable* executable){
 				asys_value(v_sum);
 				std::cout << "sum = " << v_sum.toString() << std::endl;
+				return asys::CodeFlow::next_;
+			})_;
+
+			ASYS_VAR(v_sum2);
+			f->CALL({ v_sum2 }, { index }, sum2())_;
+
+			f->EXPRESS([v_sum2](asys::Executable* executable){
+				asys_value(v_sum2);
+				std::cout << "sum = " << v_sum2.toString() << std::endl;
 				return asys::CodeFlow::next_;
 			})_;
 
