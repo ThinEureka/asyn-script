@@ -21,15 +21,14 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 		f->INPUT({n})_;
 
 		ASYS_VAR(sum);
-		f->ASSIGN(sum, "0")_;
+		f->ASSIGN(sum, asys_const(0))_;
 
 		ASYS_VAR(i);
-		f->ASSIGN(i, "0")_;
+		f->ASSIGN(i, asys_const(0))_;
 
 		f->WHILE_NOT_EQUAL(i, n)_
 		{
 			f->OPERATE(sum, sum, i, asys::Operator::plus)_;
-			f->OPERATE(i, i, "1", asys::Operator::plus)_;
 		}f->END_WHILE()_;
 		f->RETURN({ sum })_;
 	}
@@ -71,7 +70,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 		f->INPUT({n})_;
 
 		ASYS_VAR(index);
-		f->ASSIGN(index, "0")_;
+		f->ASSIGN(index, asys_const(0))_;
 
 		f->WHILE_NOT_EQUAL(index, n)_;
 		{
@@ -93,7 +92,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 				return asys::CodeFlow::next_;
 			})_;
 
-			f->OPERATE(index, index, "1", asys::Operator::plus)_;
+			f->OPERATE(index, index, asys_const(1), asys::Operator::plus)_;
 		}f->END_WHILE()_;
 	}
 

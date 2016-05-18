@@ -12,11 +12,18 @@
 #include <string>
 #include <sstream>
 
+#define ASYS_VAR(name) const std::string name("$"#name)
+#define ASYS_PARAM(name) const std::string& name = "$"#name
+#define D_ASYS_PARAM(name) const std::string& name
+#define asys_value(name) const auto& tmp_##name = name; auto& name = (*executable)[tmp_##name];
+#define asys_const(name) asys::toString(name) 
+#define asys_null ""
+
 namespace asys
 {
 	enum class CodeFlow
 	{
-		yield_, // the virtual machine will start from the same instructor next time it's invoked.
+		yield_, // the virtual machine will start from the same instructor next time it's invoked. 
 		next_, // the virtual machine moves to the next instructor
 		break_, // function as break in a while loop
 		continue_, //function as continue in a while loop

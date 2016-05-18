@@ -41,7 +41,7 @@ private:
 			f->INPUT({device_id})_;
 
 			ASYS_VAR(index);
-			f->ASSIGN(index, "0")_;
+			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(user_id);
 			ASYS_VAR(access_token);
@@ -85,7 +85,7 @@ private:
 			f->INPUT({user_id, access_token})_;
 
 			ASYS_VAR(index);
-			f->ASSIGN(index, "0")_;
+			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(session_id);
 			f->EXPRESS([index, session_id, user_id, access_token](asys::Executable* executable){
@@ -127,7 +127,7 @@ private:
 			f->INPUT({ user_id, session_id, gameserver_ip })_;
 
 			ASYS_VAR(index);
-			f->ASSIGN(index, "0")_;
+			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(player_info);
 			f->EXPRESS([index, user_id, session_id, player_info](asys::Executable* executable){
