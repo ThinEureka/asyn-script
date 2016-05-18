@@ -29,6 +29,7 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 		f->WHILE_NOT_EQUAL(i, n)_
 		{
 			f->OPERATE(sum, sum, i, asys::Operator::plus)_;
+			f->OPERATE(i, i, asys_const(1), asys::Operator::plus)_;
 		}f->END_WHILE()_;
 		f->RETURN({ sum })_;
 	}
