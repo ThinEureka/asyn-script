@@ -571,6 +571,11 @@ asys::CodeFlow asys::FunctionExecutable::run()
 {
 	while (true)
 	{
+		if (m_nCurIp >= static_cast<int>(m_instructors.size()))
+		{
+			break;
+		}
+
 		auto instructor = m_instructors[m_nCurIp];
 
 		auto callback = instructor->breakPoint().callback();
@@ -621,8 +626,10 @@ asys::CodeFlow asys::FunctionExecutable::run()
 			break;
 		}
 
-		if (m_nCurIp >= static_cast<int>(m_instructors.size()) ||
-			m_codeFlow == CodeFlow::yield_) break;
+		if (m_codeFlow == CodeFlow::yield_)
+		{
+			break;
+		}
 	}
 
 	return m_codeFlow;
