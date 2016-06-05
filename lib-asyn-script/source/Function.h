@@ -438,6 +438,7 @@ namespace asys
 	private:
 		std::vector<Instructor*> m_instructors;
 		int m_nCurIp{ INVALID_IP  + 1};
+		CodeFlow m_codeFlow{CodeFlow::next_};
 		std::map<std::string, Code*> m_dynamicCodes;
 	};
 

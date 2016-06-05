@@ -569,20 +569,17 @@ asys::FunctionExecutable::~FunctionExecutable()
 
 asys::CodeFlow asys::FunctionExecutable::run()
 {
-	CodeFlow retCode = CodeFlow::next_;
-
 	while (true)
 	{
-		if (m_nCurIp >= static_cast<int>(m_instructors.size()) || 
-			retCode == CodeFlow::yield_) break;
-
 		auto instructor = m_instructors[m_nCurIp];
 
 		auto callback = instructor->breakPoint().callback();
-		if (callback)
+		if (callback && m_codeFlow != CodeFlow::yield_)
 		{
 			callback(this, instructor->breakPoint());
 		}
+
+		m_codeFlow = CodeFlow::next_;
 
 		switch (instructor->instructorType())
 		{
@@ -590,10 +587,10 @@ asys::CodeFlow asys::FunctionExecutable::run()
 			m_nCurIp = processNullInstructor(m_nCurIp);
 			break;
 		case InstructorType::type_express:
-			m_nCurIp = processExpressInstructor(retCode, m_nCurIp, dynamic_cast<ExpressInstructor*>(instructor));
+			m_nCurIp = processExpressInstructor(m_codeFlow, m_nCurIp, dynamic_cast<ExpressInstructor*>(instructor));
 			break;
 		case InstructorType::type_call:
-			m_nCurIp = processCallInstructor(retCode, m_nCurIp, dynamic_cast<CallInstructor*>(instructor));
+			m_nCurIp = processCallInstructor(m_codeFlow, m_nCurIp, dynamic_cast<CallInstructor*>(instructor));
 			break;
 		case InstructorType::type_if:
 			m_nCurIp = processIfInstructor(m_nCurIp, dynamic_cast<IfInstructor*>(instructor));
@@ -623,9 +620,12 @@ asys::CodeFlow asys::FunctionExecutable::run()
 			++m_nCurIp;
 			break;
 		}
+
+		if (m_nCurIp >= static_cast<int>(m_instructors.size()) ||
+			m_codeFlow == CodeFlow::yield_) break;
 	}
 
-	return retCode;
+	return m_codeFlow;
 }
 
 int asys::FunctionExecutable::processExpressInstructor(CodeFlow& retCode, int curIp, ExpressInstructor* expressInstructor)
