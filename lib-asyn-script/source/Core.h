@@ -13,6 +13,7 @@
 #include <map>
 #include <vector>
 #include "Define.h"
+#include <functional>
 
 namespace asys
 {
@@ -26,6 +27,15 @@ namespace asys
 
 	class Executable
 	{
+	public:
+		virtual ~Executable()
+		{
+			for (auto& deallocator : m_deallocators)
+			{
+				deallocator(this);
+			}
+		}
+
 	public:
 		virtual CodeFlow run() = 0;
 
@@ -85,9 +95,15 @@ namespace asys
 		const Value* getOutputValue(int index) const { return getValue(getOutputVariableName(index)); }
 		const Value* getInputValue(int index) const { return getValue(getInputVariableName(index)); }
 
+		void addDeallocator(const std::function<void(asys::Executable*)>& deallocator)
+		{
+			m_deallocators.push_back(deallocator);
+		}
+
 	private:
 		int m_nReferenceCount{ 0 };
 		std::map<std::string, Value> m_varTable;
+		std::vector<std::function<void(asys::Executable*)>> m_deallocators;
 	};
 	
 }
