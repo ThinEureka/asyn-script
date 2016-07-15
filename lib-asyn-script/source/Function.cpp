@@ -688,7 +688,7 @@ int asys::FunctionExecutable::processCallInstructor(CodeFlow& retCode, int curIp
 	if (!callInstructor->executable)
 	{
 		//get the real code if it's a dynamic call.
-		if (!callInstructor->code)
+		if (!callInstructor->codeName.empty())
 		{
 			auto it = m_dynamicCodes.find(callInstructor->codeName);
 			if (it != m_dynamicCodes.end())
@@ -728,6 +728,10 @@ int asys::FunctionExecutable::processCallInstructor(CodeFlow& retCode, int curIp
 
 	callInstructor->executable->release();
 	callInstructor->executable = nullptr;
+	if (!callInstructor->codeName.empty())
+	{
+		callInstructor->code = nullptr;
+	}
 
 	return curIp + 1;
 }
@@ -748,6 +752,11 @@ int asys::FunctionExecutable::processReturnInstructor(int curIp, ReturnInstructo
 	}
 
 	return static_cast<int>(m_instructors.size());
+}
+
+void asys::FunctionExecutable::registerDynamicCode(const std::string& name, Code* code)
+{
+	m_dynamicCodes[name] = code;
 }
 
 void asys::BreakPoint::operator()(const std::function<void(Executable*, const BreakPoint& breakpoint)>& callback, const char* fileName /*= nullptr*/, const char* functionName /*= nullptr*/, int lineNumber /*= -1*/)

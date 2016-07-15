@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoLogin", "DemoLogin\DemoLogin.vcxproj", "{3F519292-5E40-42B2-9EDA-95E06F2E6C30}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib-asyn-script", "..\lib-asyn-script\proj.win32\lib-asyn-script.vcxproj", "{7EA8EE28-521D-4200-B631-FFC321321925}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoHelloWorld", "DemoHelloWorld\DemoHelloWorld.vcxproj", "{3BF39BF5-24A3-4A83-8213-1DDAF90AE4C6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoRecursion", "DemoRecursion\DemoRecursion.vcxproj", "{1505F3F9-4879-40C6-B637-C1ECE05D0E36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{3BF39BF5-24A3-4A83-8213-1DDAF90AE4C6}.Debug|Win32.Build.0 = Debug|Win32
 		{3BF39BF5-24A3-4A83-8213-1DDAF90AE4C6}.Release|Win32.ActiveCfg = Release|Win32
 		{3BF39BF5-24A3-4A83-8213-1DDAF90AE4C6}.Release|Win32.Build.0 = Release|Win32
+		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Debug|Win32.Build.0 = Debug|Win32
+		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Release|Win32.ActiveCfg = Release|Win32
+		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

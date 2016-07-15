@@ -397,6 +397,8 @@ namespace asys
 
 		CodeFlow run() override;
 
+		void registerDynamicCode(const std::string& name, Code* code);
+
 	private:
 		int processNullInstructor(int curIp) {return curIp + 1;}
 
