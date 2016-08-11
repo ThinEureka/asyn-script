@@ -61,7 +61,7 @@ asys::CodeFlow asys::ConcurrencyAllExecutable::run()
 			}
 			else
 			{
-				retCode = CodeFlow::yield_;
+				retCode = CodeFlow::redo_;
 			}
 		}
 	}
@@ -120,7 +120,7 @@ asys::CodeFlow asys::ConcurrencyAnyExecutable::run()
 		}
 		else
 		{
-			retCode = CodeFlow::yield_;
+			retCode = CodeFlow::redo_;
 		}
 	}
 

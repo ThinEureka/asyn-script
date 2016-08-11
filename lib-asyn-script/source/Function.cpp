@@ -25,6 +25,8 @@ asys::FunctionCode::~FunctionCode()
 	m_instructors.clear();
 }
 
+
+
 void asys::FunctionCode::clear()
 {
 	for (auto instructor : m_instructors)
@@ -35,9 +37,9 @@ void asys::FunctionCode::clear()
 	m_instructors.clear();
 }
 
-asys::BreakPoint& asys::FunctionCode::EXPRESS(const std::function<CodeFlow(Executable*)>& express)
+asys::BreakPoint& asys::FunctionCode::DO(const std::function<void(Executable*)>& express)
 {
-	auto instructor = new ExpressInstructor(express);
+	auto instructor = new DoInstructor(express);
 	m_instructors.push_back(instructor);
 
 	return instructor->breakPoint();
@@ -99,7 +101,7 @@ asys::BreakPoint& asys::FunctionCode::CALL_EX(const std::vector<std::pair<std::s
 
 asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inputParams)
 {
-	return EXPRESS([inputParams](Executable* executable){
+	return DO([inputParams](Executable* executable){
 
 		for (size_t i = 0; i < inputParams.size(); ++i)
 		{
@@ -107,8 +109,6 @@ asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inpu
 			assert(isValidVariableName(param));
 			executable->setValue(param, executable->getValue(asys::getInputVariableName(i)));
 		}
-
-		return CodeFlow::next_;
 	});
 }
 
@@ -117,7 +117,7 @@ asys::BreakPoint& asys::FunctionCode::ASSIGN(const std::string& var1, const std:
 	// can not assign to const variable.
 	assert(isValidVariableName(var1));
 
-	return EXPRESS([var1, var2](Executable* executable){
+	return DO([var1, var2](Executable* executable){
 		if (isValidVariableName(var2))
 		{	
 			// the second argument allows to be null, thus its effect
@@ -128,7 +128,6 @@ asys::BreakPoint& asys::FunctionCode::ASSIGN(const std::string& var1, const std:
 		{
 			executable->setValue(var1, var2);
 		}
-		return CodeFlow::next_;
 	});
 }
 
@@ -136,15 +135,13 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 {
 	assert(isValidVariableName(output));
 
-	return EXPRESS([output, var1, eOperator, var2](Executable* executable){
+	return DO([output, var1, eOperator, var2](Executable* executable){
 		const auto& callback = Value::getBinaryOperator(eOperator);
-		if (!callback) return CodeFlow::next_;
+		if (!callback) return;
 
 		//none of the operands allows to be null.
 		executable->setValue(output, callback(isValidVariableName(var1) ? *executable->getValue(var1) : var1,
 			isValidVariableName(var2) ? *executable->getValue(var2) : var2));
-
-		return CodeFlow::next_;
 	});
 }
 
@@ -152,14 +149,12 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 {
 	assert(isValidVariableName(output));
 
-	return EXPRESS([output, eOperator, var](Executable* executable){
+	return DO([output, eOperator, var](Executable* executable){
 		const auto& callback = Value::getUnaryOperator(eOperator);
-		if (!callback) return CodeFlow::next_;
+		if (!callback) return;
 
 		//the operand must not be null.
 		executable->setValue(output, callback(isValidVariableName(var) ? *executable->getValue(var) : var));
-
-		return CodeFlow::next_;
 	});
 }
 
@@ -579,23 +574,23 @@ asys::CodeFlow asys::FunctionExecutable::run()
 		auto instructor = m_instructors[m_nCurIp];
 
 		auto callback = instructor->breakPoint().callback();
-		if (callback && m_codeFlow != CodeFlow::yield_)
+		if (callback && m_retCodeFlow != CodeFlow::redo_)
 		{
 			callback(this, instructor->breakPoint());
 		}
 
-		m_codeFlow = CodeFlow::next_;
+		m_retCodeFlow = CodeFlow::next_;
 
 		switch (instructor->instructorType())
 		{
 		case InstructorType::type_null:
 			m_nCurIp = processNullInstructor(m_nCurIp);
 			break;
-		case InstructorType::type_express:
-			m_nCurIp = processExpressInstructor(m_codeFlow, m_nCurIp, dynamic_cast<ExpressInstructor*>(instructor));
+		case InstructorType::type_do:
+			m_nCurIp = processDoInstructor(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstructor*>(instructor));
 			break;
 		case InstructorType::type_call:
-			m_nCurIp = processCallInstructor(m_codeFlow, m_nCurIp, dynamic_cast<CallInstructor*>(instructor));
+			m_nCurIp = processCallInstructor(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstructor*>(instructor));
 			break;
 		case InstructorType::type_if:
 			m_nCurIp = processIfInstructor(m_nCurIp, dynamic_cast<IfInstructor*>(instructor));
@@ -626,16 +621,16 @@ asys::CodeFlow asys::FunctionExecutable::run()
 			break;
 		}
 
-		if (m_codeFlow == CodeFlow::yield_)
+		if (m_retCodeFlow == CodeFlow::redo_)
 		{
 			break;
 		}
 	}
 
-	return m_codeFlow;
+	return m_retCodeFlow;
 }
 
-int asys::FunctionExecutable::processExpressInstructor(CodeFlow& retCode, int curIp, ExpressInstructor* expressInstructor)
+int asys::FunctionExecutable::processDoInstructor(CodeFlow& retCode, int curIp, DoInstructor* expressInstructor)
 {
 	if (!expressInstructor->express)
 	{
@@ -643,9 +638,12 @@ int asys::FunctionExecutable::processExpressInstructor(CodeFlow& retCode, int cu
 		return curIp + 1;
 	}
 
-	retCode = expressInstructor->express(this);
+	setReturnCodeFlow(CodeFlow::next_);
+	expressInstructor->express(this);
 
-	if (retCode == CodeFlow::yield_)
+	retCode = getReturnCodeFlow();
+
+	if (retCode == CodeFlow::redo_)
 	{
 		return curIp;
 	}
@@ -718,7 +716,7 @@ int asys::FunctionExecutable::processCallInstructor(CodeFlow& retCode, int curIp
 
 	retCode = callInstructor->executable->run();
 
-	if (retCode == CodeFlow::yield_) return curIp;
+	if (retCode == CodeFlow::redo_) return curIp;
 
 	//fetch outputs from invoked code.
 	for (const auto& pair : callInstructor->outputParams)

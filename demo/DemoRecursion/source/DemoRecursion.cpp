@@ -22,27 +22,24 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 		f->INPUT({n})_;
 		
 		ASYS_VAR(n_minus_one);
-		f->EXPRESS([=](asys::Executable* executable){
+		f->DO([=](asys::Executable* executable){
 			asys_value(n);
 			asys_value(n_minus_one);
 			if (n.toInt() <= 0)
 			{
-				executable->setOutputValues({ 0 });
-				return asys::CodeFlow::return_;
+				asys_return(0);
 			}
 
 			n_minus_one = n.toInt() - 1;
-			return asys::CodeFlow::next_;
 		})_;
 
 		ASYS_VAR(sub_result);
 		f->CALL({ sub_result }, { n_minus_one }, sum())_;
 
-		f->EXPRESS([=](asys::Executable* executable){
+		f->DO([=](asys::Executable* executable){
 			asys_value(sub_result);
 			asys_value(n);
-			executable->setOutputValues({ n.toInt() + sub_result.toInt() });
-			return asys::CodeFlow::return_;
+			asys_return(n.toInt() + sub_result.toInt());
 		})_;
 	}
 
@@ -64,13 +61,12 @@ asys::FunctionCode* print()
 			ASYS_VAR(result);
 			f->CALL({ result }, { n }, sum())_;
 
-			f->EXPRESS([=](asys::Executable* executable){
+			f->DO([=](asys::Executable* executable){
 				asys_value(result);
 				asys_value(n);
 				std::cout << "s(" << n.toInt() << ") = " << result.toInt() << std::endl;
 
 				n = n.toInt() + 1;
-				return asys::CodeFlow::next_;
 			})_;
 		}f->END_WHILE()_;
 		
@@ -82,7 +78,7 @@ asys::FunctionCode* print()
 int main()
 {
 	auto executable = print()->compile();
-	while (executable->run() == asys::CodeFlow::yield_);
+	while (executable->run() == asys::CodeFlow::redo_);
 	executable->release();
 
 	char c{};

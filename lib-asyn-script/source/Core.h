@@ -100,8 +100,12 @@ namespace asys
 			m_deallocators.push_back(deallocator);
 		}
 
+		void setReturnCodeFlow(asys::CodeFlow flow) { m_retCodeFlow = flow; }
+		CodeFlow getReturnCodeFlow() const { return m_retCodeFlow; }
+
 	private:
 		int m_nReferenceCount{ 0 };
+		CodeFlow m_retCodeFlow{ CodeFlow::next_ };
 		std::map<std::string, Value> m_varTable;
 		std::vector<std::function<void(asys::Executable*)>> m_deallocators;
 	};

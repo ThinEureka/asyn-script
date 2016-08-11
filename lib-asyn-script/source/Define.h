@@ -19,11 +19,17 @@
 #define asys_const(name) asys::toString(name) 
 #define asys_null ""
 
+#define asys_redo {executable->setReturnCodeFlow(asys::CodeFlow::redo_); return;}
+#define asys_next {executable->setReturnCodeFlow(asys::CodeFlow::next_); return;}
+#define asys_return(...) {executable->setOutputValues({__VA_ARGS__}); executable->setReturnCodeFlow(asys::CodeFlow::return_); return;}
+#define asys_break {executable->setReturnCodeFlow(asys::CodeFlow::break_); return;}
+#define asys_continue {executable->setReturnCodeFlow(asys::CodeFlow::continue_); return;}
+
 namespace asys
 {
 	enum class CodeFlow
 	{
-		yield_, // the virtual machine will start from the same instructor next time it's invoked. 
+		redo_, // the virtual machine will start from the same instructor next time it's invoked. 
 		next_, // the virtual machine moves to the next instructor
 		break_, // function as break in a while loop
 		continue_, //function as continue in a while loop

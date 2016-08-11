@@ -57,7 +57,7 @@ asys::CodeFlow asys::SequenceExecutable::run()
 		}
 		else
 		{
-			return CodeFlow::yield_;
+			return CodeFlow::redo_;
 		}
 	}
 

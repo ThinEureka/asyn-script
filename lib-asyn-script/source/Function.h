@@ -33,7 +33,7 @@ namespace asys
 	enum class InstructorType
 	{
 		type_null,
-		type_express,
+		type_do,
 		type_call,
 		type_if,
 		type_else,
@@ -104,20 +104,20 @@ namespace asys
 		BreakPoint m_breakPoint{ this };
 	};
 
-	class ExpressInstructor : public Instructor
+	class DoInstructor : public Instructor
 	{
 	public:
-		ExpressInstructor(const std::function<CodeFlow(Executable*)>& express) : Instructor(InstructorType::type_express), express(express){}
+		DoInstructor(const std::function<void(Executable*)>& express) : Instructor(InstructorType::type_do), express(express){}
 
-		Instructor* clone() const override 
-		{ 
-			auto instructor =  new ExpressInstructor(express);
+		Instructor* clone() const override
+		{
+			auto instructor = new DoInstructor(express);
 			instructor->setBreakPoint(breakPoint());
 			return instructor;
 		}
 
 	public:
-		std::function<CodeFlow(Executable*)> express{};
+		std::function<void(Executable*)> express{};
 	};
 
 	class CallInstructor : public Instructor
@@ -320,9 +320,9 @@ namespace asys
 		FunctionCode();
 		virtual ~FunctionCode();
 
-		//It's easier to debug the code using EXPRESS and lamda expression than using ASSIGN or OPERATE
+		//It's easier to debug the code using DO and lamda expression than using ASSIGN or OPERATE
 		//and the expressions written in C++ in the lamda expression are more expressive than pure asyn-script codes.
-		BreakPoint& EXPRESS(const std::function<CodeFlow(Executable*)>& express);
+		BreakPoint& DO(const std::function<void(Executable*)>& express);
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
 		BreakPoint& CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code);
@@ -402,7 +402,7 @@ namespace asys
 	private:
 		int processNullInstructor(int curIp) {return curIp + 1;}
 
-		int processExpressInstructor(CodeFlow& retCode, int curIp, ExpressInstructor* expressInstructor);
+		int processDoInstructor(CodeFlow& retCode, int curIp, DoInstructor* expressInstructor);
 		int processCallInstructor(CodeFlow& retCode, int curIp, CallInstructor* callInstructor);
 
 		int processIfInstructor(int curIp, IfInstructor* ifInstructor)
@@ -440,7 +440,7 @@ namespace asys
 	private:
 		std::vector<Instructor*> m_instructors;
 		int m_nCurIp{ INVALID_IP  + 1};
-		CodeFlow m_codeFlow{CodeFlow::next_};
+		CodeFlow m_retCodeFlow{CodeFlow::next_};
 		std::map<std::string, Code*> m_dynamicCodes;
 	};
 

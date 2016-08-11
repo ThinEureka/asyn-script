@@ -26,7 +26,7 @@ public:
 		}
 
 		auto retCode = m_pExecutable->run();
-		return retCode == asys::CodeFlow::yield_;
+		return retCode == asys::CodeFlow::redo_;
 	}
 
 private:
@@ -46,7 +46,7 @@ private:
 			ASYS_VAR(user_id);
 			ASYS_VAR(access_token);
 
-			f->EXPRESS([index, user_id, access_token, device_id](asys::Executable* executable){
+			f->DO([index, user_id, access_token, device_id](asys::Executable* executable){
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(access_token);
@@ -56,7 +56,7 @@ private:
 				{
 					std::cout << "user-server  login... " << "device_id=" << device_id.toString() << std::endl;
 					index = index.toInt() + 1;
-					return asys::CodeFlow::yield_;
+					asys_redo;
 				}
 				else
 				{
@@ -64,7 +64,6 @@ private:
 					index = index.toInt() + 1;
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
-					return asys::CodeFlow::next_;
 				}
 			})_;
 
@@ -88,7 +87,7 @@ private:
 			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(session_id);
-			f->EXPRESS([index, session_id, user_id, access_token](asys::Executable* executable){
+			f->DO([index, session_id, user_id, access_token](asys::Executable* executable){
 				asys_value(index);
 				asys_value(session_id);
 				asys_value(user_id);
@@ -99,14 +98,13 @@ private:
 					std::cout << "login-server login... " << "$user_id=" << user_id.toString() << std::endl
 						<< "$access_token=" << access_token.toString() << std::endl;
 					index = index.toInt() + 1;
-					return asys::CodeFlow::yield_;
+					asys_redo;
 				}
 				else
 				{
 					std::cout << "login-server login succeeded " << std::endl;
 					index = index.toInt() + 1;
 					session_id = "123456";
-					return asys::CodeFlow::next_;
 				}
 			})_;
 
@@ -130,7 +128,7 @@ private:
 			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(player_info);
-			f->EXPRESS([index, user_id, session_id, player_info](asys::Executable* executable){
+			f->DO([index, user_id, session_id, player_info](asys::Executable* executable){
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(session_id);
@@ -141,13 +139,12 @@ private:
 					std::cout << "game-server login... " << "$user_id=" << user_id.toString() << std::endl
 						<< "$session_id=" << session_id.toString() << std::endl;
 					index = index.toInt() + 1;
-					return asys::CodeFlow::yield_;
+					asys_redo;
 				}
 				else
 				{
 					std::cout << "game-server login succeeded " << std::endl;
 					player_info = "player-123";
-					return asys::CodeFlow::next_;
 				}
 			})_;
 
@@ -197,17 +194,16 @@ private:
 					f->CONTINUE()_;
 				}f->END_IF()_;
 
-				f->EXPRESS([player_info](asys::Executable* executable){
+				f->DO([player_info](asys::Executable* executable){
 					asys_value(player_info);
 					std::cout << "login-success: " << player_info.toString() << std::endl;
-					return asys::CodeFlow::next_;
 				})_;
 
-				f->EXPRESS([player_info](asys::Executable* executable){
+				f->DO([player_info](asys::Executable* executable){
 					//return continue to indicate that next time executable is run, it will continue here.
 					asys_value(player_info);
 					std::cout << player_info.toString() << " is playing the game." << std::endl;
-					return asys::CodeFlow::yield_;
+					asys_redo;
 				})_;
 
 			}f->END_WHILE()_;
