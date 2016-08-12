@@ -47,7 +47,7 @@ asys::FunctionCode* sum2(ASYS_PARAM(n))
 	{
 		f->INPUT({ n })_;
 
-		f->DO([n](asys::Executable* executable){
+		f->DO([=](asys::Executable* executable){
 			asys_value(n);
 			int v_sum = 0;
 			for (int i = 0; i != n.toInt(); ++i)
@@ -78,7 +78,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 			ASYS_VAR(v_sum);
 			f->CALL({v_sum}, { index }, sum())_;
 
-			f->DO([v_sum](asys::Executable* executable){
+			f->DO([=](asys::Executable* executable){
 				asys_value(v_sum);
 				std::cout << "sum = " << v_sum.toString() << std::endl;
 			})_;
@@ -86,7 +86,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 			ASYS_VAR(v_sum2);
 			f->CALL({ v_sum2 }, { index }, sum2())_;
 
-			f->DO([v_sum2](asys::Executable* executable){
+			f->DO([=](asys::Executable* executable){
 				asys_value(v_sum2);
 				std::cout << "sum2 = " << v_sum2.toString() << std::endl;
 			})_;

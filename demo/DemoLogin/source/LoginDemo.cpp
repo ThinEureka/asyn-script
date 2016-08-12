@@ -46,7 +46,7 @@ private:
 			ASYS_VAR(user_id);
 			ASYS_VAR(access_token);
 
-			f->DO([index, user_id, access_token, device_id](asys::Executable* executable){
+			f->DO([=](asys::Executable* executable){
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(access_token);
@@ -87,7 +87,7 @@ private:
 			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(session_id);
-			f->DO([index, session_id, user_id, access_token](asys::Executable* executable){
+			f->DO([=](asys::Executable* executable){
 				asys_value(index);
 				asys_value(session_id);
 				asys_value(user_id);
@@ -128,7 +128,7 @@ private:
 			f->ASSIGN(index, asys_const(0))_;
 
 			ASYS_VAR(player_info);
-			f->DO([index, user_id, session_id, player_info](asys::Executable* executable){
+			f->DO([=](asys::Executable* executable){
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(session_id);
@@ -194,12 +194,12 @@ private:
 					f->CONTINUE()_;
 				}f->END_IF()_;
 
-				f->DO([player_info](asys::Executable* executable){
+				f->DO([=](asys::Executable* executable){
 					asys_value(player_info);
 					std::cout << "login-success: " << player_info.toString() << std::endl;
 				})_;
 
-				f->DO([player_info](asys::Executable* executable){
+				f->DO([=](asys::Executable* executable){
 					//return continue to indicate that next time executable is run, it will continue here.
 					asys_value(player_info);
 					std::cout << player_info.toString() << " is playing the game." << std::endl;
