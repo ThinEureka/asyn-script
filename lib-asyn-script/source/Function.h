@@ -13,7 +13,7 @@
 #include <list>
 #include <functional>
 
-// append this macro to the instructor calls to set a break point for ease of debug in C++
+// append this macro to the instruction calls to set a break point for ease of debug in C++
 #ifdef _DEBUG
 #define _ ([](asys::Executable* executable, const asys::BreakPoint& breakPoint) \
 		{ \
@@ -30,7 +30,7 @@ namespace asys
 	class FunctionExecutable;
 	class FunctionCode;
 
-	enum class InstructorType
+	enum class InstructionType
 	{
 		type_null,
 		type_do,
@@ -47,16 +47,16 @@ namespace asys
 
 	const int INVALID_IP = -1;
 
-	class Instructor;
+	class Instruction;
 
 	class BreakPoint
 	{
 	public:
-		BreakPoint(Instructor* instructor) : m_instructor(instructor) {}
+		BreakPoint(Instruction* instruction) : m_instruction(instruction) {}
 
 		BreakPoint& operator = (const BreakPoint& breakPoint)
 		{
-			//m_instructor does not change.
+			//m_instruction does not change.
 			m_fileName = breakPoint.fileName();
 			m_functionName = breakPoint.functionName();
 			m_lineNumber = breakPoint.lineNumber();
@@ -64,7 +64,7 @@ namespace asys
 			return *this;
 		}
 
-		Instructor* instructor() { return m_instructor; }
+		Instruction* instruction() { return m_instruction; }
 		const std::string& fileName() const { return m_fileName; }
 		const std::string& functionName() const { return m_functionName; }
 		int lineNumber() const { return m_lineNumber; }
@@ -77,22 +77,22 @@ namespace asys
 		const std::function<void(Executable*, const BreakPoint& breakpoint)>& callback() const { return m_callback; }
 
 	private:
-		Instructor* m_instructor{ nullptr };
+		Instruction* m_instruction{ nullptr };
 		std::string m_fileName;
 		std::string m_functionName;
 		int m_lineNumber{ -1 };
 		std::function<void(Executable*, const BreakPoint& breakpoint)> m_callback;
 	};
 
-	class Instructor
+	class Instruction
 	{
 	public:
-		Instructor(InstructorType instructorType) : m_instructorType(instructorType) {}
-		virtual ~Instructor() {}
+		Instruction(InstructionType instructionType) : m_instructionType(instructionType) {}
+		virtual ~Instruction() {}
 
-		InstructorType instructorType() const { return m_instructorType; }
+		InstructionType instructionType() const { return m_instructionType; }
 
-		virtual Instructor* clone() const { return new Instructor(m_instructorType); }
+		virtual Instruction* clone() const { return new Instruction(m_instructionType); }
 
 		const BreakPoint& breakPoint() const { return m_breakPoint; }
 		BreakPoint& breakPoint(){ return m_breakPoint; }
@@ -100,38 +100,38 @@ namespace asys
 		void setBreakPoint(const BreakPoint& breakPoint) { m_breakPoint = breakPoint; }
 
 	private:
-		InstructorType m_instructorType;
+		InstructionType m_instructionType;
 		BreakPoint m_breakPoint{ this };
 	};
 
-	class DoInstructor : public Instructor
+	class DoInstruction : public Instruction
 	{
 	public:
-		DoInstructor(const std::function<void(Executable*)>& express) : Instructor(InstructorType::type_do), express(express){}
+		DoInstruction(const std::function<void(Executable*)>& express) : Instruction(InstructionType::type_do), express(express){}
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto instructor = new DoInstructor(express);
-			instructor->setBreakPoint(breakPoint());
-			return instructor;
+			auto instruction = new DoInstruction(express);
+			instruction->setBreakPoint(breakPoint());
+			return instruction;
 		}
 
 	public:
 		std::function<void(Executable*)> express{};
 	};
 
-	class CallInstructor : public Instructor
+	class CallInstruction : public Instruction
 	{
 	public:
-		CallInstructor(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>& inputParams, Code* code, const std::string& codeName)
-			: Instructor(InstructorType::type_call)
+		CallInstruction(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>& inputParams, Code* code, const std::string& codeName)
+			: Instruction(InstructionType::type_call)
 			, outputParams(outputParams)
 			, inputParams(inputParams)
 			, code(code)
 			, codeName(codeName)
 		{}
 
-		virtual ~CallInstructor()
+		virtual ~CallInstruction()
 		{
 			if (executable)
 			{
@@ -140,11 +140,11 @@ namespace asys
 			}
 		}
 
-		Instructor* clone() const override 
+		Instruction* clone() const override 
 		{
-			auto instructor = new CallInstructor(outputParams, inputParams, code, codeName);
-			instructor->setBreakPoint(breakPoint());
-			return instructor;
+			auto instruction = new CallInstruction(outputParams, inputParams, code, codeName);
+			instruction->setBreakPoint(breakPoint());
+			return instruction;
 		}
 
 	public:
@@ -155,14 +155,14 @@ namespace asys
 		std::string codeName;
 	};
 
-	class IfInstructor : public Instructor
+	class IfInstruction : public Instruction
 	{
 	public:
-		IfInstructor(const std::function<bool(Executable*)>& express) : Instructor(InstructorType::type_if), express(express) {};
+		IfInstruction(const std::function<bool(Executable*)>& express) : Instruction(InstructionType::type_if), express(express) {};
 
-		Instructor* clone() const override 
+		Instruction* clone() const override 
 		{ 
-			auto copy = new IfInstructor(express);
+			auto copy = new IfInstruction(express);
 			copy->elseIp = elseIp;
 			copy->endIfIp = endIfIp;
 
@@ -177,14 +177,14 @@ namespace asys
 		int endIfIp{ INVALID_IP };
 	};
 
-	class ElseInstructor : public Instructor
+	class ElseInstruction : public Instruction
 	{
 	public:
-		ElseInstructor() : Instructor(InstructorType::type_else) {};
+		ElseInstruction() : Instruction(InstructionType::type_else) {};
 
-		Instructor* clone() const override 
+		Instruction* clone() const override 
 		{ 
-			auto copy = new ElseInstructor();
+			auto copy = new ElseInstruction();
 			copy->ifIp = ifIp;
 			copy->endIfIp = endIfIp;
 
@@ -198,14 +198,14 @@ namespace asys
 		int endIfIp{ INVALID_IP };
 	};
 
-	class EndIfInstructor : public Instructor
+	class EndIfInstruction : public Instruction
 	{
 	public:
-		EndIfInstructor() : Instructor(InstructorType::type_endif) {};
+		EndIfInstruction() : Instruction(InstructionType::type_endif) {};
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto copy = new EndIfInstructor();
+			auto copy = new EndIfInstruction();
 			copy->ifIp = ifIp;
 			copy->elseIp = elseIp;
 
@@ -219,14 +219,14 @@ namespace asys
 		int elseIp{ INVALID_IP };
 	};
 
-	class WhileInstructor : public Instructor
+	class WhileInstruction : public Instruction
 	{
 	public:
-		WhileInstructor(const std::function<bool(Executable*)>& express) : Instructor(InstructorType::type_while), express(express) {};
+		WhileInstruction(const std::function<bool(Executable*)>& express) : Instruction(InstructionType::type_while), express(express) {};
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto copy = new WhileInstructor(express);
+			auto copy = new WhileInstruction(express);
 			copy->endWhileIp = endWhileIp;
 
 			copy->setBreakPoint(breakPoint());
@@ -239,14 +239,14 @@ namespace asys
 		int endWhileIp{ INVALID_IP };
 	};
 
-	class EndWhileInstructor : public Instructor
+	class EndWhileInstruction : public Instruction
 	{
 	public:
-		EndWhileInstructor() : Instructor(InstructorType::type_endwhile) {};
+		EndWhileInstruction() : Instruction(InstructionType::type_endwhile) {};
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto copy = new EndWhileInstructor();
+			auto copy = new EndWhileInstruction();
 			copy->whileIp = whileIp;
 
 			copy->setBreakPoint(breakPoint());
@@ -258,14 +258,14 @@ namespace asys
 		int whileIp{ INVALID_IP };
 	};
 
-	class ContinueInstructor : public Instructor
+	class ContinueInstruction : public Instruction
 	{
 	public:
-		ContinueInstructor() : Instructor(InstructorType::type_continue) {};
+		ContinueInstruction() : Instruction(InstructionType::type_continue) {};
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto copy = new ContinueInstructor();
+			auto copy = new ContinueInstruction();
 			copy->whileIp = whileIp;
 
 			copy->setBreakPoint(breakPoint());
@@ -277,14 +277,14 @@ namespace asys
 		int whileIp{ INVALID_IP };
 	};
 
-	class BreakInstructor : public Instructor
+	class BreakInstruction : public Instruction
 	{
 	public:
-		BreakInstructor() : Instructor(InstructorType::type_break) {};
+		BreakInstruction() : Instruction(InstructionType::type_break) {};
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto copy = new BreakInstructor();
+			auto copy = new BreakInstruction();
 			copy->whileIp = whileIp;
 
 			copy->setBreakPoint(breakPoint());
@@ -296,14 +296,14 @@ namespace asys
 		int whileIp{ INVALID_IP };
 	};
 
-	class ReturnInstructor : public Instructor
+	class ReturnInstruction : public Instruction
 	{
 	public: 
-		ReturnInstructor(const std::vector<std::string>& outputParams) : Instructor(InstructorType::type_return), outputParams(outputParams){};
+		ReturnInstruction(const std::vector<std::string>& outputParams) : Instruction(InstructionType::type_return), outputParams(outputParams){};
 
-		Instructor* clone() const override
+		Instruction* clone() const override
 		{
-			auto copy = new ReturnInstructor(outputParams);
+			auto copy = new ReturnInstruction(outputParams);
 
 			copy->setBreakPoint(breakPoint());
 
@@ -330,7 +330,7 @@ namespace asys
 		//If codeName is const which means it's not a variable name, the real code to be called is determined when FunctionCode is compiled; 
 		//In this case, codeName is used to look up the code as key in the dynamic codes table, thus the code should be registered
 		//before compile() being called. If codeName is a valid variable name(starts with $), the code invoked would be the one registered with the name 
-		//stored in the code Name variable when the call instructor is executed.
+		//stored in the code Name variable when the call instruction is executed.
 		BreakPoint& CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName);
 
 		BreakPoint& INPUT(const std::vector<std::string>& inputParams);
@@ -362,7 +362,7 @@ namespace asys
 
 		//var1 should starts with $, if not it's a const, which can't be assigned.
 		//if var2 starts with $, the value in the variables table with key var2 will be 
-		//assigned when the generated instructor is invoked, or var2 itself will be assigned instead.
+		//assigned when the generated instruction is invoked, or var2 itself will be assigned instead.
 		BreakPoint& ASSIGN(const std::string& var1, const std::string& var2);
 
 		BreakPoint& OPERATE(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator);
@@ -370,7 +370,7 @@ namespace asys
 
 		Executable* compile() override;
 
-		void registerDynamicCodes(const std::string& name, Code* code) { m_dynamicCodes[name] = code; }
+		void registerDynamicCode(const std::string& name, Code* code) { m_dynamicCodes[name] = code; }
 		void unregisterDynamicCode(const std::string& name) { m_dynamicCodes.erase(name); }
 		void unregisterAllDynamicCodes() { m_dynamicCodes.clear(); }
 
@@ -383,7 +383,7 @@ namespace asys
 		BreakPoint& CALL_EX(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName);
 
 	private:
-		std::vector<Instructor*> m_instructors;
+		std::vector<Instruction*> m_instructions;
 		std::list<int> m_unmatchedIfIps;
 		std::list<int> m_unmatchedWhileIps;
 		std::map<std::string, Code*> m_dynamicCodes;
@@ -392,56 +392,53 @@ namespace asys
 	class FunctionExecutable : public Executable
 	{
 	public:
-		FunctionExecutable(const std::vector<Instructor*> instructors, const std::map<std::string, Code*> dynamicCodes);
+		FunctionExecutable(const std::vector<Instruction*> instructions, const std::map<std::string, Code*> dynamicCodes);
 		virtual ~FunctionExecutable();
 
 		CodeFlow run() override;
 
-		void registerDynamicCode(const std::string& name, Code* code);
-
 	private:
-		int processNullInstructor(int curIp) {return curIp + 1;}
+		int processNullInstruction(int curIp) {return curIp + 1;}
 
-		int processDoInstructor(CodeFlow& retCode, int curIp, DoInstructor* expressInstructor);
-		int processCallInstructor(CodeFlow& retCode, int curIp, CallInstructor* callInstructor);
+		int processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction);
+		int processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction);
 
-		int processIfInstructor(int curIp, IfInstructor* ifInstructor)
+		int processIfInstruction(int curIp, IfInstruction* ifInstruction)
 		{
-			bool condition = ifInstructor->express(this);
+			bool condition = ifInstruction->express(this);
 			if (condition) return curIp + 1;
 
-			if (ifInstructor->elseIp != INVALID_IP) return ifInstructor->elseIp + 1;
+			if (ifInstruction->elseIp != INVALID_IP) return ifInstruction->elseIp + 1;
 
-			return ifInstructor->endIfIp + 1;
+			return ifInstruction->endIfIp + 1;
 		}
 
-		int processElseInstructor(int curIp, ElseInstructor* elseInstructor) { return elseInstructor->endIfIp + 1; }
-		int processEndIfInstructor(int curIp, EndIfInstructor* endIfInstructor) { return curIp + 1; }
+		int processElseInstruction(int curIp, ElseInstruction* elseInstruction) { return elseInstruction->endIfIp + 1; }
+		int processEndIfInstruction(int curIp, EndIfInstruction* endIfInstruction) { return curIp + 1; }
 
-		int processWhileInstructor(int curIp, WhileInstructor* whileInstructor)
+		int processWhileInstruction(int curIp, WhileInstruction* whileInstruction)
 		{
-			bool condition = whileInstructor->express(this);
+			bool condition = whileInstruction->express(this);
 			if (condition) return curIp + 1;
 
-			return whileInstructor->endWhileIp + 1;
+			return whileInstruction->endWhileIp + 1;
 		}
 
-		int processEndWhileInstructor(int curIp, EndWhileInstructor* endWhileInstructor) { return endWhileInstructor->whileIp; }
-		int processContinueInstructor(int curIp, ContinueInstructor* continueInstructor) { return continueInstructor->whileIp; }
-		int processBreakInstructor(int curIp, BreakInstructor* breakInstructor)
+		int processEndWhileInstruction(int curIp, EndWhileInstruction* endWhileInstruction) { return endWhileInstruction->whileIp; }
+		int processContinueInstruction(int curIp, ContinueInstruction* continueInstruction) { return continueInstruction->whileIp; }
+		int processBreakInstruction(int curIp, BreakInstruction* breakInstruction)
 		{
-			auto whileIp = breakInstructor->whileIp;
-			auto whileInstructor = dynamic_cast<WhileInstructor*>(m_instructors[whileIp]);
-			return whileInstructor->endWhileIp + 1;
+			auto whileIp = breakInstruction->whileIp;
+			auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[whileIp]);
+			return whileInstruction->endWhileIp + 1;
 		}
 
-		int processReturnInstructor(int curIp, ReturnInstructor* retInstructor);
+		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction);
 
 	private:
-		std::vector<Instructor*> m_instructors;
+		std::vector<Instruction*> m_instructions;
 		int m_nCurIp{ INVALID_IP  + 1};
 		CodeFlow m_retCodeFlow{CodeFlow::next_};
-		std::map<std::string, Code*> m_dynamicCodes;
 	};
 
 	class FunctionMap : public std::map <std::string, asys::FunctionCode*>

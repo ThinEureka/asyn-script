@@ -17,32 +17,32 @@ asys::FunctionCode::FunctionCode()
 
 asys::FunctionCode::~FunctionCode()
 {
-	for (auto instructor : m_instructors)
+	for (auto instruction : m_instructions)
 	{
-		delete instructor;
+		delete instruction;
 	}
 
-	m_instructors.clear();
+	m_instructions.clear();
 }
 
 
 
 void asys::FunctionCode::clear()
 {
-	for (auto instructor : m_instructors)
+	for (auto instruction : m_instructions)
 	{
-		delete instructor;
+		delete instruction;
 	}
 
-	m_instructors.clear();
+	m_instructions.clear();
 }
 
 asys::BreakPoint& asys::FunctionCode::DO(const std::function<void(Executable*)>& express)
 {
-	auto instructor = new DoInstructor(express);
-	m_instructors.push_back(instructor);
+	auto instruction = new DoInstruction(express);
+	m_instructions.push_back(instruction);
 
-	return instructor->breakPoint();
+	return instruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code)
@@ -93,10 +93,10 @@ asys::BreakPoint& asys::FunctionCode::CALL_EX(const std::vector<std::pair<std::s
 		assert(isValidVariableName(param.first));
 	}
 
-	auto instructor = new CallInstructor(outputParams, inputParams, code, codeName);
-	m_instructors.push_back(instructor);
+	auto instruction = new CallInstruction(outputParams, inputParams, code, codeName);
+	m_instructions.push_back(instruction);
 
-	return instructor->breakPoint();
+	return instruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inputParams)
@@ -275,12 +275,12 @@ asys::BreakPoint& asys::FunctionCode::IF_NOT_EQUAL(const std::string& var1, cons
 
 asys::BreakPoint& asys::FunctionCode::IF_EX(const std::function<bool(Executable*)>& express)
 {
-	int ip = static_cast<int>(m_instructors.size());
-	auto instructor = new IfInstructor(express);
-	m_instructors.push_back(instructor);
+	int ip = static_cast<int>(m_instructions.size());
+	auto instruction = new IfInstruction(express);
+	m_instructions.push_back(instruction);
 	m_unmatchedIfIps.push_back(ip);
 
-	return instructor->breakPoint();
+	return instruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::ELSE()
@@ -288,18 +288,18 @@ asys::BreakPoint& asys::FunctionCode::ELSE()
 	assert(m_unmatchedIfIps.size() > 0);//  "Asynscript compile error, there is no unmatched if expression for this else-expression";
 
 	int unMatchedIfIp = m_unmatchedIfIps.back();
-	auto ifInstructor = dynamic_cast<IfInstructor*>(m_instructors[unMatchedIfIp]);
+	auto ifInstruction = dynamic_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
 
-	assert(ifInstructor->elseIp == INVALID_IP);// "Asynscript compile error, there is already an else expression for if.");
+	assert(ifInstruction->elseIp == INVALID_IP);// "Asynscript compile error, there is already an else expression for if.");
 
-	int ip = static_cast<int>(m_instructors.size());
-	auto elseInstructor = new ElseInstructor();
-	m_instructors.push_back(elseInstructor);
+	int ip = static_cast<int>(m_instructions.size());
+	auto elseInstruction = new ElseInstruction();
+	m_instructions.push_back(elseInstruction);
 
-	ifInstructor->elseIp = ip;
-	elseInstructor->ifIp = unMatchedIfIp;
+	ifInstruction->elseIp = ip;
+	elseInstruction->ifIp = unMatchedIfIp;
 
-	return elseInstructor->breakPoint();
+	return elseInstruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::END_IF()
@@ -307,28 +307,28 @@ asys::BreakPoint& asys::FunctionCode::END_IF()
 	assert(m_unmatchedIfIps.size() > 0);// "Asynscript compile error, there is no unmatched if expression for this endif-expression");
 
 	int unMatchedIfIp = m_unmatchedIfIps.back();
-	auto ifInstructor = dynamic_cast<IfInstructor*>(m_instructors[unMatchedIfIp]);
+	auto ifInstruction = dynamic_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
 
-	assert(ifInstructor->endIfIp == INVALID_IP);// "Asynscript compile error, there is already an endif expression for if.");
+	assert(ifInstruction->endIfIp == INVALID_IP);// "Asynscript compile error, there is already an endif expression for if.");
 
-	int ip = static_cast<int>(m_instructors.size());
-	auto endIfInstructor = new EndIfInstructor();
-	m_instructors.push_back(endIfInstructor);
+	int ip = static_cast<int>(m_instructions.size());
+	auto endIfInstruction = new EndIfInstruction();
+	m_instructions.push_back(endIfInstruction);
 
-	ifInstructor->endIfIp = ip;
-	endIfInstructor->ifIp = unMatchedIfIp;
+	ifInstruction->endIfIp = ip;
+	endIfInstruction->ifIp = unMatchedIfIp;
 
-	int elseIp = ifInstructor->elseIp;
+	int elseIp = ifInstruction->elseIp;
 	if (elseIp != INVALID_IP)
 	{
-		auto elseInstructor = dynamic_cast<ElseInstructor*>(m_instructors[elseIp]);
-		elseInstructor->endIfIp = ip;
-		endIfInstructor->elseIp = elseIp;
+		auto elseInstruction = dynamic_cast<ElseInstruction*>(m_instructions[elseIp]);
+		elseInstruction->endIfIp = ip;
+		endIfInstruction->elseIp = elseIp;
 	}
 
 	m_unmatchedIfIps.pop_back();
 
-	return endIfInstructor->breakPoint();
+	return endIfInstruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::WHILE(const std::string& var)
@@ -445,12 +445,12 @@ asys::BreakPoint& asys::FunctionCode::WHILE_NOT_EQUAL(const std::string& var1, c
 
 asys::BreakPoint& asys::FunctionCode::WHILE_EX(const std::function<bool(Executable*)>& express)
 {
-	int ip = static_cast<int>(m_instructors.size());
-	auto instructor = new WhileInstructor(express);
-	m_instructors.push_back(instructor);
+	int ip = static_cast<int>(m_instructions.size());
+	auto instruction = new WhileInstruction(express);
+	m_instructions.push_back(instruction);
 	m_unmatchedWhileIps.push_back(ip);
 
-	return instructor->breakPoint();
+	return instruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::END_WHILE()
@@ -458,20 +458,20 @@ asys::BreakPoint& asys::FunctionCode::END_WHILE()
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this endwhile-expression");
 
 	int unMatchedWhileIp = m_unmatchedWhileIps.back();
-	auto whileContructor = dynamic_cast<WhileInstructor*>(m_instructors[unMatchedWhileIp]);
+	auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
 
-	assert(whileContructor->endWhileIp == INVALID_IP);// "Asynscript compile error, there is already an endwhile expression for while.");
+	assert(whileInstruction->endWhileIp == INVALID_IP);// "Asynscript compile error, there is already an endwhile expression for while.");
 
-	int ip = static_cast<int>(m_instructors.size());
-	auto endWhileInstructor = new EndWhileInstructor();
-	m_instructors.push_back(endWhileInstructor);
+	int ip = static_cast<int>(m_instructions.size());
+	auto endWhileInstruction = new EndWhileInstruction();
+	m_instructions.push_back(endWhileInstruction);
 
-	whileContructor->endWhileIp= ip;
-	endWhileInstructor->whileIp = unMatchedWhileIp;
+	whileInstruction->endWhileIp= ip;
+	endWhileInstruction->whileIp = unMatchedWhileIp;
 
 	m_unmatchedWhileIps.pop_back();
 
-	return endWhileInstructor->breakPoint();
+	return endWhileInstruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::CONTINUE()
@@ -479,14 +479,14 @@ asys::BreakPoint& asys::FunctionCode::CONTINUE()
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this continue-expression");
 
 	int unMatchedWhileIp = m_unmatchedWhileIps.back();
-	auto whileContructor = dynamic_cast<WhileInstructor*>(m_instructors[unMatchedWhileIp]);
+	auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
 
-	auto continueInstructor = new ContinueInstructor();
-	m_instructors.push_back(continueInstructor);
+	auto continueInstruction = new ContinueInstruction();
+	m_instructions.push_back(continueInstruction);
 
-	continueInstructor->whileIp = unMatchedWhileIp;
+	continueInstruction->whileIp = unMatchedWhileIp;
 
-	return continueInstructor->breakPoint();
+	return continueInstruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::BREAK()
@@ -494,22 +494,22 @@ asys::BreakPoint& asys::FunctionCode::BREAK()
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this break-expression");
 
 	int unMatchedWhileIp = m_unmatchedWhileIps.back();
-	auto whileContructor = dynamic_cast<WhileInstructor*>(m_instructors[unMatchedWhileIp]);
+	auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
 
-	auto breakInstructor = new BreakInstructor();
-	m_instructors.push_back(breakInstructor);
+	auto breakInstruction = new BreakInstruction();
+	m_instructions.push_back(breakInstruction);
 
-	breakInstructor->whileIp = unMatchedWhileIp;
+	breakInstruction->whileIp = unMatchedWhileIp;
 
-	return breakInstructor->breakPoint();
+	return breakInstruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::RETURN(const std::vector<std::string>& vars)
 {
-	auto instructor = new ReturnInstructor(vars);
-	m_instructors.push_back(instructor);
+	auto instruction = new ReturnInstruction(vars);
+	m_instructions.push_back(instruction);
 
-	return instructor->breakPoint();
+	return instruction->breakPoint();
 }
 
 asys::Executable* asys::FunctionCode::compile()
@@ -517,104 +517,103 @@ asys::Executable* asys::FunctionCode::compile()
 	assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
 	assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
 
-	decltype(m_instructors) compile_instructors;
-	compile_instructors.resize(m_instructors.size());
+	decltype(m_instructions) compile_instructions;
+	compile_instructions.resize(m_instructions.size());
 
-	for (int i = 0; i < static_cast<int>(m_instructors.size()); ++i)
+	for (int i = 0; i < static_cast<int>(m_instructions.size()); ++i)
 	{
-		compile_instructors[i] = m_instructors[i]->clone();
-		auto instructor = compile_instructors[i];
+		compile_instructions[i] = m_instructions[i]->clone();
+		auto instruction = compile_instructions[i];
 
-		if (instructor->instructorType() == InstructorType::type_call)
+		if (instruction->instructionType() == InstructionType::type_call)
 		{
-			auto callInstructor = dynamic_cast<CallInstructor*>(instructor);
-			if (!callInstructor->codeName.empty()) 
+			auto callInstruction = dynamic_cast<CallInstruction*>(instruction);
+			if (!callInstruction->codeName.empty()) 
 			{
-				if (!asys::isValidVariableName(callInstructor->codeName))
+				if (!asys::isValidVariableName(callInstruction->codeName))
 				{
-					auto itCode = m_dynamicCodes.find(callInstructor->codeName);
+					auto itCode = m_dynamicCodes.find(callInstruction->codeName);
 					if (itCode != m_dynamicCodes.end())
 					{
-						callInstructor->code = itCode->second;
+						callInstruction->code = itCode->second;
 					}
 				}
 			}
 		}
 	}
 
-	return new FunctionExecutable(compile_instructors, m_dynamicCodes);
+	return new FunctionExecutable(compile_instructions, m_dynamicCodes);
 }
 
-asys::FunctionExecutable::FunctionExecutable(const std::vector<Instructor*> instructors, const std::map<std::string, Code*> dynamicCodes)
-	: m_instructors(instructors)
-	, m_dynamicCodes(dynamicCodes)
+asys::FunctionExecutable::FunctionExecutable(const std::vector<Instruction*> instructions, const std::map<std::string, Code*> dynamicCodes)
+	: m_instructions(instructions)
 {
-
+	setDynamicCodes(dynamicCodes);
 }
 
 asys::FunctionExecutable::~FunctionExecutable()
 {
-	for (auto instructor : m_instructors)
+	for (auto instruction : m_instructions)
 	{
-		delete instructor;
+		delete instruction;
 	}
 
-	m_instructors.clear();
+	m_instructions.clear();
 }
 
 asys::CodeFlow asys::FunctionExecutable::run()
 {
 	while (true)
 	{
-		if (m_nCurIp >= static_cast<int>(m_instructors.size()))
+		if (m_nCurIp >= static_cast<int>(m_instructions.size()))
 		{
 			break;
 		}
 
-		auto instructor = m_instructors[m_nCurIp];
+		auto instruction = m_instructions[m_nCurIp];
 
-		auto callback = instructor->breakPoint().callback();
+		auto callback = instruction->breakPoint().callback();
 		if (callback && m_retCodeFlow != CodeFlow::redo_)
 		{
-			callback(this, instructor->breakPoint());
+			callback(this, instruction->breakPoint());
 		}
 
 		m_retCodeFlow = CodeFlow::next_;
 
-		switch (instructor->instructorType())
+		switch (instruction->instructionType())
 		{
-		case InstructorType::type_null:
-			m_nCurIp = processNullInstructor(m_nCurIp);
+		case InstructionType::type_null:
+			m_nCurIp = processNullInstruction(m_nCurIp);
 			break;
-		case InstructorType::type_do:
-			m_nCurIp = processDoInstructor(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstructor*>(instructor));
+		case InstructionType::type_do:
+			m_nCurIp = processDoInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstruction*>(instruction));
 			break;
-		case InstructorType::type_call:
-			m_nCurIp = processCallInstructor(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstructor*>(instructor));
+		case InstructionType::type_call:
+			m_nCurIp = processCallInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstruction*>(instruction));
 			break;
-		case InstructorType::type_if:
-			m_nCurIp = processIfInstructor(m_nCurIp, dynamic_cast<IfInstructor*>(instructor));
+		case InstructionType::type_if:
+			m_nCurIp = processIfInstruction(m_nCurIp, dynamic_cast<IfInstruction*>(instruction));
 			break;
-		case InstructorType::type_else:
-			m_nCurIp = processElseInstructor(m_nCurIp, dynamic_cast<ElseInstructor*>(instructor));
+		case InstructionType::type_else:
+			m_nCurIp = processElseInstruction(m_nCurIp, dynamic_cast<ElseInstruction*>(instruction));
 			break;
-		case InstructorType::type_endif:
-			m_nCurIp = processEndIfInstructor(m_nCurIp, dynamic_cast<EndIfInstructor*>(instructor));
+		case InstructionType::type_endif:
+			m_nCurIp = processEndIfInstruction(m_nCurIp, dynamic_cast<EndIfInstruction*>(instruction));
 			break;
-		case InstructorType::type_while:
-			m_nCurIp = processWhileInstructor(m_nCurIp, dynamic_cast<WhileInstructor*>(instructor));
+		case InstructionType::type_while:
+			m_nCurIp = processWhileInstruction(m_nCurIp, dynamic_cast<WhileInstruction*>(instruction));
 			break;
-		case InstructorType::type_endwhile:
-			m_nCurIp = processEndWhileInstructor(m_nCurIp, dynamic_cast<EndWhileInstructor*>(instructor));
+		case InstructionType::type_endwhile:
+			m_nCurIp = processEndWhileInstruction(m_nCurIp, dynamic_cast<EndWhileInstruction*>(instruction));
 			break;
-		case InstructorType::type_continue:
-			m_nCurIp = processContinueInstructor(m_nCurIp, dynamic_cast<ContinueInstructor*>(instructor));
+		case InstructionType::type_continue:
+			m_nCurIp = processContinueInstruction(m_nCurIp, dynamic_cast<ContinueInstruction*>(instruction));
 			break;
-		case InstructorType::type_break:
-			m_nCurIp = processBreakInstructor(m_nCurIp, dynamic_cast<BreakInstructor*>(instructor));
+		case InstructionType::type_break:
+			m_nCurIp = processBreakInstruction(m_nCurIp, dynamic_cast<BreakInstruction*>(instruction));
 			break;
-		case InstructorType::type_return:
-			m_nCurIp = processReturnInstructor(m_nCurIp, dynamic_cast<ReturnInstructor*>(instructor));
+		case InstructionType::type_return:
+			m_nCurIp = processReturnInstruction(m_nCurIp, dynamic_cast<ReturnInstruction*>(instruction));
 			break;
 		default:
 			++m_nCurIp;
@@ -630,16 +629,16 @@ asys::CodeFlow asys::FunctionExecutable::run()
 	return m_retCodeFlow;
 }
 
-int asys::FunctionExecutable::processDoInstructor(CodeFlow& retCode, int curIp, DoInstructor* expressInstructor)
+int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction)
 {
-	if (!expressInstructor->express)
+	if (!expressInstruction->express)
 	{
 		retCode = CodeFlow::next_;
 		return curIp + 1;
 	}
 
 	setReturnCodeFlow(CodeFlow::next_);
-	expressInstructor->express(this);
+	expressInstruction->express(this);
 
 	retCode = getReturnCodeFlow();
 
@@ -658,90 +657,91 @@ int asys::FunctionExecutable::processDoInstructor(CodeFlow& retCode, int curIp, 
 	{
 		for (int ip = curIp - 1; ip >= 0; ip--)
 		{
-			auto instructor = m_instructors[ip];
-			if (instructor->instructorType() == InstructorType::type_while)
+			auto instruction = m_instructions[ip];
+			if (instruction->instructionType() == InstructionType::type_while)
 			{
-				auto whileInstructor = dynamic_cast<WhileInstructor*>(instructor);
+				auto whileInstruction = dynamic_cast<WhileInstruction*>(instruction);
 				if (retCode == CodeFlow::continue_)
 				{
 					return ip;
 				}
-				return whileInstructor->endWhileIp + 1;
+				return whileInstruction->endWhileIp + 1;
 			}
 		}
 	}
 
 	if (retCode == CodeFlow::return_)
 	{
-		return static_cast<int>(m_instructors.size());
+		return static_cast<int>(m_instructions.size());
 	}
 
 	return curIp + 1;
 }
 
-int asys::FunctionExecutable::processCallInstructor(CodeFlow& retCode, int curIp, CallInstructor* callInstructor)
+int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction)
 {
 	retCode = CodeFlow::next_;
 
-	if (!callInstructor->executable)
+	if (!callInstruction->executable)
 	{
 		//get the real code if it's a dynamic call.
-		if (!callInstructor->codeName.empty())
+		if (!callInstruction->codeName.empty())
 		{
-			auto it = m_dynamicCodes.find(callInstructor->codeName);
-			if (it != m_dynamicCodes.end())
+			auto& dynamicCodes = getDynamicCodes();
+			auto it = dynamicCodes.find(callInstruction->codeName);
+			if (it != dynamicCodes.end())
 			{
-				callInstructor->code = it->second;
+				callInstruction->code = it->second;
 			}
 		}
 
-		if (!callInstructor->code) return curIp + 1;
+		if (!callInstruction->code) return curIp + 1;
 
-		callInstructor->executable = callInstructor->code->compile();
-		callInstructor->executable->retain();
+		callInstruction->executable = callInstruction->code->compile();
+		callInstruction->executable->retain();
 
 		//pass input arguments to the invoked code.
-		for (const auto& pair : callInstructor->inputParams)
+		for (const auto& pair : callInstruction->inputParams)
 		{
 			if (isValidVariableName(pair.second))
 			{
-				callInstructor->executable->setValue(pair.first, getValue(pair.second));
+				callInstruction->executable->setValue(pair.first, getValue(pair.second));
 			}
 			else
 			{
-				callInstructor->executable->setValue(pair.first, pair.second);
+				callInstruction->executable->setValue(pair.first, pair.second);
 			}
 		}
 	}
 
-	retCode = callInstructor->executable->run();
+	retCode = callInstruction->executable->run();
 
 	if (retCode == CodeFlow::redo_) return curIp;
 
 	//fetch outputs from invoked code.
-	for (const auto& pair : callInstructor->outputParams)
+	for (const auto& pair : callInstruction->outputParams)
 	{
-		setValue(pair.first, callInstructor->executable->getValue(pair.second));
+		setValue(pair.first, callInstruction->executable->getValue(pair.second));
 	}
 
-	callInstructor->executable->release();
-	callInstructor->executable = nullptr;
-	if (!callInstructor->codeName.empty())
+	callInstruction->executable->release();
+	callInstruction->executable = nullptr;
+	if (!callInstruction->codeName.empty())
 	{
-		callInstructor->code = nullptr;
+		callInstruction->code = nullptr;
 	}
 
 	return curIp + 1;
 }
 
-int asys::FunctionExecutable::processReturnInstructor(int curIp, ReturnInstructor* retInstructor)
+int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruction* retInstruction)
 {
-	for (int i = 0; i < static_cast<int>(retInstructor->outputParams.size()); ++i)
+	for (int i = 0; i < static_cast<int>(retInstruction->outputParams.size()); ++i)
 	{
-		const auto& param = retInstructor->outputParams[i];
+		const auto& param = retInstruction->outputParams[i];
 		if (asys::isValidVariableName(param))
 		{
-			setOutoutValue(i, getValue(retInstructor->outputParams[i]));
+			setOutoutValue(i, getValue(retInstruction->outputParams[i]));
 		}
 		else
 		{
@@ -749,12 +749,7 @@ int asys::FunctionExecutable::processReturnInstructor(int curIp, ReturnInstructo
 		}
 	}
 
-	return static_cast<int>(m_instructors.size());
-}
-
-void asys::FunctionExecutable::registerDynamicCode(const std::string& name, Code* code)
-{
-	m_dynamicCodes[name] = code;
+	return static_cast<int>(m_instructions.size());
 }
 
 void asys::BreakPoint::operator()(const std::function<void(Executable*, const BreakPoint& breakpoint)>& callback, const char* fileName /*= nullptr*/, const char* functionName /*= nullptr*/, int lineNumber /*= -1*/)

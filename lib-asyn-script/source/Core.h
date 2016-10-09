@@ -103,10 +103,17 @@ namespace asys
 		void setReturnCodeFlow(asys::CodeFlow flow) { m_retCodeFlow = flow; }
 		CodeFlow getReturnCodeFlow() const { return m_retCodeFlow; }
 
+		void registerDynamicCode(const std::string& name, Code* code){ m_dynamicCodes[name] = code; }
+		
+	protected:
+		void setDynamicCodes(const std::map<std::string, Code*> dynamicCodes) { m_dynamicCodes = dynamicCodes; }
+		std::map<std::string, Code*>& getDynamicCodes() { return m_dynamicCodes; }
+
 	private:
 		int m_nReferenceCount{ 0 };
 		CodeFlow m_retCodeFlow{ CodeFlow::next_ };
 		std::map<std::string, Value> m_varTable;
+		std::map<std::string, Code*> m_dynamicCodes;
 		std::vector<std::function<void(asys::Executable*)>> m_deallocators;
 	};
 	
