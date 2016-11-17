@@ -179,7 +179,7 @@ private:
 	}
 
 private:
-	asys::FunctionMap m_asynFunctions;
+	asys_reg_funs;
 	asys::Executable* m_pExecutable{};
 };
 

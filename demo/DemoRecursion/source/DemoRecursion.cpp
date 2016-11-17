@@ -11,7 +11,7 @@
 #include "../../../lib-asyn-script/source/Function.h"
 #include "../../../lib-asyn-script/source/AsynScript.h"
 
-asys::FunctionMap m_asynFunctions;
+asys_reg_funs;
 
 asys::FunctionCode* sum(ASYS_PARAM(n))
 {
@@ -35,7 +35,7 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 			asys_value(sub_result);
 			asys_value(n);
 			asys_return(n.toInt() + sub_result.toInt());
-			}C__;
+		}C__;
 	}END_FUN;
 }
 
