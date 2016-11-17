@@ -10,6 +10,7 @@
 #include "Windows.h"
 #include <iostream>
 #include "../../../lib-asyn-script/source/Function.h"
+#include "../../../lib-asyn-script/source/AsynScript.h"
 
 class Game
 {
@@ -33,20 +34,14 @@ private:
 	//ret success user_id access_token
 	asys::FunctionCode* platformLogin(ASYS_PARAM(device_id))
 	{
-		auto& f = m_asynFunctions[__FUNCTION__];
-		if (f) return f;
-		
-		f = new asys::FunctionCode;
-		{
-			f->INPUT({device_id})_;
-
+		BEGIN_FUN(device_id){
 			ASYS_VAR(index);
-			f->ASSIGN(index, asys_const(0))_;
+			ASSIGN(index, asys_const(0));
 
 			ASYS_VAR(user_id);
 			ASYS_VAR(access_token);
 
-			f->DO([=](asys::Executable* executable){
+			__C{
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(access_token);
@@ -65,29 +60,21 @@ private:
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
 				}
-			})_;
+			}C__;
 
-			f->RETURN({ asys::True, user_id, access_token })_;
-		}
-
-		return f;
+			RETURN(asys::True, user_id, access_token);
+		}END_FUN;
 	}
 
 	//ret success session_id gameserver_ip
 	asys::FunctionCode* userServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(access_token))
 	{
-		auto& f = m_asynFunctions[__FUNCTION__];
-		if (f) return f;
-
-		f = new asys::FunctionCode;
-		{
-			f->INPUT({user_id, access_token})_;
-
+		BEGIN_FUN(user_id, access_token){
 			ASYS_VAR(index);
-			f->ASSIGN(index, asys_const(0))_;
+			ASSIGN(index, asys_const(0));
 
 			ASYS_VAR(session_id);
-			f->DO([=](asys::Executable* executable){
+			__C{
 				asys_value(index);
 				asys_value(session_id);
 				asys_value(user_id);
@@ -106,29 +93,22 @@ private:
 					index = index.toInt() + 1;
 					session_id = "123456";
 				}
-			})_;
+			}C__;
 
-			f->RETURN({ asys::True, session_id, "127.0.0.1:3697" })_;
-		}
-
-		return f;
+			RETURN({ asys::True, session_id, "127.0.0.1:3697" });
+		}END_FUN;
 	}
 
 	//ret success player_info
 	asys::FunctionCode* gameServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(session_id), ASYS_PARAM(gameserver_ip))
 	{
-		auto& f = m_asynFunctions[__FUNCTION__];
-		if (f) return f;
-
-		f = new asys::FunctionCode;
-		{
-			f->INPUT({ user_id, session_id, gameserver_ip })_;
+		BEGIN_FUN(user_id, session_id, gameserver_ip){
 
 			ASYS_VAR(index);
-			f->ASSIGN(index, asys_const(0))_;
+			ASSIGN(index, asys_const(0));
 
 			ASYS_VAR(player_info);
-			f->DO([=](asys::Executable* executable){
+			__C{
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(session_id);
@@ -146,70 +126,56 @@ private:
 					std::cout << "game-server login succeeded " << std::endl;
 					player_info = "player-123";
 				}
-			})_;
+			}C__;
 
-			f->RETURN({ asys::True, player_info })_;
-		}
-
-		return f;
+			RETURN(asys::True, player_info);
+		}END_FUN;
 	}
 
 	//ret success player_info
 	asys::FunctionCode* login(ASYS_PARAM(device_id))
 	{
-		auto& f = m_asynFunctions[__FUNCTION__];
-		if (f) return f;
-
-		f = new asys::FunctionCode;
-		{
-			f->INPUT({ device_id })_;
-
+		BEGIN_FUN(device_id){
 			ASYS_VAR(game_end);
-			f->WHILE_NOT(game_end)_
-			{
+			WHILE_NOT(game_end){
 				ASYS_VAR(success);
 				ASYS_VAR(user_id);
 				ASYS_VAR(access_token);
-				f->CALL({ success, user_id, access_token }, { device_id }, platformLogin())_;
 
-				f->IF_NOT(success)_
-				{
-					f->CONTINUE()_;
-				}f->END_IF()_;
+				CALL({ success, user_id, access_token }, { device_id }, platformLogin());
+
+				IF_NOT(success){
+					CONTINUE;
+				}END_IF;
 
 				ASYS_VAR(session_id);
 				ASYS_VAR(gameserver_ip);
-				f->CALL({ success, session_id, gameserver_ip }, { user_id, access_token }, userServerLogin())_;
+				CALL({ success, session_id, gameserver_ip }, { user_id, access_token }, userServerLogin());
 
-				f->IF_NOT(success)_
-				{
-					f->CONTINUE()_;
-				}f->END_IF()_;
+				IF_NOT(success){
+					CONTINUE;
+				}END_IF;
 
 				ASYS_VAR(player_info);
-				f->CALL({ success, player_info }, { user_id, session_id, gameserver_ip }, gameServerLogin())_;
+				CALL({ success, player_info }, { user_id, session_id, gameserver_ip }, gameServerLogin());
 
-				f->IF_NOT(success)_
-				{
-					f->CONTINUE()_;
-				}f->END_IF()_;
+				IF_NOT(success){
+					CONTINUE;
+				}END_IF;
 
-				f->DO([=](asys::Executable* executable){
+				__C{
 					asys_value(player_info);
 					std::cout << "login-success: " << player_info.toString() << std::endl;
-				})_;
+				}C__;
 
-				f->DO([=](asys::Executable* executable){
+				__C{
 					//return continue to indicate that next time executable is run, it will continue here.
 					asys_value(player_info);
 					std::cout << player_info.toString() << " is playing the game." << std::endl;
 					asys_redo;
-				})_;
-
-			}f->END_WHILE()_;
-		}
-
-		return f;
+				}C__;
+			}END_WHILE;
+		}END_FUN;
 	}
 
 private:

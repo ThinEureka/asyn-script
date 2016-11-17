@@ -13,17 +13,6 @@
 #include <list>
 #include <functional>
 
-// append this macro to the instruction calls to set a break point for ease of debug in C++
-#ifdef _DEBUG
-#define _ ([](asys::Executable* executable, const asys::BreakPoint& breakPoint) \
-		{ \
-			executable->setValue("$$__FILE__", breakPoint.fileName()); \
-			executable->setValue("$$__FUNCTION__", breakPoint.functionName()); \
-			executable->setValue("$$__LINE__", breakPoint.lineNumber());},\
-			__FILE__, __FUNCTION__, __LINE__);
-#else
-#define _ ;
-#endif
 
 namespace asys
 {
@@ -322,40 +311,40 @@ namespace asys
 
 		//It's easier to debug the code using DO and lamda expression than using ASSIGN or OPERATE
 		//and the expressions written in C++ in the lamda expression are more expressive than pure asyn-script codes.
-		BreakPoint& DO(const std::function<void(Executable*)>& express);
+		BreakPoint& Do(const std::function<void(Executable*)>& express);
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
-		BreakPoint& CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code);
+		BreakPoint& Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code);
 		
 		//If codeName is const which means it's not a variable name, the real code to be called is determined when FunctionCode is compiled; 
 		//In this case, codeName is used to look up the code as key in the dynamic codes table, thus the code should be registered
 		//before compile() being called. If codeName is a valid variable name(starts with $), the code invoked would be the one registered with the name 
 		//stored in the code Name variable when the call instruction is executed.
-		BreakPoint& CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName);
+		BreakPoint& Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName);
 
-		BreakPoint& INPUT(const std::vector<std::string>& inputParams);
+		BreakPoint& Input(const std::vector<std::string>& inputParams);
 
-		BreakPoint& IF(const std::string& var);
-		BreakPoint& IF_EX(const std::function<bool(Executable*)>& express);
-		BreakPoint& IF_NOT(const std::string& var);
-		BreakPoint& IF_EQUAL(const std::string& var1, const std::string& var2);
-		BreakPoint& IF_NOT_EQUAL(const std::string& var1, const std::string& var2);
+		BreakPoint& If(const std::string& var);
+		BreakPoint& If_ex(const std::function<bool(Executable*)>& express);
+		BreakPoint& If_not(const std::string& var);
+		BreakPoint& If_equal(const std::string& var1, const std::string& var2);
+		BreakPoint& If_not_equal(const std::string& var1, const std::string& var2);
 
-		BreakPoint& ELSE();
-		BreakPoint& END_IF();
+		BreakPoint& Else();
+		BreakPoint& End_if();
 
-		BreakPoint& WHILE(const std::string& var);
-		BreakPoint& WHILE_EX(const std::function<bool(Executable*)>& express);
-		BreakPoint& WHILE_NOT(const std::string& var);
-		BreakPoint& WHILE_EQUAL(const std::string& var1, const std::string& var2);
-		BreakPoint& WHILE_NOT_EQUAL(const std::string& var1, const std::string& var2);
+		BreakPoint& While(const std::string& var);
+		BreakPoint& While_ex(const std::function<bool(Executable*)>& express);
+		BreakPoint& While_not(const std::string& var);
+		BreakPoint& While_equal(const std::string& var1, const std::string& var2);
+		BreakPoint& While_not_equal(const std::string& var1, const std::string& var2);
 
-		BreakPoint& END_WHILE();
-		BreakPoint& CONTINUE();
-		BreakPoint& BREAK();
+		BreakPoint& End_while();
+		BreakPoint& Continue();
+		BreakPoint& Break();
 
-		BreakPoint& RETURN() { return RETURN({}); }
-		BreakPoint& RETURN(const std::vector<std::string>& vars);
+		BreakPoint& Return() { return Return({}); }
+		BreakPoint& Return(const std::vector<std::string>& vars);
 
 		//It's easier to debug the code using EXPRESS and lamda expression than using ASSIGN or OPERATE
 		//and the expressions written in C++ in the lamda expression are more expressive than pure asyn-script codes.
@@ -363,10 +352,10 @@ namespace asys
 		//var1 should starts with $, if not it's a const, which can't be assigned.
 		//if var2 starts with $, the value in the variables table with key var2 will be 
 		//assigned when the generated instruction is invoked, or var2 itself will be assigned instead.
-		BreakPoint& ASSIGN(const std::string& var1, const std::string& var2);
+		BreakPoint& Assign(const std::string& var1, const std::string& var2);
 
-		BreakPoint& OPERATE(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator);
-		BreakPoint& OPERATE(const std::string& output, const std::string& var, Operator eOperator);
+		BreakPoint& Operate(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator);
+		BreakPoint& Operate(const std::string& output, const std::string& var, Operator eOperator);
 
 		Executable* compile() override;
 
@@ -377,10 +366,10 @@ namespace asys
 		void clear();
 
 	private:
-		BreakPoint& CALL_EX(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code, const std::string& codeName);
+		BreakPoint& Call_ex(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code, const std::string& codeName);
 
 		//CALL_EX uses pairs of variable names to pass values when invoking or returning from the sub-function.
-		BreakPoint& CALL_EX(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName);
+		BreakPoint& Call_ex(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName);
 
 	private:
 		std::vector<Instruction*> m_instructions;

@@ -8,46 +8,32 @@
 
 #include <iostream>
 #include "../../../lib-asyn-script/source/Function.h"
+#include "../../../lib-asyn-script/source/AsynScript.h"
 
 asys::FunctionMap m_asynFunctions;
 
 asys::FunctionCode* sum(ASYS_PARAM(n))
 {
-	auto& f = m_asynFunctions[__FUNCTION__];
-	if (f) return f;
-
-	f = new asys::FunctionCode;
-	{
-		f->INPUT({n})_;
-
+	BEGIN_FUN(n){
 		ASYS_VAR(sum);
-		f->ASSIGN(sum, asys_const(0))_;
+		ASSIGN(sum, asys_const(0));
 
 		ASYS_VAR(i);
-		f->ASSIGN(i, asys_const(0))_;
+		ASSIGN(i, asys_const(0));
 
-		f->WHILE_NOT_EQUAL(i, n)_
-		{
-			f->OPERATE(sum, sum, i, asys::Operator::plus)_;
-			f->OPERATE(i, i, asys_const(1), asys::Operator::plus)_;
-		}f->END_WHILE()_;
+		WHILE_NOT_EQUAL(i, n){
+			OPERATE(sum, sum, i, asys::Operator::plus);
+			OPERATE(i, i, asys_const(1), asys::Operator::plus);
+		}END_WHILE;
 
-		f->RETURN({ sum })_;
-	}
-
-	return f;
+		RETURN(sum);
+	}END_FUN;
 }
 
 asys::FunctionCode* sum2(ASYS_PARAM(n))
 {
-	auto& f = m_asynFunctions[__FUNCTION__];
-	if (f) return f;
-
-	f = new asys::FunctionCode;
-	{
-		f->INPUT({ n })_;
-
-		f->DO([=](asys::Executable* executable){
+	BEGIN_FUN(n){
+		__C{
 			asys_value(n);
 			int v_sum = 0;
 			for (int i = 0; i != n.toInt(); ++i)
@@ -55,47 +41,36 @@ asys::FunctionCode* sum2(ASYS_PARAM(n))
 				v_sum += i;
 			}
 			asys_return(v_sum);
-		})_;
-	}
-
-	return f;
+		}C__;
+	}END_FUN;
 }
 
 asys::FunctionCode* print_sum(ASYS_PARAM(n))
 {
-	auto& f = m_asynFunctions[__FUNCTION__];
-	if (f) return f;
-
-	f = new asys::FunctionCode;
-	{
-		f->INPUT({n})_;
-
+	BEGIN_FUN(n){
 		ASYS_VAR(index);
-		f->ASSIGN(index, asys_const(0))_;
+		ASSIGN(index, asys_const(0));
 
-		f->WHILE_NOT_EQUAL(index, n)_
-		{
+		WHILE_NOT_EQUAL(index, n){
 			ASYS_VAR(v_sum);
-			f->CALL({v_sum}, { index }, sum())_;
+			CALL({ v_sum }, { index }, sum());
 
-			f->DO([=](asys::Executable* executable){
+			__C{
 				asys_value(v_sum);
 				std::cout << "sum = " << v_sum.toString() << std::endl;
-			})_;
+			}C__;
 
 			ASYS_VAR(v_sum2);
-			f->CALL({ v_sum2 }, { index }, sum2())_;
+			CALL({ v_sum2 }, { index }, sum2());
 
-			f->DO([=](asys::Executable* executable){
+			__C{
 				asys_value(v_sum2);
 				std::cout << "sum2 = " << v_sum2.toString() << std::endl;
-			})_;
+			}C__;
 
-			f->OPERATE(index, index, asys_const(1), asys::Operator::plus)_;
-		}f->END_WHILE()_;
-	}
-
-	return f;
+			OPERATE(index, index, asys_const(1), asys::Operator::plus);
+		}END_WHILE;
+	}END_FUN;
 }
 
 int main()

@@ -19,5 +19,6 @@
     <ClInclude Include="..\source\Sequence.h" />
     <ClInclude Include="..\source\Simple.h" />
     <ClInclude Include="..\source\Value.h" />
+    <ClInclude Include="..\source\AsynScript.h" />
   </ItemGroup>
 </Project>

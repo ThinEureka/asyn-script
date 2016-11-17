@@ -83,6 +83,7 @@
     <ClCompile Include="..\source\Value.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\AsynScript.h" />
     <ClInclude Include="..\source\CompoundCode.h" />
     <ClInclude Include="..\source\Concurrency.h" />
     <ClInclude Include="..\source\Core.h" />

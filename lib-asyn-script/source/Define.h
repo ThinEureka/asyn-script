@@ -12,18 +12,19 @@
 #include <string>
 #include <sstream>
 
+#define asys_null ""
+
 #define ASYS_VAR(name) const std::string name("$"#name)
 #define ASYS_PARAM(name) const std::string& name = "$"#name
 #define D_ASYS_PARAM(name) const std::string& name
-#define asys_value(name) const auto& tmp_##name = name; auto& name = (*executable)[tmp_##name];
+#define asys_value(name) const auto& tmp_##name = name; auto& name = (*asys_this)[tmp_##name]
 #define asys_const(name) asys::toString(name) 
-#define asys_null ""
 
-#define asys_redo {executable->setReturnCodeFlow(asys::CodeFlow::redo_); return;}
-#define asys_next {executable->setReturnCodeFlow(asys::CodeFlow::next_); return;}
-#define asys_return(...) {executable->setOutputValues({__VA_ARGS__}); executable->setReturnCodeFlow(asys::CodeFlow::return_); return;}
-#define asys_break {executable->setReturnCodeFlow(asys::CodeFlow::break_); return;}
-#define asys_continue {executable->setReturnCodeFlow(asys::CodeFlow::continue_); return;}
+#define asys_redo {asys_this->setReturnCodeFlow(asys::CodeFlow::redo_); return;}
+#define asys_next {asys_this->setReturnCodeFlow(asys::CodeFlow::next_); return;}
+#define asys_return(...) {asys_this->setOutputValues({__VA_ARGS__}); asys_this->setReturnCodeFlow(asys::CodeFlow::return_); return;}
+#define asys_break {asys_this->setReturnCodeFlow(asys::CodeFlow::break_); return;}
+#define asys_continue {asys_this->setReturnCodeFlow(asys::CodeFlow::continue_); return;}
 
 namespace asys
 {

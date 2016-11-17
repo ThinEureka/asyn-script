@@ -37,7 +37,7 @@ void asys::FunctionCode::clear()
 	m_instructions.clear();
 }
 
-asys::BreakPoint& asys::FunctionCode::DO(const std::function<void(Executable*)>& express)
+asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Executable*)>& express)
 {
 	auto instruction = new DoInstruction(express);
 	m_instructions.push_back(instruction);
@@ -45,17 +45,17 @@ asys::BreakPoint& asys::FunctionCode::DO(const std::function<void(Executable*)>&
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code)
+asys::BreakPoint& asys::FunctionCode::Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code)
 {
-	return CALL_EX(outputParams, inputParams, code, "");
+	return Call_ex(outputParams, inputParams, code, "");
 }
 
-asys::BreakPoint&  asys::FunctionCode::CALL(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName)
+asys::BreakPoint&  asys::FunctionCode::Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName)
 {
-	return CALL_EX(outputParams, inputParams, nullptr, codeName);
+	return Call_ex(outputParams, inputParams, nullptr, codeName);
 }
 
-asys::BreakPoint&  asys::FunctionCode::CALL_EX(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code, const std::string& codeName)
+asys::BreakPoint&  asys::FunctionCode::Call_ex(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code, const std::string& codeName)
 {
 	std::vector<std::pair<std::string, std::string>> outputPairs;
 	auto inputPairs = outputPairs;
@@ -77,10 +77,10 @@ asys::BreakPoint&  asys::FunctionCode::CALL_EX(const std::vector<std::string>& o
 		pair.second = inputParams[i];
 	}
 
-	return CALL_EX(outputPairs, inputPairs, code, codeName);
+	return Call_ex(outputPairs, inputPairs, code, codeName);
 }
 
-asys::BreakPoint& asys::FunctionCode::CALL_EX(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName)
+asys::BreakPoint& asys::FunctionCode::Call_ex(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName)
 {
 	for (auto& param : outputParams)
 	{
@@ -99,9 +99,9 @@ asys::BreakPoint& asys::FunctionCode::CALL_EX(const std::vector<std::pair<std::s
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inputParams)
+asys::BreakPoint& asys::FunctionCode::Input(const std::vector<std::string>& inputParams)
 {
-	return DO([inputParams](Executable* executable){
+	return Do([inputParams](Executable* executable){
 
 		for (size_t i = 0; i < inputParams.size(); ++i)
 		{
@@ -112,12 +112,12 @@ asys::BreakPoint& asys::FunctionCode::INPUT(const std::vector<std::string>& inpu
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::ASSIGN(const std::string& var1, const std::string& var2)
+asys::BreakPoint& asys::FunctionCode::Assign(const std::string& var1, const std::string& var2)
 {
 	// can not assign to const variable.
 	assert(isValidVariableName(var1));
 
-	return DO([var1, var2](Executable* executable){
+	return Do([var1, var2](Executable* executable){
 		if (isValidVariableName(var2))
 		{	
 			// the second argument allows to be null, thus its effect
@@ -131,11 +131,11 @@ asys::BreakPoint& asys::FunctionCode::ASSIGN(const std::string& var1, const std:
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator)
+asys::BreakPoint& asys::FunctionCode::Operate(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator)
 {
 	assert(isValidVariableName(output));
 
-	return DO([output, var1, eOperator, var2](Executable* executable){
+	return Do([output, var1, eOperator, var2](Executable* executable){
 		const auto& callback = Value::getBinaryOperator(eOperator);
 		if (!callback) return;
 
@@ -145,11 +145,11 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const std::string& var, Operator eOperator)
+asys::BreakPoint& asys::FunctionCode::Operate(const std::string& output, const std::string& var, Operator eOperator)
 {
 	assert(isValidVariableName(output));
 
-	return DO([output, eOperator, var](Executable* executable){
+	return Do([output, eOperator, var](Executable* executable){
 		const auto& callback = Value::getUnaryOperator(eOperator);
 		if (!callback) return;
 
@@ -158,9 +158,9 @@ asys::BreakPoint& asys::FunctionCode::OPERATE(const std::string& output, const s
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::IF(const std::string& var)
+asys::BreakPoint& asys::FunctionCode::If(const std::string& var)
 {
-	return IF_EX([var](Executable* executable){
+	return If_ex([var](Executable* executable){
 		if (asys::isValidVariableName(var))
 		{
 			auto val = executable->getValue(var);
@@ -173,9 +173,9 @@ asys::BreakPoint& asys::FunctionCode::IF(const std::string& var)
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::IF_NOT(const std::string& var)
+asys::BreakPoint& asys::FunctionCode::If_not(const std::string& var)
 {
-	return IF_EX([var](Executable* executable){
+	return If_ex([var](Executable* executable){
 		if (asys::isValidVariableName(var))
 		{
 			auto val = executable->getValue(var);
@@ -187,9 +187,9 @@ asys::BreakPoint& asys::FunctionCode::IF_NOT(const std::string& var)
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::IF_EQUAL(const std::string& var1, const std::string& var2)
+asys::BreakPoint& asys::FunctionCode::If_equal(const std::string& var1, const std::string& var2)
 {
-	return IF_EX([var1, var2](Executable* executable){
+	return If_ex([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -230,9 +230,9 @@ asys::BreakPoint& asys::FunctionCode::IF_EQUAL(const std::string& var1, const st
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::IF_NOT_EQUAL(const std::string& var1, const std::string& var2)
+asys::BreakPoint& asys::FunctionCode::If_not_equal(const std::string& var1, const std::string& var2)
 {
-	return IF_EX([var1, var2](Executable* executable){
+	return If_ex([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -273,7 +273,7 @@ asys::BreakPoint& asys::FunctionCode::IF_NOT_EQUAL(const std::string& var1, cons
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::IF_EX(const std::function<bool(Executable*)>& express)
+asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
 {
 	int ip = static_cast<int>(m_instructions.size());
 	auto instruction = new IfInstruction(express);
@@ -283,7 +283,7 @@ asys::BreakPoint& asys::FunctionCode::IF_EX(const std::function<bool(Executable*
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::ELSE()
+asys::BreakPoint& asys::FunctionCode::Else()
 {
 	assert(m_unmatchedIfIps.size() > 0);//  "Asynscript compile error, there is no unmatched if expression for this else-expression";
 
@@ -302,7 +302,7 @@ asys::BreakPoint& asys::FunctionCode::ELSE()
 	return elseInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::END_IF()
+asys::BreakPoint& asys::FunctionCode::End_if()
 {
 	assert(m_unmatchedIfIps.size() > 0);// "Asynscript compile error, there is no unmatched if expression for this endif-expression");
 
@@ -331,9 +331,9 @@ asys::BreakPoint& asys::FunctionCode::END_IF()
 	return endIfInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::WHILE(const std::string& var)
+asys::BreakPoint& asys::FunctionCode::While(const std::string& var)
 {
-	return WHILE_EX([var](Executable* executable){
+	return While_ex([var](Executable* executable){
 		if (asys::isValidVariableName(var)){
 			auto val = executable->getValue(var);
 			if (!val) return false;
@@ -344,9 +344,9 @@ asys::BreakPoint& asys::FunctionCode::WHILE(const std::string& var)
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::WHILE_NOT(const std::string& var)
+asys::BreakPoint& asys::FunctionCode::While_not(const std::string& var)
 {
-	return WHILE_EX([var](Executable* executable){
+	return While_ex([var](Executable* executable){
 		if (asys::isValidVariableName(var)){
 			auto val = executable->getValue(var);
 			if (!val) return true;
@@ -357,9 +357,9 @@ asys::BreakPoint& asys::FunctionCode::WHILE_NOT(const std::string& var)
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::WHILE_EQUAL(const std::string& var1, const std::string& var2)
+asys::BreakPoint& asys::FunctionCode::While_equal(const std::string& var1, const std::string& var2)
 {
-	return WHILE_EX([var1, var2](Executable* executable){
+	return While_ex([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -400,9 +400,9 @@ asys::BreakPoint& asys::FunctionCode::WHILE_EQUAL(const std::string& var1, const
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::WHILE_NOT_EQUAL(const std::string& var1, const std::string& var2)
+asys::BreakPoint& asys::FunctionCode::While_not_equal(const std::string& var1, const std::string& var2)
 {
-	return WHILE_EX([var1, var2](Executable* executable){
+	return While_ex([var1, var2](Executable* executable){
 
 		Value leftValue{ var1 };
 		Value rightValue{ var2 };
@@ -443,7 +443,7 @@ asys::BreakPoint& asys::FunctionCode::WHILE_NOT_EQUAL(const std::string& var1, c
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::WHILE_EX(const std::function<bool(Executable*)>& express)
+asys::BreakPoint& asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
 {
 	int ip = static_cast<int>(m_instructions.size());
 	auto instruction = new WhileInstruction(express);
@@ -453,7 +453,7 @@ asys::BreakPoint& asys::FunctionCode::WHILE_EX(const std::function<bool(Executab
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::END_WHILE()
+asys::BreakPoint& asys::FunctionCode::End_while()
 {
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this endwhile-expression");
 
@@ -474,7 +474,7 @@ asys::BreakPoint& asys::FunctionCode::END_WHILE()
 	return endWhileInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::CONTINUE()
+asys::BreakPoint& asys::FunctionCode::Continue()
 {
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this continue-expression");
 
@@ -489,7 +489,7 @@ asys::BreakPoint& asys::FunctionCode::CONTINUE()
 	return continueInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::BREAK()
+asys::BreakPoint& asys::FunctionCode::Break()
 {
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this break-expression");
 
@@ -504,7 +504,7 @@ asys::BreakPoint& asys::FunctionCode::BREAK()
 	return breakInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::RETURN(const std::vector<std::string>& vars)
+asys::BreakPoint& asys::FunctionCode::Return(const std::vector<std::string>& vars)
 {
 	auto instruction = new ReturnInstruction(vars);
 	m_instructions.push_back(instruction);
