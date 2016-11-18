@@ -17,7 +17,7 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 {
 	BEGIN_FUN(n){
 		ASYS_VAR(n_minus_one);
-		__C{
+		_CC{
 			asys_value(n);
 			asys_value(n_minus_one);
 			if (n.toInt() <= 0)
@@ -26,16 +26,16 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 			}
 
 			n_minus_one = n.toInt() - 1;
-		}C__;
+		}CC_;
 
 		ASYS_VAR(sub_result);
 		CALL({ sub_result }, { n_minus_one }, sum());
 
-		__C{
+		_CC{
 			asys_value(sub_result);
 			asys_value(n);
 			asys_return(n.toInt() + sub_result.toInt());
-		}C__;
+		}CC_;
 	}END_FUN;
 }
 
@@ -49,13 +49,13 @@ asys::FunctionCode* print()
 			ASYS_VAR(result);
 			CALL({ result }, { n }, sum());
 
-			__C{
+			_CC{
 				asys_value(result);
 				asys_value(n);
 				std::cout << "s(" << n.toInt() << ") = " << result.toInt() << std::endl;
 
 				n = n.toInt() + 1;
-			}C__;
+			}CC_;
 		}END_WHILE;
 	}END_FUN;
 }

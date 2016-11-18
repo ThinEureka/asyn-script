@@ -33,7 +33,7 @@ asys::FunctionCode* sum(ASYS_PARAM(n))
 asys::FunctionCode* sum2(ASYS_PARAM(n))
 {
 	BEGIN_FUN(n){
-		__C{
+		_CC{
 			asys_value(n);
 			int v_sum = 0;
 			for (int i = 0; i != n.toInt(); ++i)
@@ -41,7 +41,7 @@ asys::FunctionCode* sum2(ASYS_PARAM(n))
 				v_sum += i;
 			}
 			asys_return(v_sum);
-		}C__;
+		}CC_;
 	}END_FUN;
 }
 
@@ -55,18 +55,18 @@ asys::FunctionCode* print_sum(ASYS_PARAM(n))
 			ASYS_VAR(v_sum);
 			CALL({ v_sum }, { index }, sum());
 
-			__C{
+			_CC{
 				asys_value(v_sum);
 				std::cout << "sum = " << v_sum.toString() << std::endl;
-			}C__;
+			}CC_;
 
 			ASYS_VAR(v_sum2);
 			CALL({ v_sum2 }, { index }, sum2());
 
-			__C{
+			_CC{
 				asys_value(v_sum2);
 				std::cout << "sum2 = " << v_sum2.toString() << std::endl;
-			}C__;
+			}CC_;
 
 			OPERATE(index, index, asys_const(1), asys::Operator::plus);
 		}END_WHILE;

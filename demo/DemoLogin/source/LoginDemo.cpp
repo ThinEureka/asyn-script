@@ -41,7 +41,7 @@ private:
 			ASYS_VAR(user_id);
 			ASYS_VAR(access_token);
 
-			__C{
+			_CC{
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(access_token);
@@ -60,7 +60,7 @@ private:
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
 				}
-			}C__;
+			}CC_;
 
 			RETURN(asys::True, user_id, access_token);
 		}END_FUN;
@@ -74,7 +74,7 @@ private:
 			ASSIGN(index, asys_const(0));
 
 			ASYS_VAR(session_id);
-			__C{
+			_CC{
 				asys_value(index);
 				asys_value(session_id);
 				asys_value(user_id);
@@ -93,7 +93,7 @@ private:
 					index = index.toInt() + 1;
 					session_id = "123456";
 				}
-			}C__;
+			}CC_;
 
 			RETURN({ asys::True, session_id, "127.0.0.1:3697" });
 		}END_FUN;
@@ -108,7 +108,7 @@ private:
 			ASSIGN(index, asys_const(0));
 
 			ASYS_VAR(player_info);
-			__C{
+			_CC{
 				asys_value(index);
 				asys_value(user_id);
 				asys_value(session_id);
@@ -126,7 +126,7 @@ private:
 					std::cout << "game-server login succeeded " << std::endl;
 					player_info = "player-123";
 				}
-			}C__;
+			}CC_;
 
 			RETURN(asys::True, player_info);
 		}END_FUN;
@@ -163,17 +163,17 @@ private:
 					CONTINUE;
 				}END_IF;
 
-				__C{
+				_CC{
 					asys_value(player_info);
 					std::cout << "login-success: " << player_info.toString() << std::endl;
-				}C__;
+				}CC_;
 
-				__C{
+				_CC{
 					//return continue to indicate that next time executable is run, it will continue here.
 					asys_value(player_info);
 					std::cout << player_info.toString() << " is playing the game." << std::endl;
 					asys_redo;
-				}C__;
+				}CC_;
 			}END_WHILE;
 		}END_FUN;
 	}

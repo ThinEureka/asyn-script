@@ -27,12 +27,12 @@
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \
 					if (__this_function) return __this_function; \
 					__this_function = new asys::FunctionCode; \
-					__this_function->Input({__VA_ARGS__})_; \
+					__this_function->Input({__VA_ARGS__})_; 
 
 #define END_FUN return __this_function;
 
-#define __C __this_function->Do([=](asys::Executable* asys_this){
-#define C__ })_;
+#define _CC __this_function->Do([=](asys::Executable* asys_this){
+#define CC_ })_;
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(...)  __this_function->Call(__VA_ARGS__)_;
