@@ -2,8 +2,8 @@
 /*!
  * \file Function.cpp
  * \date 02-10-2016 15:29:51
- * 
- * 
+ *
+ *
  * \author cs 04nycs@gmail.com
  */
 
@@ -17,15 +17,8 @@ asys::FunctionCode::FunctionCode()
 
 asys::FunctionCode::~FunctionCode()
 {
-	for (auto instruction : m_instructions)
-	{
-		delete instruction;
-	}
-
-	m_instructions.clear();
+	clear();
 }
-
-
 
 void asys::FunctionCode::clear()
 {
@@ -35,6 +28,7 @@ void asys::FunctionCode::clear()
 	}
 
 	m_instructions.clear();
+	m_stackStructure.clear();
 }
 
 asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Executable*)>& express)
@@ -45,232 +39,52 @@ asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Executable*)>&
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code)
+asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 {
-	return Call_ex(outputParams, inputParams, code, "");
+	m_stackStructure.declare(var);
+
+	return Do([=](asys::Executable* executable){
+		if (executable->hasAsysValue(var))
+		{
+			executable->desstruct(var);
+		}
+
+		executable->construct(var);
+	});
 }
 
-asys::BreakPoint&  asys::FunctionCode::Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName)
+asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const ValueList& inputs, Code* code)
 {
-	return Call_ex(outputParams, inputParams, nullptr, codeName);
+	return Call_ex([=](Executable* caller, Executable* callee)->void{
+		callee->setInput(inputs, caller);
+	},
+		[=](Executable* caller, Executable* callee)->void{
+		caller->fetchOutput(outputs, callee);
+	},
+		code,
+		nullptr);
 }
 
-asys::BreakPoint&  asys::FunctionCode::Call_ex(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code, const std::string& codeName)
+asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code)
 {
-	std::vector<std::pair<std::string, std::string>> outputPairs;
-	auto inputPairs = outputPairs;
-
-	outputPairs.resize(outputParams.size());
-	inputPairs.resize(inputParams.size());
-
-	for (int i = 0; i < static_cast<int>(outputParams .size()); ++i)
-	{
-		auto& pair = outputPairs[i];
-		pair.first = outputParams[i];
-		pair.second = asys::getOutputVariableName(i);
-	}
-
-	for (int i = 0; i < static_cast<int>(inputParams.size()); ++i)
-	{
-		auto& pair = inputPairs[i];
-		pair.first = asys::getInputVariableName(i);
-		pair.second = inputParams[i];
-	}
-
-	return Call_ex(outputPairs, inputPairs, code, codeName);
+	return Call_ex([=](Executable* caller, Executable* callee)->void{
+		callee->setInput(inputs, caller);
+	},
+		[=](Executable* caller, Executable* callee)->void{
+		caller->fetchOutput(outputs, callee);
+	},
+		nullptr,
+		[=](Executable* caller)->Code*{
+		return static_cast<Code*>(caller->getAsysValue(code)->toVoidPointer());
+	});
 }
 
-asys::BreakPoint& asys::FunctionCode::Call_ex(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName)
+asys::BreakPoint& asys::FunctionCode::Call_ex(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback /*= nullptr*/)
 {
-	for (auto& param : outputParams)
-	{
-		//there's not point to have any of the 2 assignment operands being const
-		assert(isValidVariableName(param.first) && isValidVariableName(param.second));
-	}
-
-	for (auto& param : inputParams)
-	{
-		assert(isValidVariableName(param.first));
-	}
-
-	auto instruction = new CallInstruction(outputParams, inputParams, code, codeName);
+	auto instruction = new CallInstruction(outputCallback, inputCallback, code, getCodeCallback);
 	m_instructions.push_back(instruction);
 
 	return instruction->breakPoint();
-}
-
-asys::BreakPoint& asys::FunctionCode::Input(const std::vector<std::string>& inputParams)
-{
-	return Do([inputParams](Executable* executable){
-
-		for (size_t i = 0; i < inputParams.size(); ++i)
-		{
-			auto& param = inputParams[i];
-			assert(isValidVariableName(param));
-			executable->setValue(param, executable->getValue(asys::getInputVariableName(i)));
-		}
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::Assign(const std::string& var1, const std::string& var2)
-{
-	// can not assign to const variable.
-	assert(isValidVariableName(var1));
-
-	return Do([var1, var2](Executable* executable){
-		if (isValidVariableName(var2))
-		{	
-			// the second argument allows to be null, thus its effect
-			//is to erase var1 from variables table.
-			executable->setValue(var1, executable->getValue(var2));
-		}
-		else
-		{
-			executable->setValue(var1, var2);
-		}
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::Operate(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator)
-{
-	assert(isValidVariableName(output));
-
-	return Do([output, var1, eOperator, var2](Executable* executable){
-		const auto& callback = Value::getBinaryOperator(eOperator);
-		if (!callback) return;
-
-		//none of the operands allows to be null.
-		executable->setValue(output, callback(isValidVariableName(var1) ? *executable->getValue(var1) : var1,
-			isValidVariableName(var2) ? *executable->getValue(var2) : var2));
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::Operate(const std::string& output, const std::string& var, Operator eOperator)
-{
-	assert(isValidVariableName(output));
-
-	return Do([output, eOperator, var](Executable* executable){
-		const auto& callback = Value::getUnaryOperator(eOperator);
-		if (!callback) return;
-
-		//the operand must not be null.
-		executable->setValue(output, callback(isValidVariableName(var) ? *executable->getValue(var) : var));
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::If(const std::string& var)
-{
-	return If_ex([var](Executable* executable){
-		if (asys::isValidVariableName(var))
-		{
-			auto val = executable->getValue(var);
-			if (!val) return false;
-
-			return val->toBool();
-		}
-
-		return Value(var).toBool();
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::If_not(const std::string& var)
-{
-	return If_ex([var](Executable* executable){
-		if (asys::isValidVariableName(var))
-		{
-			auto val = executable->getValue(var);
-			if (!val) return true;
-			return !val->toBool();
-		}
-
-		return !Value(var).toBool();
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::If_equal(const std::string& var1, const std::string& var2)
-{
-	return If_ex([var1, var2](Executable* executable){
-
-		Value leftValue{ var1 };
-		Value rightValue{ var2 };
-
-		const Value* left = &leftValue;
-		const Value* right = &rightValue;
-
-		if (asys::isValidVariableName(var1))
-		{
-			left = executable->getValue(var1);
-
-			if (left)
-			{
-				leftValue = *left;
-			}
-			else
-			{
-				left = nullptr;
-			}
-		}
-
-		if (asys::isValidVariableName(var2))
-		{
-			right = executable->getValue(var2);
-			if (right)
-			{
-				rightValue = *right;
-			}
-			else
-			{
-				right = nullptr;
-			}
-		}
-
-		if (!left || !right) return left == right;
-
-		return Value::equal(leftValue, rightValue).toBool();
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::If_not_equal(const std::string& var1, const std::string& var2)
-{
-	return If_ex([var1, var2](Executable* executable){
-
-		Value leftValue{ var1 };
-		Value rightValue{ var2 };
-
-		const Value* left = &leftValue;
-		const Value* right = &rightValue;
-
-		if (asys::isValidVariableName(var1))
-		{
-			left = executable->getValue(var1);
-
-			if (left)
-			{
-				leftValue = *left;
-			}
-			else
-			{
-				left = nullptr;
-			}
-		}
-
-		if (asys::isValidVariableName(var2))
-		{
-			right = executable->getValue(var2);
-			if (right)
-			{
-				rightValue = *right;
-			}
-			else
-			{
-				right = nullptr;
-			}
-		}
-
-		if (!left || !right) return left != right;
-
-		return !Value::equal(leftValue, rightValue).toBool();
-	});
 }
 
 asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
@@ -331,118 +145,6 @@ asys::BreakPoint& asys::FunctionCode::End_if()
 	return endIfInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::While(const std::string& var)
-{
-	return While_ex([var](Executable* executable){
-		if (asys::isValidVariableName(var)){
-			auto val = executable->getValue(var);
-			if (!val) return false;
-			return val->toBool();
-		}
-
-		return Value(var).toBool();
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::While_not(const std::string& var)
-{
-	return While_ex([var](Executable* executable){
-		if (asys::isValidVariableName(var)){
-			auto val = executable->getValue(var);
-			if (!val) return true;
-			return !val->toBool();
-		}
-
-		return !Value(var).toBool();
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::While_equal(const std::string& var1, const std::string& var2)
-{
-	return While_ex([var1, var2](Executable* executable){
-
-		Value leftValue{ var1 };
-		Value rightValue{ var2 };
-
-		const Value* left = &leftValue;
-		const Value* right = &rightValue;
-
-		if (asys::isValidVariableName(var1))
-		{
-			left = executable->getValue(var1);
-
-			if (left)
-			{
-				leftValue = *left;
-			}
-			else
-			{
-				left = nullptr;
-			}
-		}
-
-		if (asys::isValidVariableName(var2))
-		{
-			right = executable->getValue(var2);
-			if (right)
-			{
-				rightValue = *right;
-			}
-			else
-			{
-				right = nullptr;
-			}
-		}
-
-		if (!left || !right) return left == right;
-
-		return Value::equal(leftValue, rightValue).toBool();
-	});
-}
-
-asys::BreakPoint& asys::FunctionCode::While_not_equal(const std::string& var1, const std::string& var2)
-{
-	return While_ex([var1, var2](Executable* executable){
-
-		Value leftValue{ var1 };
-		Value rightValue{ var2 };
-
-		const Value* left = &leftValue;
-		const Value* right = &rightValue;
-
-		if (asys::isValidVariableName(var1))
-		{
-			left = executable->getValue(var1);
-
-			if (left)
-			{
-				leftValue = *left;
-			}
-			else
-			{
-				left = nullptr;
-			}
-		}
-
-		if (asys::isValidVariableName(var2))
-		{
-			right = executable->getValue(var2);
-			if (right)
-			{
-				rightValue = *right;
-			}
-			else
-			{
-				right = nullptr;
-			}
-		}
-
-		if (!left || !right) return left != right;
-
-		return !Value::equal(leftValue, rightValue).toBool();
-	});
-}
-
 asys::BreakPoint& asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
 {
 	int ip = static_cast<int>(m_instructions.size());
@@ -466,7 +168,7 @@ asys::BreakPoint& asys::FunctionCode::End_while()
 	auto endWhileInstruction = new EndWhileInstruction();
 	m_instructions.push_back(endWhileInstruction);
 
-	whileInstruction->endWhileIp= ip;
+	whileInstruction->endWhileIp = ip;
 	endWhileInstruction->whileIp = unMatchedWhileIp;
 
 	m_unmatchedWhileIps.pop_back();
@@ -504,9 +206,21 @@ asys::BreakPoint& asys::FunctionCode::Break()
 	return breakInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::Return(const std::vector<std::string>& vars)
+asys::BreakPoint& asys::FunctionCode::Return()
 {
-	auto instruction = new ReturnInstruction(vars);
+	return Return_ex(nullptr);
+}
+
+asys::BreakPoint& asys::FunctionCode::Return(const ValueList& vars)
+{
+	return Return_ex([=](asys::Executable* executable){
+		executable->setOutput(vars, executable);
+	});
+}
+
+asys::BreakPoint& asys::FunctionCode::Return_ex(const std::function<void(asys::Executable*)>& returnCallback)
+{
+	auto instruction = new ReturnInstruction(returnCallback);
 	m_instructions.push_back(instruction);
 
 	return instruction->breakPoint();
@@ -528,27 +242,17 @@ asys::Executable* asys::FunctionCode::compile()
 		if (instruction->instructionType() == InstructionType::type_call)
 		{
 			auto callInstruction = dynamic_cast<CallInstruction*>(instruction);
-			if (!callInstruction->codeName.empty()) 
-			{
-				if (!asys::isValidVariableName(callInstruction->codeName))
-				{
-					auto itCode = m_dynamicCodes.find(callInstruction->codeName);
-					if (itCode != m_dynamicCodes.end())
-					{
-						callInstruction->code = itCode->second;
-					}
-				}
-			}
 		}
 	}
 
-	return new FunctionExecutable(compile_instructions, m_dynamicCodes);
+	return new FunctionExecutable(compile_instructions, m_stackStructure);
 }
 
-asys::FunctionExecutable::FunctionExecutable(const std::vector<Instruction*> instructions, const std::map<std::string, Code*> dynamicCodes)
-	: m_instructions(instructions)
+asys::FunctionExecutable::FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure)
+	: Executable(stackStructure)
+	, m_instructions(instructions)
 {
-	setDynamicCodes(dynamicCodes);
+
 }
 
 asys::FunctionExecutable::~FunctionExecutable()
@@ -685,14 +389,9 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 	if (!callInstruction->executable)
 	{
 		//get the real code if it's a dynamic call.
-		if (!callInstruction->codeName.empty())
+		if (!callInstruction->getCodeCallback)
 		{
-			auto& dynamicCodes = getDynamicCodes();
-			auto it = dynamicCodes.find(callInstruction->codeName);
-			if (it != dynamicCodes.end())
-			{
-				callInstruction->code = it->second;
-			}
+			callInstruction->code = callInstruction->getCodeCallback(this);
 		}
 
 		if (!callInstruction->code) return curIp + 1;
@@ -700,17 +399,9 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		callInstruction->executable = callInstruction->code->compile();
 		callInstruction->executable->retain();
 
-		//pass input arguments to the invoked code.
-		for (const auto& pair : callInstruction->inputParams)
+		if (callInstruction->inputCallback)
 		{
-			if (isValidVariableName(pair.second))
-			{
-				callInstruction->executable->setValue(pair.first, getValue(pair.second));
-			}
-			else
-			{
-				callInstruction->executable->setValue(pair.first, pair.second);
-			}
+			callInstruction->inputCallback(this, callInstruction->executable);
 		}
 	}
 
@@ -718,15 +409,15 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 
 	if (retCode == CodeFlow::redo_) return curIp;
 
-	//fetch outputs from invoked code.
-	for (const auto& pair : callInstruction->outputParams)
+	if (callInstruction->outputCallback)
 	{
-		setValue(pair.first, callInstruction->executable->getValue(pair.second));
+		callInstruction->outputCallback(this, callInstruction->executable);
 	}
 
 	callInstruction->executable->release();
 	callInstruction->executable = nullptr;
-	if (!callInstruction->codeName.empty())
+
+	if (callInstruction->getCodeCallback)
 	{
 		callInstruction->code = nullptr;
 	}
@@ -736,19 +427,10 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 
 int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruction* retInstruction)
 {
-	for (int i = 0; i < static_cast<int>(retInstruction->outputParams.size()); ++i)
+	if (retInstruction->returnCallback)
 	{
-		const auto& param = retInstruction->outputParams[i];
-		if (asys::isValidVariableName(param))
-		{
-			setOutoutValue(i, getValue(retInstruction->outputParams[i]));
-		}
-		else
-		{
-			setOutoutValue(i, param);
-		}
+		retInstruction->returnCallback(this);
 	}
-
 	return static_cast<int>(m_instructions.size());
 }
 

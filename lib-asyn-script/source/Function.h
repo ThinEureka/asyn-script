@@ -12,7 +12,7 @@
 #include <vector>
 #include <list>
 #include <functional>
-
+#include "AsysVarible.h"
 
 namespace asys
 {
@@ -112,12 +112,12 @@ namespace asys
 	class CallInstruction : public Instruction
 	{
 	public:
-		CallInstruction(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>& inputParams, Code* code, const std::string& codeName)
+		CallInstruction(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback= nullptr)
 			: Instruction(InstructionType::type_call)
-			, outputParams(outputParams)
-			, inputParams(inputParams)
+			, outputCallback(outputCallback)
+			, inputCallback(inputCallback)
+			, getCodeCallback(getCodeCallback)
 			, code(code)
-			, codeName(codeName)
 		{}
 
 		virtual ~CallInstruction()
@@ -131,17 +131,17 @@ namespace asys
 
 		Instruction* clone() const override 
 		{
-			auto instruction = new CallInstruction(outputParams, inputParams, code, codeName);
+			auto instruction = new CallInstruction(outputCallback, inputCallback, code, getCodeCallback);
 			instruction->setBreakPoint(breakPoint());
 			return instruction;
 		}
 
 	public:
-		std::vector<std::pair<std::string, std::string>> outputParams;
-		std::vector<std::pair<std::string, std::string>> inputParams;
+		std::function<void(Executable* caller, Executable* callee)> outputCallback{};
+		std::function<void(Executable* caller, Executable* callee)> inputCallback{};
+		std::function<Code*(Executable* caller)> getCodeCallback{};
 		Executable* executable{};
 		Code* code{};
-		std::string codeName;
 	};
 
 	class IfInstruction : public Instruction
@@ -288,11 +288,11 @@ namespace asys
 	class ReturnInstruction : public Instruction
 	{
 	public: 
-		ReturnInstruction(const std::vector<std::string>& outputParams) : Instruction(InstructionType::type_return), outputParams(outputParams){};
+		ReturnInstruction(const std::function<void(asys::Executable*)>& returnCallback) : Instruction(InstructionType::type_return), returnCallback(returnCallback){};
 
 		Instruction* clone() const override
 		{
-			auto copy = new ReturnInstruction(outputParams);
+			auto copy = new ReturnInstruction(returnCallback);
 
 			copy->setBreakPoint(breakPoint());
 
@@ -300,7 +300,7 @@ namespace asys
 		}
 
 	public:
-		std::vector<std::string> outputParams;
+		std::function<void(asys::Executable*)> returnCallback{};
 	};
 
 	class FunctionCode : public Code
@@ -309,79 +309,199 @@ namespace asys
 		FunctionCode();
 		virtual ~FunctionCode();
 
-		//It's easier to debug the code using DO and lamda expression than using ASSIGN or OPERATE
-		//and the expressions written in C++ in the lamda expression are more expressive than pure asyn-script codes.
 		BreakPoint& Do(const std::function<void(Executable*)>& express);
+		BreakPoint& Declare(AsysVariable& var);
+
+		/*template<typename ...Args>
+		BreakPoint& Declare(Args... args)
+		{
+
+		}*/
+
+		template<typename ...Args>
+		BreakPoint& Declare(AsysVariable& var, Args... args)
+		{
+			auto& breakPoint Declare(var);
+			Declare(args);
+
+			return breakPoint;
+		}
+
+		template<typename ...Args>
+		BreakPoint& Input(Args... args)
+		{
+			Input(0, args);
+		}
+
+		template<typename ...Args>
+		BreakPoint& Input(int inputIndex, Args... args)
+		{
+		}
+
+		template<typename ...Args>
+		BreakPoint& Input(int inputIndex, AsysVariable& var, Args... args)
+		{
+			auto& breakPoint = Declare(var);
+			Do([=](asys::Executable* executable){
+				executable->setAsysValue(var, executable->getInput(inputIndex));
+			});
+
+			Input(inputIndex + 1, args);
+		}
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
-		BreakPoint& Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code);
-		
-		//If codeName is const which means it's not a variable name, the real code to be called is determined when FunctionCode is compiled; 
-		//In this case, codeName is used to look up the code as key in the dynamic codes table, thus the code should be registered
-		//before compile() being called. If codeName is a valid variable name(starts with $), the code invoked would be the one registered with the name 
-		//stored in the code Name variable when the call instruction is executed.
-		BreakPoint& Call(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, const std::string& codeName);
+		BreakPoint& Call(const VariableList& outputs, const ValueList& inputs, Code* code);
+		BreakPoint& Call(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code);
 
-		BreakPoint& Input(const std::vector<std::string>& inputParams);
+		template<typename T>
+		BreakPoint& If(const AsysVaribleT<T>& var)
+		{
+			return If_ex([=](Executable* executable){
+				return executable->getAsysValue(var)->toBool();
+			});
+		}
 
-		BreakPoint& If(const std::string& var);
 		BreakPoint& If_ex(const std::function<bool(Executable*)>& express);
-		BreakPoint& If_not(const std::string& var);
-		BreakPoint& If_equal(const std::string& var1, const std::string& var2);
-		BreakPoint& If_not_equal(const std::string& var1, const std::string& var2);
+
+		template<typename T>
+		BreakPoint& If_not(const AsysVaribleT<T>& var)
+		{
+			return If_ex([=](Executable* executable){
+				return !executable->getAsysValue(var)->toBool();
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& If_equal(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		{
+			return If_ex([=](Executable* executable){
+				return var1->getValue(executable) == var2->getValue(executable);
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& If_equal(const AsysVaribleT<T1>& var, const T2& constValue)
+		{
+			return If_ex([=](Executable* executable){
+				return var->getValue(executable) == constValue;
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& If_not_equal(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		{
+			return If_ex([=](Executable* executable){
+				return var1->getValue(executable) != var2->getValue(executable);
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& If_not_equal(const AsysVaribleT<T1>& var, const T2& value)
+		{
+			return If_ex([=](Executable* executable){
+				return var->getValue(executable) != value;
+			});
+		}
 
 		BreakPoint& Else();
 		BreakPoint& End_if();
 
-		BreakPoint& While(const std::string& var);
+		template<typename T>
+		BreakPoint& While(const AsysVaribleT<T>& var)
+		{
+			return While_ex([var](Executable* executable){
+				return executable->getAsysValue(var)->toBool();
+			});
+		}
+
+		template<typename T>
+		BreakPoint& While(const T& var)
+		{
+			return While_ex([var](Executable* executable){
+				return var;
+			});
+		}
+
 		BreakPoint& While_ex(const std::function<bool(Executable*)>& express);
-		BreakPoint& While_not(const std::string& var);
-		BreakPoint& While_equal(const std::string& var1, const std::string& var2);
-		BreakPoint& While_not_equal(const std::string& var1, const std::string& var2);
+
+		template<typename T>
+		BreakPoint& While_not(const AsysVaribleT<T>& var)
+		{
+			return While_ex([var](Executable* executable){
+				return !executable->getAsysValue(var)->toBool();
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& While_equal(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		{
+			return While_ex([var](Executable* executable){
+				return executable->getAsysValue(var1) == executable->getAsysValue(var2);
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& While_equal(const AsysVaribleT<T1>& var1, const T2& constValue)
+		{
+			return While_ex([var](Executable* executable){
+				return executable->getAsysValue(var1) == constValue;
+			});
+		}
+
+		template<typename T1, typename T2>
+		BreakPoint& While_not_equal(const AsysVariable& var1, const T2& constValue)
+		{
+			return While_ex([var](Executable* executable){
+				return executable->getAsysValue(var1) != executable->getAsysValue(var2);
+			});
+		}
 
 		BreakPoint& End_while();
 		BreakPoint& Continue();
 		BreakPoint& Break();
 
-		BreakPoint& Return() { return Return({}); }
-		BreakPoint& Return(const std::vector<std::string>& vars);
+		BreakPoint& Return();
+		BreakPoint& Return(const ValueList& vars);
 
-		//It's easier to debug the code using EXPRESS and lamda expression than using ASSIGN or OPERATE
-		//and the expressions written in C++ in the lamda expression are more expressive than pure asyn-script codes.
+		template<typename T1, typename T2>
+		BreakPoint& Assign(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		{
+			return Do([=](asys::Executable* executable){
+				executable->setAsysValue(var1, executable->getAsysValue(var2));
+			});
+		}
 
-		//var1 should starts with $, if not it's a const, which can't be assigned.
-		//if var2 starts with $, the value in the variables table with key var2 will be 
-		//assigned when the generated instruction is invoked, or var2 itself will be assigned instead.
-		BreakPoint& Assign(const std::string& var1, const std::string& var2);
-
-		BreakPoint& Operate(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator);
-		BreakPoint& Operate(const std::string& output, const std::string& var, Operator eOperator);
+		template<typename T1, typename T2>
+		BreakPoint& Assign(const AsysVaribleT<T1>& var, const T2& constValue)
+		{
+			return Do([=](asys::Executable* executable){
+				auto* pCastValue = dynamic_cast<AsysValueT<T1>*>(executable->getAsysValue(var));
+				pCastValue->getNativeValueReference() = constValue;
+			});
+		}
 
 		Executable* compile() override;
-
-		void registerDynamicCode(const std::string& name, Code* code) { m_dynamicCodes[name] = code; }
-		void unregisterDynamicCode(const std::string& name) { m_dynamicCodes.erase(name); }
-		void unregisterAllDynamicCodes() { m_dynamicCodes.clear(); }
 
 		void clear();
 
 	private:
-		BreakPoint& Call_ex(const std::vector<std::string>& outputParams, const std::vector<std::string>& inputParams, Code* code, const std::string& codeName);
-
-		//CALL_EX uses pairs of variable names to pass values when invoking or returning from the sub-function.
-		BreakPoint& Call_ex(const std::vector<std::pair<std::string, std::string>>& outputParams, const std::vector<std::pair<std::string, std::string>>&inputParams, Code* code, const std::string& codeName);
+		BreakPoint& Call_ex(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback = nullptr);
+		BreakPoint& Return_ex(const std::function<void(asys::Executable*)>& returnCallback);
 
 	private:
 		std::vector<Instruction*> m_instructions;
 		std::list<int> m_unmatchedIfIps;
 		std::list<int> m_unmatchedWhileIps;
-		std::map<std::string, Code*> m_dynamicCodes;
+
+		std::string m_fileNameForCurInstruction;
+		int m_lineNumerForCurInstruction{ -1 };
+		std::string m_functionNameForCurInstruction;
 	};
 
 	class FunctionExecutable : public Executable
 	{
 	public:
-		FunctionExecutable(const std::vector<Instruction*> instructions, const std::map<std::string, Code*> dynamicCodes);
+		FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure);
 		virtual ~FunctionExecutable();
 
 		CodeFlow run() override;

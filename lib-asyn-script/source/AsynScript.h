@@ -12,16 +12,6 @@
 #include "Define.h"
 
 // append this macro to the instruction calls to set a break point for ease of debug in C++
-#ifdef _DEBUG
-#define _ ([](asys::Executable* asys_this, const asys::BreakPoint& breakPoint) \
-								{ \
-			asys_this->setValue("$$__FILE__", breakPoint.fileName()); \
-			asys_this->setValue("$$__FUNCTION__", breakPoint.functionName()); \
-			asys_this->setValue("$$__LINE__", breakPoint.lineNumber());},\
-			__FILE__, __FUNCTION__, __LINE__);
-#else
-#define _ ;
-#endif
 
 //key words
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \

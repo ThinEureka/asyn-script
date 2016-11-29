@@ -9,6 +9,9 @@
     <ClCompile Include="..\source\Sequence.cpp" />
     <ClCompile Include="..\source\Simple.cpp" />
     <ClCompile Include="..\source\Value.cpp" />
+    <ClCompile Include="..\source\Stack.cpp" />
+    <ClCompile Include="..\source\AsysVarible.cpp" />
+    <ClCompile Include="..\source\AsysValue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\CompoundCode.h" />
@@ -20,5 +23,8 @@
     <ClInclude Include="..\source\Simple.h" />
     <ClInclude Include="..\source\Value.h" />
     <ClInclude Include="..\source\AsynScript.h" />
+    <ClInclude Include="..\source\Stack.h" />
+    <ClInclude Include="..\source\AsysVarible.h" />
+    <ClInclude Include="..\source\AsysValue.h" />
   </ItemGroup>
 </Project>

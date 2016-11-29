@@ -14,6 +14,8 @@
 #include <vector>
 #include "Define.h"
 #include <functional>
+#include "AsysVarible.h"
+#include "Stack.h"
 
 namespace asys
 {
@@ -23,17 +25,29 @@ namespace asys
 	{
 	public:
 		virtual Executable* compile() = 0;
+
+	protected:
+		StackStructure m_stackStructure;
 	};
 
 	class Executable
 	{
 	public:
-		virtual ~Executable()
+		Executable(const StackStructure& stackStructure)
+			: m_stack(stackStructure)
+		{
+
+		}
+
+		asys::Executable::~Executable()
 		{
 			for (auto& deallocator : m_deallocators)
 			{
 				deallocator(this);
 			}
+
+			clearInputs();
+			clearOutputs();
 		}
 
 	public:
@@ -48,52 +62,45 @@ namespace asys
 			}
 		}
 
+		void construct(const AsysVariable& var)
+		{
+			m_stack.construct(var);
+		}
+
+		void desstruct(const AsysVariable& var)
+		{
+			m_stack.destruct(var);
+		}
+
 		void retain() { ++m_nReferenceCount; }
 
-		void setValue(const std::string& name, const Value* pValue) 
-		{ 
-			if (!pValue)
-			{
-				m_varTable.erase(name);
-			}
-			else
-			{
-				m_varTable[name] = *pValue;
-			}
-		}
-
-		asys::Value& operator [](const std::string& name) { return m_varTable[name]; }
-
-		void setValue(const std::string& name, const Value& value) { m_varTable[name] = value; }
-		void setValue(const std::string& name, const std::string& value) { m_varTable[name] = Value(value); }
-		void setValue(const std::string& name, const char* pchar) { m_varTable[name] = Value(std::string(pchar)); }
-		void setValue(const std::string& name, int intValue) { m_varTable[name] = Value(intValue); }
-		void setValue(const std::string& name, bool boolValue) { m_varTable[name] = Value(boolValue); }
-		void setValue(const std::string& name, float floatValue) { m_varTable[name] = Value(floatValue); }
-		void setValue(const std::string& name, double doubleValue){ m_varTable[name] = Value(doubleValue); }
-		void setValue(const std::string& name, long long llValue){ m_varTable[name] = Value(llValue); }
-
-		const Value* getValue(const std::string& name) const 
+		void setAsysValue(const AsysVariable& var, const AsysValue* pValue)
 		{
-			auto it = m_varTable.find(name);
-			if (it == m_varTable.end()) return nullptr;
-			return &(it->second);
+			getAsysValue(var)->assign(*pValue);
 		}
 
-		//void setOutputValues(const std::vector<const Value*>& values);
-		void setOutputValues(const std::vector<Value>& values);
+		const AsysValue* getAsysValue(const AsysVariable& var) const
+		{
+			return m_stack.getMetaVariable(var)->getAsysValue();
+		}
 
-		void setOutoutValue(int index, const Value* pValue) { setValue(getOutputVariableName(index), pValue); }
-		void setOutoutValue(int index, const Value& value) { setValue(getOutputVariableName(index), value); }
+		AsysValue* getAsysValue(const AsysVariable& var)
+		{
+			return m_stack.getMetaVariable(var)->getAsysValue();
+		}
 
-		//void setInputValues(const std::vector<const Value*>& values);
-		void setInputValues(const std::vector<Value>& values);
+		void setInput(const ValueList& vars, Executable* executable);
+		void setOutput(const ValueList& vars, Executable* executable);
 
-		void setInputValue(int index, const Value* pValue) { setValue(getInputVariableName(index), pValue); }
-		void setInputValue(int index, const Value& value) { setValue(getInputVariableName(index), value); }
+		void fetchOutput(const VariableList& vars, Executable* callee);
 
-		const Value* getOutputValue(int index) const { return getValue(getOutputVariableName(index)); }
-		const Value* getInputValue(int index) const { return getValue(getInputVariableName(index)); }
+		const AsysValue* getOutput(int index) const;
+		const AsysValue* getInput(int index) const;
+
+		bool hasAsysValue(const AsysVariable& var) const
+		{
+			return m_stack.hasAsysValue(var);
+		}
 
 		void addDeallocator(const std::function<void(asys::Executable*)>& deallocator)
 		{
@@ -103,18 +110,31 @@ namespace asys
 		void setReturnCodeFlow(asys::CodeFlow flow) { m_retCodeFlow = flow; }
 		CodeFlow getReturnCodeFlow() const { return m_retCodeFlow; }
 
-		void registerDynamicCode(const std::string& name, Code* code){ m_dynamicCodes[name] = code; }
-		
-	protected:
-		void setDynamicCodes(const std::map<std::string, Code*> dynamicCodes) { m_dynamicCodes = dynamicCodes; }
-		std::map<std::string, Code*>& getDynamicCodes() { return m_dynamicCodes; }
+		void clearInputs()
+		{
+			for (auto input : m_inputs)
+			{
+				delete input;
+			}
+			m_inputs.clear();
+		}
 
-	private:
+		void clearOutputs()
+		{
+			for (auto output : m_outputs)
+			{
+				delete output;
+			}
+			m_outputs.clear();
+		}
+
+	protected:
 		int m_nReferenceCount{ 0 };
 		CodeFlow m_retCodeFlow{ CodeFlow::next_ };
-		std::map<std::string, Value> m_varTable;
-		std::map<std::string, Code*> m_dynamicCodes;
 		std::vector<std::function<void(asys::Executable*)>> m_deallocators;
+		std::vector<AsysValue*> m_inputs;
+		std::vector<AsysValue*> m_outputs;
+		Stack m_stack;
 	};
 	
 }
