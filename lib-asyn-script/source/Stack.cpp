@@ -17,6 +17,7 @@ asys::StackStructure::StackStructure(const StackStructure& structure)
 	{
 		m_variables[pair.first] = pair.second->clone();
 	}
+	m_curSize = structure.m_curSize;
 }
 
 asys::StackStructure::~StackStructure()

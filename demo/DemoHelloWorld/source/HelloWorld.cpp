@@ -96,13 +96,19 @@ int main()
 				asys_this->setReturnCodeFlow(asys::CodeFlow::return_); return;
 			}
 			
-			auto i_sum = dynamic_cast<asys::AsysValueT<int>*>(asys_this->getAsysValue(i));
+			auto i_sum = dynamic_cast<asys::AsysValueT<int>*>(asys_this->getAsysValue(sum));
 			i_sum->getNativeValueReference() = i_sum->getNativeValue() + i_value->getNativeValue();
 			asys_this->getAsysValue(i)->toInt();
 
 			i_value->getNativeValueReference() = i_value->getNativeValue() + 1;
+
+			std::cout << "i " << i_value->getNativeValue() << " n " << i_sum->getNativeValue() << std::endl;
 		});
 	}f->End_while();
+
+	auto executable = f->compile();
+	while (executable->run() == asys::CodeFlow::redo_);
+	executable->release();
 
 	typedef int int_tmp;
 	int x0 = 1;

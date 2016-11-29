@@ -98,7 +98,6 @@ namespace asys
 		void shallowCopy(const AsysVariable& var)
 		{
 			m_memoryOffset = var.m_memoryOffset;
-			m_nativeTypeSize = var.m_nativeTypeSize;
 		}
 
 		void deepCopy(const AsysVariable& var)
@@ -144,8 +143,6 @@ namespace asys
 
 	protected:
 		size_t m_memoryOffset{};
-		size_t m_nativeTypeSize{};
-
 		AsysValue* m_pAsysValue{};
 	};
 
@@ -155,6 +152,7 @@ namespace asys
 	public:
 		AsysVaribleT()
 		{
+
 		}
 
 		virtual AsysVariable* clone() const override
