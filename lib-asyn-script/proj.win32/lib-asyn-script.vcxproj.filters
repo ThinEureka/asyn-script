@@ -1,30 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\source\CompoundCode.cpp" />
-    <ClCompile Include="..\source\Concurrency.cpp" />
     <ClCompile Include="..\source\Core.cpp" />
     <ClCompile Include="..\source\Define.cpp" />
     <ClCompile Include="..\source\Function.cpp" />
-    <ClCompile Include="..\source\Sequence.cpp" />
-    <ClCompile Include="..\source\Simple.cpp" />
-    <ClCompile Include="..\source\Value.cpp" />
     <ClCompile Include="..\source\Stack.cpp" />
-    <ClCompile Include="..\source\AsysVarible.cpp" />
     <ClCompile Include="..\source\AsysValue.cpp" />
+    <ClCompile Include="..\source\AsysVariable.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\CompoundCode.h" />
-    <ClInclude Include="..\source\Concurrency.h" />
     <ClInclude Include="..\source\Core.h" />
     <ClInclude Include="..\source\Define.h" />
     <ClInclude Include="..\source\Function.h" />
-    <ClInclude Include="..\source\Sequence.h" />
-    <ClInclude Include="..\source\Simple.h" />
-    <ClInclude Include="..\source\Value.h" />
     <ClInclude Include="..\source\AsynScript.h" />
     <ClInclude Include="..\source\Stack.h" />
-    <ClInclude Include="..\source\AsysVarible.h" />
     <ClInclude Include="..\source\AsysValue.h" />
+    <ClInclude Include="..\source\AsysVariable.h" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 ﻿/*!
- * \file Variable.h
+ * \file AsysVariable.h
  * \date 11-25-2016 14:44:28
  *
  *
@@ -43,6 +43,11 @@ namespace asys
 
 		Const(){}
 
+		Const(const Const& val)
+		{
+			copyFrom(val);
+		}
+
 		virtual ~Const()
 		{
 			if (m_pAsysValue)
@@ -85,6 +90,14 @@ namespace asys
 		friend class Stack;
 		friend class StackStructure;
 		friend class Executable;
+		friend class ValueList;
+
+	public:
+		AsysVariable() = default;
+		AsysVariable(const AsysVariable& var)
+		{
+			shallowCopy(var);
+		}
 
 	protected:
 		virtual AsysVariable* clone() const
@@ -147,17 +160,22 @@ namespace asys
 	};
 
 	template<typename T>
-	class AsysVaribleT : public AsysVariable
+	class AsysVariableT : public AsysVariable
 	{
 	public:
-		AsysVaribleT()
+		AsysVariableT()
+		{
+
+		}
+
+		AsysVariableT(int, int)
 		{
 
 		}
 
 		virtual AsysVariable* clone() const override
 		{
-			auto newVar = new AsysVaribleT<T>();
+			auto newVar = new AsysVariableT<T>();
 			newVar->deepCopy(*this);
 
 			return newVar;
@@ -176,8 +194,8 @@ namespace asys
 
 		virtual void destruct() override
 		{
-			auto* pCastValue = dynamic_cast<AsysVaribleT<T>*>(m_pAsysValue);
-			pCastValue->~AsysVaribleT<T>();
+			auto* pCastValue = dynamic_cast<AsysVariableT<T>*>(m_pAsysValue);
+			pCastValue->~AsysVariableT<T>();
 			m_pAsysValue = nullptr;
 		}
 
@@ -191,43 +209,43 @@ namespace asys
 			construct(m_pAddress);
 		}
 
+		operator T() const
+		{
+			if (!m_pExecutable)
+			{
+				m_pExecutable = Executable::getMainExecutable();
+			}
+
+			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
+			return asysValue->getNativeValue();
+		}
+
+		T& r() const
+		{
+			if (!m_pExecutable)
+			{
+				m_pExecutable = Executable::getMainExecutable();
+			}
+
+			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
+			return asysValue->getNativeValueReference();
+		}
+
+		template<typename T1>
+		const AsysVariableT& operator = (const T1& var) const
+		{
+			r() = var;
+			return *this;
+		}
+
 	private:
 		void* m_pAddress{};
+		mutable Executable* m_pExecutable{};
 
-		/*	template<typename T1>
-			AsysVaribleT& operator = (const AsysVaribleT<T1>& var)
-			{
-			AsysValueT<T>* nativeValue = dynamic_cast<AsysValueT<T>*>(m_pNativeValue);
-			if (!nativeValue)
-			{
-			m_pNativeValue = nativeValue = new AsysValueT<T>;
-			}
-
-			AsysValueT<T1>* nativeValue1 = dynamic_cast<AsysValueT<T1>*>(var.m_pNativeValue);
-			nativeValue->getValue() = nativeValue1->getValue();
-
-			return *this;
-			}*/
-
-		/*operator T()
+		void setExecutable(Executable* executable)
 		{
-			AsysValueT<T>* nativeValue = dynamic_cast<AsysValueT<T>*>(m_pNativeValue);
-			return nativeValue->getValue();
-		}*/
-
-		/*template<typename T1>
-		AsysVaribleT& operator = (const T1& var)
-		{
-			AsysValueT<T>* nativeValue = dynamic_cast<AsysValueT<T>*>(m_pNativeValue);
-			if (!nativeValue)
-			{
-				m_pNativeValue = nativeValue = new AsysValueT<T>;
-			}
-
-			nativeValue->getValue() = var;
-
-			return *this;
-		}*/
+			m_pExecutable = executable;
+		}
 	};
 
 	class VariableList
@@ -268,28 +286,11 @@ namespace asys
 		};
 
 	public:
-		template<typename... ValueTypes>
-		ValueList(ValueTypes... values)
+		template<typename... Args>
+		ValueList(const Args&... args)
 		{
-
-		}
-
-		template<typename... ValueTypes>
-		ValueList(const Const& constValue, ValueTypes... values)
-		{
-			m_values.resize(m_values.size() + 1);
-			m_values[m_values.size() - 1].asysConst.copyFrom(asysValue);
-			m_values[m_values.size() - 1].isConst = true;
-			ValueList(values...);
-		}
-
-		template<typename... ValueTypes>
-		ValueList(const AsysVariable& variable, ValueTypes... values)
-		{
-			m_values.resize(m_values.size() + 1);
-			m_values[m_values.size() - 1].asysVarible.shallowCopy(variable);
-			m_values[m_values.size() - 1].isConst = false;
-			ValueList(values...);
+			m_values.resize(sizeof...(Args));
+			init(0, args...);
 		}
 
 		size_t getLength() const
@@ -298,11 +299,30 @@ namespace asys
 		}
 
 	private:
+		template<typename... Args>
+		void init(int index, const Const& constValue, const Args&... args)
+		{
+			m_values[index].asysConst.copyFrom(constValue);
+			m_values[index].isConst = true;
+			init(index + 1, args...);
+		}
+
+		template<typename... Args>
+		void init(int index, const AsysVariable& variable, const Args&... values)
+		{
+			m_values[index].asysVarible.shallowCopy(variable);
+			m_values[index].isConst = false;
+			init(index + 1, values...);
+		}
+
+		void init(int){}
+
+	private:
 		void forEachValue(const std::function<void(bool, const AsysVariable&, const Const&)>& callback) const
 		{
 			if (callback)
 			{
-				for (auto val : m_values)
+				for (const auto& val : m_values)
 				{
 					callback(val.isConst, val.asysVarible, val.asysConst);
 				}

@@ -12,7 +12,7 @@
 #include <vector>
 #include <list>
 #include <functional>
-#include "AsysVarible.h"
+#include "AsysVariable.h"
 
 namespace asys
 {
@@ -312,49 +312,34 @@ namespace asys
 		BreakPoint& Do(const std::function<void(Executable*)>& express);
 		BreakPoint& Declare(AsysVariable& var);
 
-		/*template<typename ...Args>
-		BreakPoint& Declare(Args... args)
-		{
-
-		}*/
-
 		template<typename ...Args>
-		BreakPoint& Declare(AsysVariable& var, Args... args)
+		BreakPoint& Declare(AsysVariable& var, Args&... args)
 		{
-			auto& breakPoint Declare(var);
-			Declare(args);
+			auto& breakPoint = Declare(var);
+			Declare(args...);
 
 			return breakPoint;
 		}
 
 		template<typename ...Args>
-		BreakPoint& Input(Args... args)
+		BreakPoint& Input(Args&... args)
 		{
-			Input(0, args);
+			auto& breakPoint = Declare(args...);
+			Input_ex(0, args...);
+			return breakPoint;
 		}
 
-		template<typename ...Args>
-		BreakPoint& Input(int inputIndex, Args... args)
+		BreakPoint& Input()
 		{
-		}
-
-		template<typename ...Args>
-		BreakPoint& Input(int inputIndex, AsysVariable& var, Args... args)
-		{
-			auto& breakPoint = Declare(var);
-			Do([=](asys::Executable* executable){
-				executable->setAsysValue(var, executable->getInput(inputIndex));
-			});
-
-			Input(inputIndex + 1, args);
+			return Do(nullptr);
 		}
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
 		BreakPoint& Call(const VariableList& outputs, const ValueList& inputs, Code* code);
 		BreakPoint& Call(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code);
 
-		template<typename T>
-		BreakPoint& If(const AsysVaribleT<T>& var)
+		template<typename V>
+		BreakPoint& If(const AsysVariableT<V>& var)
 		{
 			return If_ex([=](Executable* executable){
 				return executable->getAsysValue(var)->toBool();
@@ -363,96 +348,160 @@ namespace asys
 
 		BreakPoint& If_ex(const std::function<bool(Executable*)>& express);
 
-		template<typename T>
-		BreakPoint& If_not(const AsysVaribleT<T>& var)
+		template<typename V>
+		BreakPoint& If_not(const AsysVariableT<V>& var)
 		{
 			return If_ex([=](Executable* executable){
 				return !executable->getAsysValue(var)->toBool();
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& If_equal(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		template<typename V1, typename V2>
+		BreakPoint& If_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
 			return If_ex([=](Executable* executable){
-				return var1->getValue(executable) == var2->getValue(executable);
+				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
+				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
+				return pCastValue1->getNativeValue() == pCastValue2->getNativeValue();
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& If_equal(const AsysVaribleT<T1>& var, const T2& constValue)
+		template<typename V, typename C>
+		BreakPoint& If_equal(const AsysVariableT<V>& var, const C& constValue)
 		{
 			return If_ex([=](Executable* executable){
-				return var->getValue(executable) == constValue;
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() == constValue;
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& If_not_equal(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		template<typename V, typename C>
+		BreakPoint& If_equal(const C& constValue, const AsysVariableT<V>& var)
 		{
 			return If_ex([=](Executable* executable){
-				return var1->getValue(executable) != var2->getValue(executable);
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() == constValue;
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& If_not_equal(const AsysVaribleT<T1>& var, const T2& value)
+		template<typename V1, typename V2>
+		BreakPoint& If_not_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
 			return If_ex([=](Executable* executable){
-				return var->getValue(executable) != value;
+				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
+				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
+				return pCastValue1->getNativeValue() != pCastValue2->getNativeValue();
+			});
+		}
+
+		template<typename V, typename C>
+		BreakPoint& If_not_equal(const AsysVariableT<V>& var, const C& constValue)
+		{
+			return If_ex([=](Executable* executable){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() != constValue;
+			});
+		}
+
+		template<typename V, typename C>
+		BreakPoint& If_not_equal(const C& constValue, const AsysVariableT<V>& var)
+		{
+			return If_ex([=](Executable* executable){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() != constValue;
 			});
 		}
 
 		BreakPoint& Else();
 		BreakPoint& End_if();
 
-		template<typename T>
-		BreakPoint& While(const AsysVaribleT<T>& var)
+		template<typename V>
+		BreakPoint& While(const AsysVariableT<V>& var)
 		{
-			return While_ex([var](Executable* executable){
+			return While_ex([=](Executable* executable){
 				return executable->getAsysValue(var)->toBool();
 			});
 		}
 
-		template<typename T>
-		BreakPoint& While(const T& var)
+		template<typename C>
+		BreakPoint& While(const C& var)
 		{
-			return While_ex([var](Executable* executable){
+			return While_ex([=](Executable* executable){
 				return var;
 			});
 		}
 
 		BreakPoint& While_ex(const std::function<bool(Executable*)>& express);
 
-		template<typename T>
-		BreakPoint& While_not(const AsysVaribleT<T>& var)
+		template<typename V>
+		BreakPoint& While_not(const AsysVariableT<V>& var)
 		{
-			return While_ex([var](Executable* executable){
+			return While_ex([=](Executable* executable){
 				return !executable->getAsysValue(var)->toBool();
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& While_equal(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		template<typename C>
+		BreakPoint& While_not(const C& var)
 		{
-			return While_ex([var](Executable* executable){
-				return executable->getAsysValue(var1) == executable->getAsysValue(var2);
+			return While_ex([=](Executable* executable){
+				return !var;
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& While_equal(const AsysVaribleT<T1>& var1, const T2& constValue)
+		template<typename V1, typename V2>
+		BreakPoint& While_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
-			return While_ex([var](Executable* executable){
-				return executable->getAsysValue(var1) == constValue;
+			return While_ex([=](Executable* executable){
+				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
+				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
+				return pCastValue1->getNativeValue() == pCastValue2->getNativeValue();
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& While_not_equal(const AsysVariable& var1, const T2& constValue)
+		template<typename V, typename C>
+		BreakPoint& While_equal(const AsysVariableT<V>& var, const C& constValue)
 		{
-			return While_ex([var](Executable* executable){
-				return executable->getAsysValue(var1) != executable->getAsysValue(var2);
+			return While_ex([=](Executable* executable){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() == constValue;
+			});
+		}
+
+		template<typename V, typename C>
+		BreakPoint& While_equal(const C& constValue, const AsysVariableT<V>& var)
+		{
+			return While_ex([=](Executable* executable){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() == constValue;
+			});
+		}
+
+		template<typename V1, typename V2>
+		BreakPoint& While_not_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
+		{
+			return While_ex([=](Executable* executable){
+				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
+				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
+				return pCastValue1->getNativeValue() != pCastValue2->getNativeValue();
+			});
+		}
+
+		template<typename V, typename C>
+		BreakPoint& While_not_equal(const AsysVariableT<V>& var, const C& constValue)
+		{
+			return While_ex([=](Executable* executable){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() != constValue;
+			});
+		}
+
+		template<typename V, typename C>
+		BreakPoint& While_not_equal(const C& constValue, const AsysVariableT<V>& var)
+		{
+			return While_ex([=](Executable* executable){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue() != constValue;
 			});
 		}
 
@@ -463,19 +512,19 @@ namespace asys
 		BreakPoint& Return();
 		BreakPoint& Return(const ValueList& vars);
 
-		template<typename T1, typename T2>
-		BreakPoint& Assign(const AsysVaribleT<T1>& var1, const AsysVaribleT<T2>& var2)
+		template<typename V1, typename V2>
+		BreakPoint& Assign(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
 			return Do([=](asys::Executable* executable){
 				executable->setAsysValue(var1, executable->getAsysValue(var2));
 			});
 		}
 
-		template<typename T1, typename T2>
-		BreakPoint& Assign(const AsysVaribleT<T1>& var, const T2& constValue)
+		template<typename V, typename C>
+		BreakPoint& Assign(const AsysVariableT<V>& var, const C& constValue)
 		{
 			return Do([=](asys::Executable* executable){
-				auto* pCastValue = dynamic_cast<AsysValueT<T1>*>(executable->getAsysValue(var));
+				auto* pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
 				pCastValue->getNativeValueReference() = constValue;
 			});
 		}
@@ -484,9 +533,59 @@ namespace asys
 
 		void clear();
 
+
+		template<typename V1, typename V2, typename V3>
+		BreakPoint& Plus(const AsysVariableT<V1>& result, const AsysVariableT<V2>& opV1, const AsysVariableT<V3>& opV2)
+		{
+			return Do([=](asys::Executable* executable){
+				auto pCastValueResult = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(result));
+				auto pCastValueOpV1 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(opV1));
+				auto pCastVAlueOpV2 = dynamic_cast<AsysValueT<V3>*>(executable->getAsysValue(opV2));
+				pCastValueResult->getNativeValueReference() = (pCastValueOpV1->getNativeValue() + pCastVAlueOpV2->getNativeValue());
+			});
+		}
+
+		template<typename V1, typename V2, typename C>
+		BreakPoint& Plus(const AsysVariableT<V1>& result, const AsysVariableT<V2>& opV, const C& opC)
+		{
+			return Do([=](asys::Executable* executable){
+				auto pCastValueResult = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(result));
+				auto pCastValueOpV = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(opV));
+				pCastValueResult->getNativeValueReference() = (pCastValueOpV->getNativeValue() + opC);
+			});
+		}
+
+		template<typename V1, typename V2, typename C>
+		BreakPoint& Plus(const AsysVariableT<V1>& result, const C& opC, const AsysVariableT<V2>& opV)
+		{
+			return Do([=](asys::Executable* executable){
+				auto pCastValueResult = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(result));
+				auto pCastValueOpV = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(opV));
+				pCastValueResult->getNativeValueReference() = (pCastValueOpV->getNativeValue() + opC);
+			});
+		}
+
 	private:
 		BreakPoint& Call_ex(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback = nullptr);
 		BreakPoint& Return_ex(const std::function<void(asys::Executable*)>& returnCallback);
+
+		template<typename ...Args>
+		void Input_ex(int inputIndex, AsysVariable& var, Args&... args)
+		{
+			Do([=](asys::Executable* executable){
+				auto pAsysValue = executable->getInput(inputIndex);
+				if (pAsysValue)
+				{
+					executable->setAsysValue(var, pAsysValue);
+				}
+			});
+
+			Input_ex(inputIndex + 1, args...);
+		}
+
+		template<typename ...Args>
+		void Input_ex(int)
+		{}
 
 	private:
 		std::vector<Instruction*> m_instructions;
@@ -504,15 +603,15 @@ namespace asys
 		FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure);
 		virtual ~FunctionExecutable();
 
-		CodeFlow run() override;
+		CodeFlow run(Context* context = nullptr) override;
 
 	private:
-		int processNullInstruction(int curIp) {return curIp + 1;}
+		int processNullInstruction(int curIp, Context* context) {return curIp + 1;}
 
-		int processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction);
-		int processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction);
+		int processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction, Context* context);
+		int processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction, Context* context);
 
-		int processIfInstruction(int curIp, IfInstruction* ifInstruction)
+		int processIfInstruction(int curIp, IfInstruction* ifInstruction, Context* context)
 		{
 			bool condition = ifInstruction->express(this);
 			if (condition) return curIp + 1;
@@ -522,10 +621,10 @@ namespace asys
 			return ifInstruction->endIfIp + 1;
 		}
 
-		int processElseInstruction(int curIp, ElseInstruction* elseInstruction) { return elseInstruction->endIfIp + 1; }
-		int processEndIfInstruction(int curIp, EndIfInstruction* endIfInstruction) { return curIp + 1; }
+		int processElseInstruction(int curIp, ElseInstruction* elseInstruction, Context* context) { return elseInstruction->endIfIp + 1; }
+		int processEndIfInstruction(int curIp, EndIfInstruction* endIfInstruction, Context* context) { return curIp + 1; }
 
-		int processWhileInstruction(int curIp, WhileInstruction* whileInstruction)
+		int processWhileInstruction(int curIp, WhileInstruction* whileInstruction, Context* context)
 		{
 			bool condition = whileInstruction->express(this);
 			if (condition) return curIp + 1;
@@ -533,16 +632,16 @@ namespace asys
 			return whileInstruction->endWhileIp + 1;
 		}
 
-		int processEndWhileInstruction(int curIp, EndWhileInstruction* endWhileInstruction) { return endWhileInstruction->whileIp; }
-		int processContinueInstruction(int curIp, ContinueInstruction* continueInstruction) { return continueInstruction->whileIp; }
-		int processBreakInstruction(int curIp, BreakInstruction* breakInstruction)
+		int processEndWhileInstruction(int curIp, EndWhileInstruction* endWhileInstruction, Context* context) { return endWhileInstruction->whileIp; }
+		int processContinueInstruction(int curIp, ContinueInstruction* continueInstruction, Context* context) { return continueInstruction->whileIp; }
+		int processBreakInstruction(int curIp, BreakInstruction* breakInstruction, Context* context)
 		{
 			auto whileIp = breakInstruction->whileIp;
 			auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[whileIp]);
 			return whileInstruction->endWhileIp + 1;
 		}
 
-		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction);
+		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction, Context* context);
 
 	private:
 		std::vector<Instruction*> m_instructions;

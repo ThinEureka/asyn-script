@@ -7,7 +7,7 @@
  * \author cs (04nycs@gmail.com)
  */
 
-#include "AsysVarible.h"
+#include "AsysVariable.h"
 
 asys::VariableList::VariableList(std::initializer_list<AsysVariable> varList)
 {

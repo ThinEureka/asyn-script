@@ -8,16 +8,24 @@
 
 #pragma once
 
+#include "AsysVariable.h"
 #include "Function.h"
 #include "Define.h"
 
 // append this macro to the instruction calls to set a break point for ease of debug in C++
 
+#define _ ([](asys::Executable* asys_this, const asys::BreakPoint& breakPoint) \
+																																																																																																																																{ \
+			/*asys_this->setValue("$$__FILE__", breakPoint.fileName());*/ \
+			/*asys_this->setValue("$$__FUNCTION__", breakPoint.functionName());*/ \
+			/*asys_this->setValue("$$__LINE__", breakPoint.lineNumber());*/},\
+			__FILE__, __FUNCTION__, __LINE__);
+
 //key words
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \
 					if (__this_function) return __this_function; \
 					__this_function = new asys::FunctionCode; \
-					__this_function->Input({__VA_ARGS__})_; 
+					__this_function->Input(__VA_ARGS__)_; 
 
 #define END_FUN return __this_function;
 
@@ -38,8 +46,10 @@
 #define END_IF __this_function->End_if()_;
 
 #define WHILE(var) __this_function->While(var)_;
+
 //asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
 #define WHILE_EX(express) __this_function->While_ex(express)_;
+
 #define WHILE_NOT(var) __this_function->While_not(var)_;
 #define WHILE_EQUAL(var1, var2)  __this_function->While_equal(var)_;
 #define WHILE_NOT_EQUAL(var1, var2) __this_function->While_not_equal(var1, var2)_;
@@ -49,30 +59,22 @@
 #define BREAK __this_function->Break()_;
 
 #define RETURN(...) __this_function->Return({__VA_ARGS__})_;
-
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)_;
-//asys::FunctionCode::Operate(const std::string& output, const std::string& var1, const std::string& var2, Operator eOperator)
-//asys::FunctionCode::Operate(const std::string& output, const std::string& var, Operator eOperator)
-#define OPERATE(...) __this_function->Operate(__VA_ARGS__)_;
 
-#define ASYS_VAR_F(name, f) const std::string name("$"#name); f->Assign(name, asys_null)_;
-#define ASYS_VAR(name) ASYS_VAR_F(name, __this_function);
-#define ASYS_VAR_DECLARE_ONLY(name)  std::string name("$"#name)
-#define ASYS_PARAM(name) const std::string& name = "$"#name
-#define D_ASYS_PARAM(name) const std::string& name
+#define PLUS(result, op1, op2) __this_function->Plus(result, op1, op2)_;
+
+#define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name; f->Declare(name)_;
+#define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
+#define ASYS_PARAM(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(0, 0)
+#define D_ASYS_PARAM(name) asys::AsysVariableT<type> name
 
 //keywords used in embedded c++ codes
 #define asys_redo {asys_this->setReturnCodeFlow(asys::CodeFlow::redo_); return;}
 #define asys_next {asys_this->setReturnCodeFlow(asys::CodeFlow::next_); return;}
-#define asys_return(...) {asys_this->setOutputValues({__VA_ARGS__}); asys_this->setReturnCodeFlow(asys::CodeFlow::return_); return;}
+#define asys_return(...) {asys_this->setOutput({__VA_ARGS__}); asys_this->setReturnCodeFlow(asys::CodeFlow::return_); return;}
 #define asys_break {asys_this->setReturnCodeFlow(asys::CodeFlow::break_); return;}
 #define asys_continue {asys_this->setReturnCodeFlow(asys::CodeFlow::continue_); return;}
 #define asys_this asys_this
-
-//value converter
-#define asys_value(name) const auto& tmp_##name = name; auto& name = (*asys_this)[tmp_##name]
-#define asys_const(name) asys::toString(name) 
-
 
 //used to register asyn functions.
 #define asys_reg_funs asys::FunctionMap m_asynFunctions;

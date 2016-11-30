@@ -44,7 +44,7 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 	m_stackStructure.declare(var);
 
 	return Do([=](asys::Executable* executable){
-		if (executable->hasAsysValue(var))
+		if (!executable->hasAsysValue(var))
 		{
 			executable->desstruct(var);
 		}
@@ -56,10 +56,10 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const ValueList& inputs, Code* code)
 {
 	return Call_ex([=](Executable* caller, Executable* callee)->void{
-		callee->setInput(inputs, caller);
+		caller->fetchOutput(outputs, callee);
 	},
 		[=](Executable* caller, Executable* callee)->void{
-		caller->fetchOutput(outputs, callee);
+		callee->setInput(inputs, caller);
 	},
 		code,
 		nullptr);
@@ -68,10 +68,10 @@ asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const Va
 asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code)
 {
 	return Call_ex([=](Executable* caller, Executable* callee)->void{
-		callee->setInput(inputs, caller);
+		caller->fetchOutput(outputs, callee);
 	},
 		[=](Executable* caller, Executable* callee)->void{
-		caller->fetchOutput(outputs, callee);
+		callee->setInput(inputs, caller);
 	},
 		nullptr,
 		[=](Executable* caller)->Code*{
@@ -265,8 +265,13 @@ asys::FunctionExecutable::~FunctionExecutable()
 	m_instructions.clear();
 }
 
-asys::CodeFlow asys::FunctionExecutable::run()
+asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
 {
+	if (isInMainThread(context))
+	{
+		Executable::m_pMainExecutable = this;
+	}
+
 	while (true)
 	{
 		if (m_nCurIp >= static_cast<int>(m_instructions.size()))
@@ -287,37 +292,37 @@ asys::CodeFlow asys::FunctionExecutable::run()
 		switch (instruction->instructionType())
 		{
 		case InstructionType::type_null:
-			m_nCurIp = processNullInstruction(m_nCurIp);
+			m_nCurIp = processNullInstruction(m_nCurIp, context);
 			break;
 		case InstructionType::type_do:
-			m_nCurIp = processDoInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstruction*>(instruction));
+			m_nCurIp = processDoInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_call:
-			m_nCurIp = processCallInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstruction*>(instruction));
+			m_nCurIp = processCallInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_if:
-			m_nCurIp = processIfInstruction(m_nCurIp, dynamic_cast<IfInstruction*>(instruction));
+			m_nCurIp = processIfInstruction(m_nCurIp, dynamic_cast<IfInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_else:
-			m_nCurIp = processElseInstruction(m_nCurIp, dynamic_cast<ElseInstruction*>(instruction));
+			m_nCurIp = processElseInstruction(m_nCurIp, dynamic_cast<ElseInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_endif:
-			m_nCurIp = processEndIfInstruction(m_nCurIp, dynamic_cast<EndIfInstruction*>(instruction));
+			m_nCurIp = processEndIfInstruction(m_nCurIp, dynamic_cast<EndIfInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_while:
-			m_nCurIp = processWhileInstruction(m_nCurIp, dynamic_cast<WhileInstruction*>(instruction));
+			m_nCurIp = processWhileInstruction(m_nCurIp, dynamic_cast<WhileInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_endwhile:
-			m_nCurIp = processEndWhileInstruction(m_nCurIp, dynamic_cast<EndWhileInstruction*>(instruction));
+			m_nCurIp = processEndWhileInstruction(m_nCurIp, dynamic_cast<EndWhileInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_continue:
-			m_nCurIp = processContinueInstruction(m_nCurIp, dynamic_cast<ContinueInstruction*>(instruction));
+			m_nCurIp = processContinueInstruction(m_nCurIp, dynamic_cast<ContinueInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_break:
-			m_nCurIp = processBreakInstruction(m_nCurIp, dynamic_cast<BreakInstruction*>(instruction));
+			m_nCurIp = processBreakInstruction(m_nCurIp, dynamic_cast<BreakInstruction*>(instruction), context);
 			break;
 		case InstructionType::type_return:
-			m_nCurIp = processReturnInstruction(m_nCurIp, dynamic_cast<ReturnInstruction*>(instruction));
+			m_nCurIp = processReturnInstruction(m_nCurIp, dynamic_cast<ReturnInstruction*>(instruction), context);
 			break;
 		default:
 			++m_nCurIp;
@@ -330,10 +335,15 @@ asys::CodeFlow asys::FunctionExecutable::run()
 		}
 	}
 
+	if (isInMainThread(context))
+	{
+		Executable::m_pMainExecutable = nullptr;
+	}
+
 	return m_retCodeFlow;
 }
 
-int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction)
+int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction, Context* context)
 {
 	if (!expressInstruction->express)
 	{
@@ -382,14 +392,14 @@ int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp,
 	return curIp + 1;
 }
 
-int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction)
+int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction, Context* context)
 {
 	retCode = CodeFlow::next_;
 
 	if (!callInstruction->executable)
 	{
 		//get the real code if it's a dynamic call.
-		if (!callInstruction->getCodeCallback)
+		if (callInstruction->getCodeCallback)
 		{
 			callInstruction->code = callInstruction->getCodeCallback(this);
 		}
@@ -405,7 +415,7 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		}
 	}
 
-	retCode = callInstruction->executable->run();
+	retCode = callInstruction->executable->run(context);
 
 	if (retCode == CodeFlow::redo_) return curIp;
 
@@ -422,10 +432,15 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		callInstruction->code = nullptr;
 	}
 
+	if (isInMainThread(context))
+	{
+		Executable::m_pMainExecutable = this;
+	}
+
 	return curIp + 1;
 }
 
-int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruction* retInstruction)
+int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruction* retInstruction, Context* context)
 {
 	if (retInstruction->returnCallback)
 	{

@@ -9,7 +9,7 @@
  */
 
 #include "Stack.h"
-#include "AsysVarible.h"
+#include "AsysVariable.h"
 
 asys::StackStructure::StackStructure(const StackStructure& structure)
 {

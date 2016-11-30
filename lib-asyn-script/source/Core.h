@@ -9,17 +9,22 @@
 
 #pragma once
 
-#include "Value.h"
 #include <map>
 #include <vector>
 #include "Define.h"
 #include <functional>
-#include "AsysVarible.h"
+#include "AsysVariable.h"
 #include "Stack.h"
 
 namespace asys
 {
 	class Executable;
+
+	class Context
+	{
+	public:
+		virtual int threadId() = 0;
+	};
 
 	class Code
 	{
@@ -32,6 +37,12 @@ namespace asys
 
 	class Executable
 	{
+	public:
+		static Executable* getMainExecutable()
+		{
+			return m_pMainExecutable;
+		}
+
 	public:
 		Executable(const StackStructure& stackStructure)
 			: m_stack(stackStructure)
@@ -51,7 +62,7 @@ namespace asys
 		}
 
 	public:
-		virtual CodeFlow run() = 0;
+		virtual CodeFlow run(Context* context = nullptr) = 0;
 
 		void release()
 		{
@@ -90,7 +101,16 @@ namespace asys
 		}
 
 		void setInput(const ValueList& vars, Executable* executable);
+		void setInput(const ValueList& vars)
+		{
+			setInput(vars, nullptr);
+		}
+
 		void setOutput(const ValueList& vars, Executable* executable);
+		void setOutput(const ValueList& vars)
+		{
+			setOutput(vars, nullptr);
+		}
 
 		void fetchOutput(const VariableList& vars, Executable* callee);
 
@@ -129,12 +149,21 @@ namespace asys
 		}
 
 	protected:
+		bool isInMainThread(Context* context)
+		{
+			return !context || context->threadId() == 0;
+		}
+
+	protected:
 		int m_nReferenceCount{ 0 };
 		CodeFlow m_retCodeFlow{ CodeFlow::next_ };
 		std::vector<std::function<void(asys::Executable*)>> m_deallocators;
 		std::vector<AsysValue*> m_inputs;
 		std::vector<AsysValue*> m_outputs;
 		Stack m_stack;
+
+	protected:
+		static Executable* m_pMainExecutable;
 	};
 	
 }

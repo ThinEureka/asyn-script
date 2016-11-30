@@ -9,7 +9,6 @@
 
 #include "Windows.h"
 #include <iostream>
-#include "../../../lib-asyn-script/source/Function.h"
 #include "../../../lib-asyn-script/source/AsynScript.h"
 
 class Game
@@ -23,7 +22,7 @@ public:
 		if (!m_pExecutable)
 		{
 			m_pExecutable = login()->compile();
-			m_pExecutable->setInputValue(0, deviceId);
+			m_pExecutable->setInput({deviceId});
 		}
 
 		auto retCode = m_pExecutable->run();
@@ -32,93 +31,79 @@ public:
 
 private:
 	//ret success user_id access_token
-	asys::FunctionCode* platformLogin(ASYS_PARAM(device_id))
+	asys::FunctionCode* platformLogin(ASYS_PARAM(std::string, device_id))
 	{
 		BEGIN_FUN(device_id){
-			ASYS_VAR(index);
-			ASSIGN(index, asys_const(0));
+			ASYS_VAR(int, index);
+			ASSIGN(index, 0);
 
-			ASYS_VAR(user_id);
-			ASYS_VAR(access_token);
+			ASYS_VAR(std::string, user_id);
+			ASYS_VAR(std::string, access_token);
 
 			_CC{
-				asys_value(index);
-				asys_value(user_id);
-				asys_value(access_token);
-				asys_value(device_id);
-
-				if (index.toInt() < 5)
+				if (index < 5)
 				{
-					std::cout << "user-server  login... " << "device_id=" << device_id.toString() << std::endl;
-					index = index.toInt() + 1;
+					std::cout << "user-server  login... " << "device_id=" << device_id.r() << std::endl;
+					index = index + 1;
 					asys_redo;
 				}
 				else
 				{
-					std::cout << "platform login succeeded " << "device_id=" << device_id.toString() << std::endl;
-					index = index.toInt() + 1;
+					std::cout << "platform login succeeded " << "device_id=" << device_id.r() << std::endl;
+					index = index + 1;
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
 				}
 			}CC_;
 
-			RETURN(asys::True, user_id, access_token);
+			RETURN(true, user_id, access_token);
 		}END_FUN;
 	}
 
 	//ret success session_id gameserver_ip
-	asys::FunctionCode* userServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(access_token))
+	asys::FunctionCode* userServerLogin(ASYS_PARAM(std::string, user_id), ASYS_PARAM(std::string, access_token))
 	{
 		BEGIN_FUN(user_id, access_token){
-			ASYS_VAR(index);
-			ASSIGN(index, asys_const(0));
+			ASYS_VAR(int, index);
+			ASSIGN(index, 0);
 
-			ASYS_VAR(session_id);
+			ASYS_VAR(std::string, session_id);
 			_CC{
-				asys_value(index);
-				asys_value(session_id);
-				asys_value(user_id);
-				asys_value(access_token);
-
-				if (index.toInt() < 5)
+				if (index < 5)
 				{
-					std::cout << "login-server login... " << "$user_id=" << user_id.toString() << std::endl
-						<< "$access_token=" << access_token.toString() << std::endl;
-					index = index.toInt() + 1;
+					std::cout << "login-server login... " << "$user_id=" << user_id.r() << std::endl
+						<< "$access_token=" << access_token.r() << std::endl;
+					index = index + 1;
 					asys_redo;
 				}
 				else
 				{
 					std::cout << "login-server login succeeded " << std::endl;
-					index = index.toInt() + 1;
+					index = index + 1;
 					session_id = "123456";
 				}
 			}CC_;
 
-			RETURN({ asys::True, session_id, "127.0.0.1:3697" });
+			RETURN(true, session_id, "127.0.0.1:3697");
 		}END_FUN;
 	}
 
 	//ret success player_info
-	asys::FunctionCode* gameServerLogin(ASYS_PARAM(user_id), ASYS_PARAM(session_id), ASYS_PARAM(gameserver_ip))
+	asys::FunctionCode* gameServerLogin(ASYS_PARAM(std::string, user_id), ASYS_PARAM(std::string, session_id), ASYS_PARAM(std::string, gameserver_ip))
 	{
 		BEGIN_FUN(user_id, session_id, gameserver_ip){
 
-			ASYS_VAR(index);
-			ASSIGN(index, asys_const(0));
+			ASYS_VAR(int, index);
+			ASSIGN(index, 0);
 
-			ASYS_VAR(player_info);
+			ASYS_VAR(std::string, player_info);
 			_CC{
-				asys_value(index);
-				asys_value(user_id);
-				asys_value(session_id);
-				asys_value(player_info);
 
-				if (index.toInt() < 5)
+				if (index < 5)
 				{
-					std::cout << "game-server login... " << "$user_id=" << user_id.toString() << std::endl
-						<< "$session_id=" << session_id.toString() << std::endl;
-					index = index.toInt() + 1;
+					std::cout << "game-server login... " << "$user_id=" << user_id.r() << std::endl
+						<< "$session_id=" << session_id.r() << std::endl;
+					index = index + 1;
 					asys_redo;
 				}
 				else
@@ -128,19 +113,19 @@ private:
 				}
 			}CC_;
 
-			RETURN(asys::True, player_info);
+			RETURN(true, player_info);
 		}END_FUN;
 	}
 
-	//ret success player_info
-	asys::FunctionCode* login(ASYS_PARAM(device_id))
+	//ret int success std::string player_info
+	asys::FunctionCode* login(ASYS_PARAM(std::string, device_id))
 	{
 		BEGIN_FUN(device_id){
-			ASYS_VAR(game_end);
+			ASYS_VAR(bool, game_end);
 			WHILE_NOT(game_end){
-				ASYS_VAR(success);
-				ASYS_VAR(user_id);
-				ASYS_VAR(access_token);
+				ASYS_VAR(bool, success);
+				ASYS_VAR(std::string, user_id);
+				ASYS_VAR(std::string, access_token);
 
 				CALL({ success, user_id, access_token }, { device_id }, platformLogin());
 
@@ -148,15 +133,15 @@ private:
 					CONTINUE;
 				}END_IF;
 
-				ASYS_VAR(session_id);
-				ASYS_VAR(gameserver_ip);
+				ASYS_VAR(std::string, session_id);
+				ASYS_VAR(std::string, gameserver_ip);
 				CALL({ success, session_id, gameserver_ip }, { user_id, access_token }, userServerLogin());
 
 				IF_NOT(success){
 					CONTINUE;
 				}END_IF;
 
-				ASYS_VAR(player_info);
+				ASYS_VAR(std::string, player_info);
 				CALL({ success, player_info }, { user_id, session_id, gameserver_ip }, gameServerLogin());
 
 				IF_NOT(success){
@@ -164,14 +149,11 @@ private:
 				}END_IF;
 
 				_CC{
-					asys_value(player_info);
-					std::cout << "login-success: " << player_info.toString() << std::endl;
+					std::cout << "login-success: " << player_info.r() << std::endl;
 				}CC_;
 
 				_CC{
-					//return continue to indicate that next time executable is run, it will continue here.
-					asys_value(player_info);
-					std::cout << player_info.toString() << " is playing the game." << std::endl;
+					std::cout << player_info.r() << " is playing the game." << std::endl;
 					asys_redo;
 				}CC_;
 			}END_WHILE;
