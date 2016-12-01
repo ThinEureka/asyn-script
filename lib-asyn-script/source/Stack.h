@@ -44,6 +44,10 @@ namespace asys
 	private:
 		std::map<size_t, AsysVariable*>  m_variables;
 		size_t m_curSize{};
+
+	private:
+		friend class Debugger;
+		friend class DebugInfo;
 	};
 
 	class Stack
@@ -69,5 +73,9 @@ namespace asys
 	private:
 		StackStructure m_structure;
 		char* const m_pRawMem{};
+
+	private:
+		friend class Debugger;
+		friend class DebugInfo;
 	};
 }

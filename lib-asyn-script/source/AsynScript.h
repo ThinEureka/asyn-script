@@ -12,15 +12,6 @@
 #include "Function.h"
 #include "Define.h"
 
-// append this macro to the instruction calls to set a break point for ease of debug in C++
-
-#define _ ([](asys::Executable* asys_this, const asys::BreakPoint& breakPoint) \
-																																																																																																																																{ \
-			/*asys_this->setValue("$$__FILE__", breakPoint.fileName());*/ \
-			/*asys_this->setValue("$$__FUNCTION__", breakPoint.functionName());*/ \
-			/*asys_this->setValue("$$__LINE__", breakPoint.lineNumber());*/},\
-			__FILE__, __FUNCTION__, __LINE__);
-
 //key words
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \
 					if (__this_function) return __this_function; \
@@ -61,10 +52,10 @@
 #define RETURN(...) __this_function->Return({__VA_ARGS__})_;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)_;
 
-#define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name; f->Declare(name)_;
+#define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)_;
 #define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
-#define ASYS_PARAM(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(0, 0)
-#define D_ASYS_PARAM(name) asys::AsysVariableT<type> name
+#define ASYS_PARAM(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(#name, 0)
+#define D_ASYS_PARAM(name) asys::AsysVariableT<type> name(#name, 0)
 
 //keywords used in embedded c++ codes
 #define asys_redo {asys_this->setReturnCodeFlow(asys::CodeFlow::redo_); return;}

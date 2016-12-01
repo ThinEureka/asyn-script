@@ -9,6 +9,7 @@
 
 #include "Function.h"
 #include <assert.h>
+#include "Debug.h"
 
 asys::FunctionCode::FunctionCode()
 {
@@ -231,32 +232,30 @@ asys::Executable* asys::FunctionCode::compile()
 	assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
 	assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
 
-	decltype(m_instructions) compile_instructions;
-	compile_instructions.resize(m_instructions.size());
-
-	for (int i = 0; i < static_cast<int>(m_instructions.size()); ++i)
-	{
-		compile_instructions[i] = m_instructions[i]->clone();
-		auto instruction = compile_instructions[i];
-
-		if (instruction->instructionType() == InstructionType::type_call)
-		{
-			auto callInstruction = dynamic_cast<CallInstruction*>(instruction);
-		}
-	}
-
-	return new FunctionExecutable(compile_instructions, m_stackStructure);
+	return new FunctionExecutable(m_instructions, m_stackStructure);
 }
 
 asys::FunctionExecutable::FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure)
 	: Executable(stackStructure)
-	, m_instructions(instructions)
 {
+	m_instructions.resize(instructions.size());
+	for (int i = 0; i < static_cast<int>(instructions.size()); ++i)
+	{
+		m_instructions[i] = instructions[i]->clone();
+	}
 
+#if ASYS_DEBUG == 1
+	m_pDebugInfo = new DebugInfo;
+	m_pDebugInfo->initialize(this);
+#endif
 }
 
 asys::FunctionExecutable::~FunctionExecutable()
 {
+#if ASYS_DEBUG == 1
+	delete m_pDebugInfo;
+#endif
+
 	for (auto instruction : m_instructions)
 	{
 		delete instruction;
@@ -280,13 +279,13 @@ asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
 		}
 
 		auto instruction = m_instructions[m_nCurIp];
-
-		auto callback = instruction->breakPoint().callback();
-		if (callback && m_retCodeFlow != CodeFlow::redo_)
+#if ASYS_BREAKPOINT == 1
+		auto codeFlow = processBreakpoint(instruction->breakPoint(), context);
+		if (codeFlow == CodeFlow::redo_)
 		{
-			callback(this, instruction->breakPoint());
+			return m_retCodeFlow = CodeFlow::redo_;
 		}
-
+#endif
 		m_retCodeFlow = CodeFlow::next_;
 
 		switch (instruction->instructionType())
@@ -341,6 +340,52 @@ asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
 	}
 
 	return m_retCodeFlow;
+}
+
+void asys::FunctionExecutable::attachDebugger(Debugger* debugger, DebugInfo* parentDebugInfo /*= nullptr*/)
+{
+	if (!m_pDebugInfo)
+	{
+		return;
+	}
+
+	m_pDebugInfo->setDebugger(debugger);
+	m_pDebugInfo->setParentDebugInfo(parentDebugInfo);
+
+	if (m_nCurIp >= 0 && m_nCurIp < static_cast<int>(m_instructions.size()))
+	{
+		auto callInstruction = dynamic_cast<CallInstruction*>(m_instructions[m_nCurIp]);
+		if (callInstruction && callInstruction->executable)
+		{
+			auto funExe = dynamic_cast<FunctionExecutable*>(callInstruction->executable);
+			if (funExe)
+			{
+				funExe->attachDebugger(debugger, m_pDebugInfo);
+			}
+		}
+	}
+}
+
+void asys::FunctionExecutable::detachDebugger()
+{
+	if (!m_pDebugInfo)
+	{
+		return;
+	}
+
+	m_pDebugInfo->setDebugger(nullptr);
+	if (m_nCurIp >= 0 && m_nCurIp < static_cast<int>(m_instructions.size()))
+	{
+		auto callInstruction = dynamic_cast<CallInstruction*>(m_instructions[m_nCurIp]);
+		if (callInstruction && callInstruction->executable)
+		{
+			auto funExe = dynamic_cast<FunctionExecutable*>(callInstruction->executable);
+			if (funExe)
+			{
+				funExe->detachDebugger();
+			}
+		}
+	}
 }
 
 int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction, Context* context)
@@ -409,6 +454,17 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		callInstruction->executable = callInstruction->code->compile();
 		callInstruction->executable->retain();
 
+#if ASYS_DEBUG == 1
+		if (m_pDebugInfo && m_pDebugInfo->getDebugger())
+		{
+			auto funExe = dynamic_cast<FunctionExecutable*>(callInstruction->executable);
+			if (funExe)
+			{
+				funExe->attachDebugger(m_pDebugInfo->getDebugger());
+			}
+		}
+#endif
+
 		if (callInstruction->inputCallback)
 		{
 			callInstruction->inputCallback(this, callInstruction->executable);
@@ -449,10 +505,34 @@ int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruct
 	return static_cast<int>(m_instructions.size());
 }
 
-void asys::BreakPoint::operator()(const std::function<void(Executable*, const BreakPoint& breakpoint)>& callback, const char* fileName /*= nullptr*/, const char* functionName /*= nullptr*/, int lineNumber /*= -1*/)
+asys::CodeFlow asys::FunctionExecutable::processBreakpoint(const BreakPoint& breakPoint, Context* context)
+{
+	auto callback = breakPoint.callback();
+	if (callback && m_retCodeFlow != CodeFlow::redo_)
+	{
+		callback(this, breakPoint, context);
+	}
+
+	if (m_pDebugInfo)
+	{
+		if (callback && m_retCodeFlow != CodeFlow::redo_)
+		{
+			m_pDebugInfo->setCurLocation(breakPoint.fileName(), breakPoint.functionName(), breakPoint.lineNumber());
+		}
+
+		if (m_pDebugInfo->getDebugger())
+		{
+			return m_pDebugInfo->getDebugger()->onBreakPoint(this, breakPoint, context);
+		}
+	}
+
+	return CodeFlow::next_;
+}
+
+void asys::BreakPoint::operator()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback, const char* fileName /*= nullptr*/, const char* functionName /*= nullptr*/, int lineNumber /*= -1*/)
 {
 	m_callback = callback;
-	if (fileName) m_fileName = fileName;
-	if (functionName) m_functionName = functionName;
+	m_fileName = fileName;
+	m_functionName = functionName;
 	m_lineNumber = lineNumber;
 }

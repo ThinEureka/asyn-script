@@ -13,6 +13,7 @@
 #include <list>
 #include <functional>
 #include "AsysVariable.h"
+#include "Debug.h"
 
 namespace asys
 {
@@ -54,23 +55,23 @@ namespace asys
 		}
 
 		Instruction* instruction() { return m_instruction; }
-		const std::string& fileName() const { return m_fileName; }
-		const std::string& functionName() const { return m_functionName; }
+		const char* fileName() const { return m_fileName; }
+		const char* functionName() const { return m_functionName; }
 		int lineNumber() const { return m_lineNumber; }
 
-		void operator ()(const std::function<void(Executable*, const BreakPoint& breakpoint)>& callback,
+		void operator ()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback,
 			const char* fileName = nullptr,
 			const char* functionName = nullptr,
 			int lineNumber = -1);
 
-		const std::function<void(Executable*, const BreakPoint& breakpoint)>& callback() const { return m_callback; }
+		const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback() const { return m_callback; }
 
 	private:
 		Instruction* m_instruction{ nullptr };
-		std::string m_fileName;
-		std::string m_functionName;
+		const char* m_fileName{};
+		const char* m_functionName{};
 		int m_lineNumber{ -1 };
-		std::function<void(Executable*, const BreakPoint& breakpoint)> m_callback;
+		std::function<void(FunctionExecutable*, const BreakPoint&, Context*)> m_callback;
 	};
 
 	class Instruction
@@ -568,10 +569,16 @@ namespace asys
 	class FunctionExecutable : public Executable
 	{
 	public:
+		friend class Debugger;
+
+	public:
 		FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure);
 		virtual ~FunctionExecutable();
 
 		CodeFlow run(Context* context = nullptr) override;
+
+		void attachDebugger(Debugger* debugger, DebugInfo* parentDebugInfo = nullptr);
+		void detachDebugger();
 
 	private:
 		int processNullInstruction(int curIp, Context* context) {return curIp + 1;}
@@ -611,8 +618,11 @@ namespace asys
 
 		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction, Context* context);
 
+		CodeFlow processBreakpoint(const BreakPoint& breakpoint, Context* context);
+
 	private:
 		std::vector<Instruction*> m_instructions;
+		DebugInfo* m_pDebugInfo{};
 		int m_nCurIp{ INVALID_IP  + 1};
 		CodeFlow m_retCodeFlow{CodeFlow::next_};
 	};

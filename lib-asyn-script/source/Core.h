@@ -164,6 +164,10 @@ namespace asys
 
 	protected:
 		static Executable* m_pMainExecutable;
+
+	private:
+		friend class Debugger;
+		friend class DebugInfo;
 	};
 	
 }

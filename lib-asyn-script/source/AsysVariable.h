@@ -84,14 +84,33 @@ namespace asys
 
 	class Executable;
 
-	class AsysVariable
+	class VariableViewer{
+	public:
+		virtual const char* getName() const = 0;
+	};
+
+	template<typename T>
+	class VariableViewerT : public VariableViewer
 	{
 	public:
-		friend class Stack;
-		friend class StackStructure;
-		friend class Executable;
-		friend class ValueList;
+		void setTarget(const char* varName, T* value)
+		{
+			m_pValue = value;
+			m_varName = varName;
+		}
 
+		virtual const char* getName() const override
+		{
+			return m_varName;
+		}
+
+	private:
+		T* m_pValue{};
+		const char* m_varName{};
+	};
+
+	class AsysVariable
+	{
 	public:
 		AsysVariable() = default;
 		AsysVariable(const AsysVariable& var)
@@ -111,6 +130,7 @@ namespace asys
 		void shallowCopy(const AsysVariable& var)
 		{
 			m_memoryOffset = var.m_memoryOffset;
+			m_pName = var.m_pName;
 		}
 
 		void deepCopy(const AsysVariable& var)
@@ -154,9 +174,23 @@ namespace asys
 
 		void setAsysValue(AsysValue* asysValue) { m_pAsysValue = asysValue; }
 
+		virtual VariableViewer* createVariableViewer() const
+		{
+			return nullptr;
+		}
+
 	protected:
 		size_t m_memoryOffset{};
+		const char* m_pName{};
 		AsysValue* m_pAsysValue{};
+
+	private:
+		friend class Stack;
+		friend class StackStructure;
+		friend class Executable;
+		friend class ValueList;
+		friend class Debugger;
+		friend class DebugInfo;
 	};
 
 	template<typename T>
@@ -168,11 +202,41 @@ namespace asys
 
 		}
 
-		AsysVariableT(int, int)
+		AsysVariableT(const char* name, int)
 		{
-
+			m_pName = name;
 		}
 
+		operator T() const
+		{
+			if (!m_pExecutable)
+			{
+				m_pExecutable = Executable::getMainExecutable();
+			}
+
+			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
+			return asysValue->getNativeValue();
+		}
+
+		T& r() const
+		{
+			if (!m_pExecutable)
+			{
+				m_pExecutable = Executable::getMainExecutable();
+			}
+
+			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
+			return asysValue->getNativeValueReference();
+		}
+
+		template<typename T1>
+		const AsysVariableT& operator = (const T1& var) const
+		{
+			r() = var;
+			return *this;
+		}
+
+	private:
 		virtual AsysVariable* clone() const override
 		{
 			auto newVar = new AsysVariableT<T>();
@@ -209,33 +273,13 @@ namespace asys
 			construct(m_pAddress);
 		}
 
-		operator T() const
+		virtual VariableViewer* createVariableViewer() const
 		{
-			if (!m_pExecutable)
-			{
-				m_pExecutable = Executable::getMainExecutable();
-			}
+			auto viewer = new VariableViewerT<T>;
+			auto pCastValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
+			viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
 
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
-			return asysValue->getNativeValue();
-		}
-
-		T& r() const
-		{
-			if (!m_pExecutable)
-			{
-				m_pExecutable = Executable::getMainExecutable();
-			}
-
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
-			return asysValue->getNativeValueReference();
-		}
-
-		template<typename T1>
-		const AsysVariableT& operator = (const T1& var) const
-		{
-			r() = var;
-			return *this;
+			return viewer;
 		}
 
 	private:
