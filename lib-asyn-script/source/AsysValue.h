@@ -424,7 +424,7 @@ namespace asys
 	};
 
 	template<>
-	class AsysValueT<unsigned char> : public AsysValueBuildInT<char>
+	class AsysValueT<unsigned char> : public AsysValueBuildInT<unsigned char>
 	{
 	public:
 		virtual AsysValue* clone() const override
