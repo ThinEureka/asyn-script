@@ -18,8 +18,10 @@ asys::FunctionCode* sum(ASYS_PARAM(int, n))
 		ASYS_VAR(int, i);
 
 		WHILE_NOT_EQUAL(i, n){
-			PLUS(sum, sum, i);
-			PLUS(i, i, 1);
+			_CC{
+				sum = sum + i;
+				i = i + 1;
+			}CC_;
 		}END_WHILE;
 
 		RETURN(sum);
@@ -45,22 +47,25 @@ asys::FunctionCode* print_sum(ASYS_PARAM(int, n))
 	BEGIN_FUN(n){
 		ASYS_VAR(int, index);
 		ASYS_VAR(int, v_sum);
+		ASYS_VAR(double, sum_double);
+		ASYS_VAR(short, sum_short);
 
 		WHILE_NOT_EQUAL(index, n){
 			CALL({ v_sum }, { index }, sum());
 
 			_CC{
-				std::cout << "index, sum = " << index << " " << v_sum << std::endl;
+				sum_double = v_sum;
+				std::cout << "index, sum, sum_double = " << index << " " << v_sum << " " << sum_double << std::endl;
 			}CC_;
 
 			ASYS_VAR(int, v_sum2);
 			CALL({ v_sum2 }, { index }, sum2());
 
 			_CC{
-				std::cout << "index, sum2 = " << index << " " << v_sum2 << std::endl;
+				sum_short = static_cast<short>(sum_double);
+				std::cout << "index, sum2, sum_char = " << index << " " << v_sum2 << " " << sum_short << std::endl;
+				index = index + 1;
 			}CC_;
-
-			PLUS(index, index, 1);
 		}END_WHILE;
 	}END_FUN;
 }

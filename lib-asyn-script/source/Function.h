@@ -533,38 +533,6 @@ namespace asys
 
 		void clear();
 
-
-		template<typename V1, typename V2, typename V3>
-		BreakPoint& Plus(const AsysVariableT<V1>& result, const AsysVariableT<V2>& opV1, const AsysVariableT<V3>& opV2)
-		{
-			return Do([=](asys::Executable* executable){
-				auto pCastValueResult = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(result));
-				auto pCastValueOpV1 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(opV1));
-				auto pCastVAlueOpV2 = dynamic_cast<AsysValueT<V3>*>(executable->getAsysValue(opV2));
-				pCastValueResult->getNativeValueReference() = (pCastValueOpV1->getNativeValue() + pCastVAlueOpV2->getNativeValue());
-			});
-		}
-
-		template<typename V1, typename V2, typename C>
-		BreakPoint& Plus(const AsysVariableT<V1>& result, const AsysVariableT<V2>& opV, const C& opC)
-		{
-			return Do([=](asys::Executable* executable){
-				auto pCastValueResult = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(result));
-				auto pCastValueOpV = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(opV));
-				pCastValueResult->getNativeValueReference() = (pCastValueOpV->getNativeValue() + opC);
-			});
-		}
-
-		template<typename V1, typename V2, typename C>
-		BreakPoint& Plus(const AsysVariableT<V1>& result, const C& opC, const AsysVariableT<V2>& opV)
-		{
-			return Do([=](asys::Executable* executable){
-				auto pCastValueResult = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(result));
-				auto pCastValueOpV = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(opV));
-				pCastValueResult->getNativeValueReference() = (pCastValueOpV->getNativeValue() + opC);
-			});
-		}
-
 	private:
 		BreakPoint& Call_ex(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback = nullptr);
 		BreakPoint& Return_ex(const std::function<void(asys::Executable*)>& returnCallback);

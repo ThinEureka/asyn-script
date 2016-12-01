@@ -39,6 +39,7 @@ namespace asys
 
 		virtual float toFloat() const = 0;
 		virtual double toDouble() const = 0;
+		virtual long double toLongDouble() const = 0;
 
 		virtual void* toVoidPointer() const = 0;
 
@@ -131,6 +132,12 @@ namespace asys
 			return 0.0;
 		}
 
+		virtual long double toLongDouble() const override
+		{
+			assert(false); // "no default conversion to long double for custom class"
+			return 0.0;
+		}
+
 		virtual void* toVoidPointer() const override
 		{
 			assert(false); // "no default conversion to void pointer for custom class");
@@ -146,7 +153,7 @@ namespace asys
 
 		virtual AsysValue* clone() const override
 		{
-			auto newValue = new AsysValueGeneralT();
+			auto newValue = new AsysValueGeneralT<T>();
 			newValue->m_nativeValue = m_nativeValue;
 			return newValue;
 		}
@@ -213,6 +220,18 @@ namespace asys
 		virtual bool toBool() const override
 		{
 			return false;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			auto pAsysValue = dynamic_cast<const AsysValueT<std::nullptr_t>*>(&value);
+			if (!pAsysValue)
+			{
+				//not allowed to assigned other type to nullptr_t;
+				assert(false);
+			}
+
+			m_nativeValue = nullptr;
 		}
 	};
 
@@ -281,6 +300,13 @@ namespace asys
 	class AsysValueBuildInT : public AsysValueGeneralT<T>
 	{
 	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueBuildInT<T>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
 		virtual bool toBool() const override
 		{
 			return m_nativeValue != 0;
@@ -346,6 +372,11 @@ namespace asys
 			return static_cast<double>(m_nativeValue);
 		}
 
+		virtual long double toLongDouble() const override
+		{
+			return static_cast<long double>(m_nativeValue);
+		}
+
 		virtual void* toVoidPointer() const override
 		{
 			assert("no default conversion to double for custom class");
@@ -357,11 +388,6 @@ namespace asys
 	class AsysValueT<bool> : public AsysValueBuildInT<bool>
 	{
 	public:
-		virtual bool toBool() const override
-		{
-			return m_nativeValue;
-		}
-
 		virtual AsysValue* clone() const override
 		{
 			auto newValue = new AsysValueT<bool>();
@@ -369,9 +395,82 @@ namespace asys
 			return newValue;
 		}
 
+		virtual bool toBool() const override
+		{
+			return m_nativeValue;
+		}
+
 		virtual void assign(const AsysValue& value) override
 		{
 			m_nativeValue = value.toBool();
+		}
+	};
+
+	template<>
+	class AsysValueT<char> : public AsysValueBuildInT<char>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<char>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toChar();
+		}
+	};
+
+	template<>
+	class AsysValueT<unsigned char> : public AsysValueBuildInT<char>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<unsigned char>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toUchar();
+		}
+	};
+
+	template<>
+	class AsysValueT<short> : public AsysValueBuildInT<short>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<short>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toShort();
+		}
+	};
+
+	template<>
+	class AsysValueT<unsigned short> : public AsysValueBuildInT<unsigned short>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<unsigned short>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toUShort();
 		}
 	};
 
@@ -389,6 +488,142 @@ namespace asys
 		virtual void assign(const AsysValue& value) override
 		{
 			m_nativeValue = value.toInt();
+		}
+	};
+
+	template<>
+	class AsysValueT<unsigned int> : public AsysValueBuildInT<unsigned int>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<unsigned int>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toUInt();
+		}
+	};
+
+	template<>
+	class AsysValueT<long> : public AsysValueBuildInT<long>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<long>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toLong();
+		}
+	};
+
+	template<>
+	class AsysValueT<unsigned long> : public AsysValueBuildInT<unsigned long>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<unsigned long>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toULong();
+		}
+	};
+
+	template<>
+	class AsysValueT<long long> : public AsysValueBuildInT<long long>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<long long>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toLongLong();
+		}
+	};
+
+	template<>
+	class AsysValueT<unsigned long long> : public AsysValueBuildInT<unsigned long long>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<unsigned long long>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toULongLong();
+		}
+	};
+
+	template<>
+	class AsysValueT<float> : public AsysValueBuildInT<float>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<float>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toFloat();
+		}
+	};
+
+	template<>
+	class AsysValueT<double> : public AsysValueBuildInT<double>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<double>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toDouble();
+		}
+	};
+
+	template<>
+	class AsysValueT<long double> : public AsysValueBuildInT<long double>
+	{
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<long double>();
+			newValue->setNativeValue(m_nativeValue);
+			return newValue;
+		}
+
+		virtual void assign(const AsysValue& value) override
+		{
+			m_nativeValue = value.toLongDouble();
 		}
 	};
 

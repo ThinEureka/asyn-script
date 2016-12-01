@@ -61,8 +61,6 @@
 #define RETURN(...) __this_function->Return({__VA_ARGS__})_;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)_;
 
-#define PLUS(result, op1, op2) __this_function->Plus(result, op1, op2)_;
-
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name; f->Declare(name)_;
 #define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
 #define ASYS_PARAM(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(0, 0)
