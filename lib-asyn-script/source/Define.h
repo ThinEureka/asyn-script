@@ -12,6 +12,18 @@
 #include <string>
 #include <sstream>
 
+#ifndef ASYS_BREAKPOINT
+	#ifdef _DEBUG
+#define ASYS_BREAKPOINT 1
+	#else
+#define ASYS_BREAKPOINT 0
+	#endif // _DEBUG
+#endif // !ASYS_BREAK_POINT
+
+#if ASYS_BREAKPOINT == 0
+	#define ASYS_DEBUG 0
+#endif
+
 #ifndef ASYS_DEBUG
 	#ifdef _DEBUG
 		#define ASYS_DEBUG 1
@@ -20,21 +32,12 @@
 	#endif // _DEBUG
 #endif // ASYS_DEBUG
 
-#ifndef ASYS_BREAKPOINT
-	#ifdef _DEBUG
-		#define ASYS_BREAKPOINT 1
-	#else
-		#define ASYS_BREAKPOINT 0
-	#endif // _DEBUG
-#endif // !ASYS_BREAK_POINT
-
 // append this macro to the instruction calls to set a break point for ease of debug in C++
 
 #if ASYS_BREAKPOINT == 1
 	#define _ ([](asys::FunctionExecutable* asys_this, const asys::BreakPoint& breakPoint, asys::Context* context) {}, __FILE__, __FUNCTION__, __LINE__);
 #else
 	#define _ 
-	#define ASYS_DEBUG 0 // if there's no breakpoint to trigger, it has no meaning creating debug info.
 #endif
 
 namespace asys
