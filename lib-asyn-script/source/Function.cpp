@@ -45,7 +45,7 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 	m_stackStructure.declare(var);
 
 	return Do([=](asys::Executable* executable){
-		if (!executable->hasAsysValue(var))
+		if (executable->hasAsysValue(var))
 		{
 			executable->desstruct(var);
 		}
