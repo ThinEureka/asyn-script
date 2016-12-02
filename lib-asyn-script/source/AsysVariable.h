@@ -296,6 +296,7 @@ namespace asys
 	{
 	public:
 		VariableList(std::initializer_list<AsysVariable> varList);
+		VariableList(){}
 
 		size_t getLength() const
 		{
