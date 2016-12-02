@@ -343,7 +343,8 @@ namespace asys
 		BreakPoint& If(const AsysVariableT<V>& var)
 		{
 			return If_ex([=](Executable* executable){
-				return executable->getAsysValue(var)->toBool();
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue();
 			});
 		}
 
@@ -353,7 +354,8 @@ namespace asys
 		BreakPoint& If_not(const AsysVariableT<V>& var)
 		{
 			return If_ex([=](Executable* executable){
-				return !executable->getAsysValue(var)->toBool();
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return !pCastValue->getNativeValue();
 			});
 		}
 
@@ -420,7 +422,8 @@ namespace asys
 		BreakPoint& While(const AsysVariableT<V>& var)
 		{
 			return While_ex([=](Executable* executable){
-				return executable->getAsysValue(var)->toBool();
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return pCastValue->getNativeValue();
 			});
 		}
 
@@ -438,7 +441,8 @@ namespace asys
 		BreakPoint& While_not(const AsysVariableT<V>& var)
 		{
 			return While_ex([=](Executable* executable){
-				return !executable->getAsysValue(var)->toBool();
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				return !pCastValue->getNativeValue();
 			});
 		}
 
