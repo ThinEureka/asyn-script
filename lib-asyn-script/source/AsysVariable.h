@@ -13,6 +13,7 @@
 #include <string>
 #include "AsysValue.h"
 #include <functional>
+#include "AsysValueT.h"
 
 namespace asys
 {
@@ -79,7 +80,7 @@ namespace asys
 		AsysValue* getAsysValue() const { return m_pAsysValue; }
 
 	protected:
-		AsysValue* m_pAsysValue{nullptr};
+		AsysValue* m_pAsysValue{ nullptr };
 	};
 
 	class Executable;
@@ -191,105 +192,6 @@ namespace asys
 		friend class ValueList;
 		friend class Debugger;
 		friend class DebugInfo;
-	};
-
-	template<typename T>
-	class AsysVariableT : public AsysVariable
-	{
-	public:
-		AsysVariableT()
-		{
-
-		}
-
-		AsysVariableT(const char* name, int)
-		{
-			m_pName = name;
-		}
-
-		operator T() const
-		{
-			if (!m_pExecutable)
-			{
-				m_pExecutable = Executable::getMainExecutable();
-			}
-
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
-			return asysValue->getNativeValue();
-		}
-
-		T& r() const
-		{
-			if (!m_pExecutable)
-			{
-				m_pExecutable = Executable::getMainExecutable();
-			}
-
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
-			return asysValue->getNativeValueReference();
-		}
-
-		template<typename T1>
-		const AsysVariableT& operator = (const T1& var) const
-		{
-			r() = var;
-			return *this;
-		}
-
-	private:
-		virtual AsysVariable* clone() const override
-		{
-			auto newVar = new AsysVariableT<T>();
-			newVar->deepCopy(*this);
-
-			return newVar;
-		}
-
-		virtual size_t getAsysValueSize() const override
-		{
-			return sizeof(AsysValueT<T>);
-		}
-
-		virtual void construct(void* address) override
-		{
-			m_pAsysValue = new (address)AsysValueT<T>;
-			m_pAddress = address;
-		}
-
-		virtual void destruct() override
-		{
-			auto* pCastValue = dynamic_cast<AsysVariableT<T>*>(m_pAsysValue);
-			pCastValue->~AsysVariableT<T>();
-			m_pAsysValue = nullptr;
-		}
-
-		virtual void reset() override
-		{
-			if (m_pAsysValue)
-			{
-				destruct();
-			}
-
-			construct(m_pAddress);
-		}
-
-		virtual VariableViewer* createVariableViewer() const
-		{
-			auto viewer = new VariableViewerT<T>;
-			auto pCastValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
-			viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
-
-			return viewer;
-		}
-
-	private:
-		void* m_pAddress{};
-		mutable Executable* m_pExecutable{};
-
-		void setExecutable(Executable* executable)
-		{
-			m_pExecutable = executable;
-		}
 	};
 
 	class VariableList

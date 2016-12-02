@@ -50,7 +50,7 @@ namespace asys
 
 		}
 
-		asys::Executable::~Executable()
+		~Executable()
 		{
 			for (auto& deallocator : m_deallocators)
 			{

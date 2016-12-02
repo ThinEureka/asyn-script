@@ -12,7 +12,7 @@
 #include <vector>
 #include <list>
 #include <functional>
-#include "AsysVariable.h"
+#include "AsysVariableT.h"
 #include "Debug.h"
 
 namespace asys

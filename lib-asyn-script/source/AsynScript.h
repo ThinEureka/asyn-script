@@ -49,7 +49,7 @@
 #define CONTINUE __this_function->Continue()_;
 #define BREAK __this_function->Break()_;
 
-#define RETURN(...) __this_function->Return({__VA_ARGS__})_;
+#define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))_;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)_;
 
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)_;
