@@ -40,7 +40,7 @@ void asys::Executable::setOutput(const ValueList& vars, Executable* executable)
 		}
 		else
 		{
-			m_outputs[index] = executable->getAsysValue(var)->clone();
+			m_outputs[index++] = executable->getAsysValue(var)->clone();
 		}
 	});
 }

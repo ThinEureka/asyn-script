@@ -54,7 +54,7 @@ namespace asys
 	class AsysValueGeneralT : public AsysValue
 	{
 	public:
-		virtual bool toBool() const
+		virtual bool toBool() const override
 		{
 			assert(false); //assert("no default conversion to boolean value for custom class");
 			return false;
