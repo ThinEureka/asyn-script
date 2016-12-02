@@ -215,7 +215,7 @@ asys::BreakPoint& asys::FunctionCode::Return()
 asys::BreakPoint& asys::FunctionCode::Return(const ValueList& vars)
 {
 	return Return_ex([=](asys::Executable* executable){
-		executable->setOutput(vars, executable);
+		executable->setOutput(vars);
 	});
 }
 

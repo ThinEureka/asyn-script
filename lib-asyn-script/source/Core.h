@@ -106,11 +106,7 @@ namespace asys
 			setInput(vars, nullptr);
 		}
 
-		void setOutput(const ValueList& vars, Executable* executable);
-		void setOutput(const ValueList& vars)
-		{
-			setOutput(vars, nullptr);
-		}
+		void setOutput(const ValueList& vars);
 
 		void fetchOutput(const VariableList& vars, Executable* callee);
 

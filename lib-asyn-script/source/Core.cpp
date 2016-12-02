@@ -28,7 +28,7 @@ void asys::Executable::setInput(const ValueList& vars, Executable* executable)
 	});
 }
 
-void asys::Executable::setOutput(const ValueList& vars, Executable* executable)
+void asys::Executable::setOutput(const ValueList& vars)
 {
 	clearOutputs();
 	m_outputs.resize(vars.getLength());
@@ -40,7 +40,7 @@ void asys::Executable::setOutput(const ValueList& vars, Executable* executable)
 		}
 		else
 		{
-			m_outputs[index++] = executable->getAsysValue(var)->clone();
+			m_outputs[index++] = getAsysValue(var)->clone();
 		}
 	});
 }
