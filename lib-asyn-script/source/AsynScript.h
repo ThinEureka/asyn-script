@@ -55,7 +55,7 @@
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)_;
 #define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
 #define ASYS_PARAM(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(#name, 0)
-#define D_ASYS_PARAM(name) asys::AsysVariableT<type> name(#name, 0)
+#define D_ASYS_PARAM(type, name) asys::AsysVariableT<type> name
 
 //keywords used in embedded c++ codes
 #define asys_redo {asys_this->setReturnCodeFlow(asys::CodeFlow::redo_); return;}
