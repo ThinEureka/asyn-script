@@ -30,6 +30,7 @@ void asys::FunctionCode::clear()
 
 	m_instructions.clear();
 	m_stackStructure.clear();
+	m_bCompiled = false;
 }
 
 asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Executable*)>& express)
@@ -229,8 +230,12 @@ asys::BreakPoint& asys::FunctionCode::Return_ex(const std::function<void(asys::E
 
 asys::Executable* asys::FunctionCode::compile()
 {
-	assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
-	assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+	if (!m_bCompiled)
+	{
+		assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+		assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+		m_bCompiled = true;
+	}
 
 	return new FunctionExecutable(m_instructions, m_stackStructure);
 }
@@ -523,7 +528,10 @@ asys::CodeFlow asys::FunctionExecutable::processBreakpoint(const BreakPoint& bre
 	{
 		if (callback && m_retCodeFlow != CodeFlow::redo_)
 		{
-			m_pDebugInfo->setCurLocation(breakPoint.fileName(), breakPoint.functionName(), breakPoint.lineNumber());
+			if (breakPoint.lineNumber() != -1)
+			{
+				m_pDebugInfo->setCurLocation(breakPoint.fileName(), breakPoint.functionName(), breakPoint.lineNumber());
+			}
 		}
 
 		if (m_pDebugInfo->getDebugger())
