@@ -50,7 +50,7 @@ namespace asys
 
 		}
 
-		~Executable()
+		virtual ~Executable()
 		{
 			for (auto& deallocator : m_deallocators)
 			{

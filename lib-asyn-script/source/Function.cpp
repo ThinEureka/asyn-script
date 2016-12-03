@@ -258,9 +258,15 @@ asys::FunctionExecutable::~FunctionExecutable()
 
 	for (auto instruction : m_instructions)
 	{
+		auto callInstruction = dynamic_cast<CallInstruction*>(instruction);
+		if (callInstruction && callInstruction->executable)
+		{
+			callInstruction->executable->release();
+			callInstruction->executable = nullptr;
+		}
+
 		delete instruction;
 	}
-
 	m_instructions.clear();
 }
 
