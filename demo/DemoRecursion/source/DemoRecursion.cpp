@@ -13,7 +13,7 @@
 
 asys_reg_funs;
 
-asys::FunctionCode* sum(ASYS_PARAM(int, n))
+asys::FunctionCode* sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		ASYS_VAR(int, n_minus_one);
@@ -41,7 +41,7 @@ asys::FunctionCode* print()
 		ASYS_VAR(int, n);
 		ASSIGN(n, 0);
 
-		WHILE(true){
+		WHILE_CC(true){
 			ASYS_VAR(int, result);
 			CALL({ result }, { n }, sum());
 

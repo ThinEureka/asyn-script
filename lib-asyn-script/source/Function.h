@@ -359,62 +359,6 @@ namespace asys
 			});
 		}
 
-		template<typename V1, typename V2>
-		BreakPoint& If_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
-		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
-				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
-				return pCastValue1->getNativeValue() == pCastValue2->getNativeValue();
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& If_equal(const AsysVariableT<V>& var, const C& constValue)
-		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() == constValue;
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& If_equal(const C& constValue, const AsysVariableT<V>& var)
-		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() == constValue;
-			});
-		}
-
-		template<typename V1, typename V2>
-		BreakPoint& If_not_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
-		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
-				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
-				return pCastValue1->getNativeValue() != pCastValue2->getNativeValue();
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& If_not_equal(const AsysVariableT<V>& var, const C& constValue)
-		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() != constValue;
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& If_not_equal(const C& constValue, const AsysVariableT<V>& var)
-		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() != constValue;
-			});
-		}
-
 		BreakPoint& Else();
 		BreakPoint& End_if();
 
@@ -427,14 +371,6 @@ namespace asys
 			});
 		}
 
-		template<typename C>
-		BreakPoint& While(const C& var)
-		{
-			return While_ex([=](Executable* executable){
-				return var;
-			});
-		}
-
 		BreakPoint& While_ex(const std::function<bool(Executable*)>& express);
 
 		template<typename V>
@@ -443,70 +379,6 @@ namespace asys
 			return While_ex([=](Executable* executable){
 				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
 				return !pCastValue->getNativeValue();
-			});
-		}
-
-		template<typename C>
-		BreakPoint& While_not(const C& var)
-		{
-			return While_ex([=](Executable* executable){
-				return !var;
-			});
-		}
-
-		template<typename V1, typename V2>
-		BreakPoint& While_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
-		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
-				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
-				return pCastValue1->getNativeValue() == pCastValue2->getNativeValue();
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& While_equal(const AsysVariableT<V>& var, const C& constValue)
-		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() == constValue;
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& While_equal(const C& constValue, const AsysVariableT<V>& var)
-		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() == constValue;
-			});
-		}
-
-		template<typename V1, typename V2>
-		BreakPoint& While_not_equal(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
-		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue1 = dynamic_cast<AsysValueT<V1>*>(executable->getAsysValue(var1));
-				auto pCastValue2 = dynamic_cast<AsysValueT<V2>*>(executable->getAsysValue(var2));
-				return pCastValue1->getNativeValue() != pCastValue2->getNativeValue();
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& While_not_equal(const AsysVariableT<V>& var, const C& constValue)
-		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() != constValue;
-			});
-		}
-
-		template<typename V, typename C>
-		BreakPoint& While_not_equal(const C& constValue, const AsysVariableT<V>& var)
-		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
-				return pCastValue->getNativeValue() != constValue;
 			});
 		}
 

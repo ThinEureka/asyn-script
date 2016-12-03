@@ -27,23 +27,24 @@
 #define CALL(...)  __this_function->Call(__VA_ARGS__)_;
 
 #define IF(var) __this_function->If(var)_;
+//cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
+#define IF_CC(var) __this_function->If_ex([=](asys::Executable* asys_this){ return var; })_;
+
 //asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
 #define IF_EX(...) __this_function->If_ex(__VA_ARGS__)_;
 #define IF_NOT(condition) __this_function->If_not(condition)_;
-#define IF_EQUAL(var1, var2) __this_function->If_equal(var1, var2)_;
-#define IF_NOT_EQUAL(var1, var2) __this_function->If_not_equal(var1, var2)_;
 
 #define ELSE __this_function->Else()_;
 #define END_IF __this_function->End_if()_;
 
 #define WHILE(var) __this_function->While(var)_;
 
+//cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
+#define WHILE_CC(var) __this_function->While_ex([=](asys::Executable* asys_this){ return var; })_;
+
 //asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
 #define WHILE_EX(express) __this_function->While_ex(express)_;
-
 #define WHILE_NOT(var) __this_function->While_not(var)_;
-#define WHILE_EQUAL(var1, var2)  __this_function->While_equal(var)_;
-#define WHILE_NOT_EQUAL(var1, var2) __this_function->While_not_equal(var1, var2)_;
 
 #define END_WHILE __this_function->End_while()_;
 #define CONTINUE __this_function->Continue()_;
@@ -54,8 +55,8 @@
 
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)_;
 #define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
-#define ASYS_PARAM(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(#name, 0)
-#define D_ASYS_PARAM(type, name) asys::AsysVariableT<type> name
+#define ASYS_P(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(#name, 0)
+#define D_ASYS_P(type, name) asys::AsysVariableT<type> name
 
 //keywords used in embedded c++ codes
 #define asys_redo {asys_this->setReturnCodeFlow(asys::CodeFlow::redo_); return;}

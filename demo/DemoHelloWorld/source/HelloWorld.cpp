@@ -11,13 +11,13 @@
 
 asys_reg_funs;
 
-asys::FunctionCode* sum(ASYS_PARAM(int, n))
+asys::FunctionCode* sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		ASYS_VAR(int, sum);
 		ASYS_VAR(int, i);
 
-		WHILE_NOT_EQUAL(i, n){
+		WHILE_CC(i <= n){
 			_CC{
 				sum = sum + i;
 				i = i + 1;
@@ -28,12 +28,12 @@ asys::FunctionCode* sum(ASYS_PARAM(int, n))
 	}END_FUN;
 }
 
-asys::FunctionCode* sum2(ASYS_PARAM(int, n))
+asys::FunctionCode* sum2(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		_CC{
 			int v_sum = 0;
-			for (int i = 0; i != n; ++i)
+			for (int i = 0; i <= n; ++i)
 			{
 				v_sum += i;
 			}
@@ -42,7 +42,7 @@ asys::FunctionCode* sum2(ASYS_PARAM(int, n))
 	}END_FUN;
 }
 
-asys::FunctionCode* print_sum(ASYS_PARAM(int, n))
+asys::FunctionCode* print_sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		ASYS_VAR(int, index);
@@ -50,7 +50,7 @@ asys::FunctionCode* print_sum(ASYS_PARAM(int, n))
 		ASYS_VAR(double, sum_double);
 		ASYS_VAR(short, sum_short);
 
-		WHILE_NOT_EQUAL(index, n){
+		WHILE_CC(index <= n){
 			CALL({ v_sum }, { index }, sum());
 
 			_CC{

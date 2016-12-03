@@ -31,7 +31,7 @@ public:
 
 private:
 	//ret success user_id access_token
-	asys::FunctionCode* platformLogin(ASYS_PARAM(std::string, device_id))
+	asys::FunctionCode* platformLogin(ASYS_P(std::string, device_id))
 	{
 		BEGIN_FUN(device_id){
 			ASYS_VAR(int, index);
@@ -61,7 +61,7 @@ private:
 	}
 
 	//ret success session_id gameserver_ip
-	asys::FunctionCode* userServerLogin(ASYS_PARAM(std::string, user_id), ASYS_PARAM(std::string, access_token))
+	asys::FunctionCode* userServerLogin(ASYS_P(std::string, user_id), ASYS_P(std::string, access_token))
 	{
 		BEGIN_FUN(user_id, access_token){
 			ASYS_VAR(int, index);
@@ -89,7 +89,7 @@ private:
 	}
 
 	//ret success player_info
-	asys::FunctionCode* gameServerLogin(ASYS_PARAM(std::string, user_id), ASYS_PARAM(std::string, session_id), ASYS_PARAM(std::string, gameserver_ip))
+	asys::FunctionCode* gameServerLogin(ASYS_P(std::string, user_id), ASYS_P(std::string, session_id), ASYS_P(std::string, gameserver_ip))
 	{
 		BEGIN_FUN(user_id, session_id, gameserver_ip){
 
@@ -118,7 +118,7 @@ private:
 	}
 
 	//ret int success std::string player_info
-	asys::FunctionCode* login(ASYS_PARAM(std::string, device_id))
+	asys::FunctionCode* login(ASYS_P(std::string, device_id))
 	{
 		BEGIN_FUN(device_id){
 			ASYS_VAR(bool, game_end);
