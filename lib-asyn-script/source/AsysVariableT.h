@@ -31,23 +31,22 @@ namespace asys
 
 		operator T() const
 		{
-			if (!m_pExecutable)
-			{
-				m_pExecutable = Executable::getMainExecutable();
-			}
-
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
-			return asysValue->getNativeValue();
+			return r();
 		}
 
 		T& r() const
 		{
-			if (!m_pExecutable)
+			if (!m_pAsysValue)
 			{
-				m_pExecutable = Executable::getMainExecutable();
+				if (!m_pExecutable)
+				{
+					m_pExecutable = Executable::getMainExecutable();
+				}
+
+				m_pAsysValue = m_pExecutable->getAsysValue(*this);
 			}
 
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pExecutable->getAsysValue(*this));
+			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
 			return asysValue->getNativeValueReference();
 		}
 

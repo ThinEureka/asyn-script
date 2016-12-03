@@ -183,7 +183,7 @@ namespace asys
 	protected:
 		size_t m_memoryOffset{};
 		const char* m_pName{};
-		AsysValue* m_pAsysValue{};
+		mutable AsysValue* m_pAsysValue{};
 
 	private:
 		friend class Stack;
