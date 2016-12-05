@@ -39,6 +39,7 @@
 	#define _d_no_callback (nullptr, __FILE__, __FUNCTION__, __LINE__);
 #else
 	#define _ 
+	#define _d_no_callback
 #endif
 
 namespace asys
