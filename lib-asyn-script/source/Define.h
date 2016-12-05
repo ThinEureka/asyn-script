@@ -14,9 +14,9 @@
 
 #ifndef ASYS_BREAKPOINT
 	#ifdef _DEBUG
-#define ASYS_BREAKPOINT 1
+		#define ASYS_BREAKPOINT 1
 	#else
-#define ASYS_BREAKPOINT 0
+		#define ASYS_BREAKPOINT 0
 	#endif // _DEBUG
 #endif // !ASYS_BREAK_POINT
 
@@ -36,6 +36,7 @@
 
 #if ASYS_BREAKPOINT == 1
 	#define _ ([](asys::FunctionExecutable* asys_this, const asys::BreakPoint& breakPoint, asys::Context* context) {}, __FILE__, __FUNCTION__, __LINE__);
+	#define _d_no_callback (nullptr, __FILE__, __FUNCTION__, __LINE__);
 #else
 	#define _ 
 #endif

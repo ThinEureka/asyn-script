@@ -30,7 +30,6 @@ void asys::FunctionCode::clear()
 
 	m_instructions.clear();
 	m_stackStructure.clear();
-	m_bCompiled = false;
 }
 
 asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Executable*)>& express)
@@ -230,12 +229,8 @@ asys::BreakPoint& asys::FunctionCode::Return_ex(const std::function<void(asys::E
 
 asys::Executable* asys::FunctionCode::compile()
 {
-	if (!m_bCompiled)
-	{
-		assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
-		assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
-		m_bCompiled = true;
-	}
+	assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+	assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
 
 	return new FunctionExecutable(m_instructions, m_stackStructure);
 }
@@ -244,9 +239,28 @@ asys::FunctionExecutable::FunctionExecutable(const std::vector<Instruction*> ins
 	: Executable(stackStructure)
 {
 	m_instructions.resize(instructions.size());
-	for (int i = 0; i < static_cast<int>(instructions.size()); ++i)
+	BreakPoint* pLastValidBreakPoint = nullptr;
+	for (size_t i = 0; i < instructions.size(); ++i)
 	{
 		m_instructions[i] = instructions[i]->clone();
+
+#if ASYS_DEBUG == 1
+		if (!pLastValidBreakPoint)
+		{
+			pLastValidBreakPoint = &m_instructions[i]->breakPoint();
+		}
+		else
+		{
+			if (m_instructions[i]->breakPoint().lineNumber() == -1)
+			{
+				m_instructions[i]->breakPoint()(nullptr, pLastValidBreakPoint->fileName(), pLastValidBreakPoint->functionName(), pLastValidBreakPoint->lineNumber());
+			}
+			else
+			{
+				pLastValidBreakPoint = &m_instructions[i]->breakPoint();
+			}
+		}
+#endif
 	}
 
 #if ASYS_DEBUG == 1

@@ -28,7 +28,7 @@
 
 #define IF(var) __this_function->If(var)_;
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
-#define IF_CC(var) __this_function->If_ex([=](asys::Executable* asys_this){ return var; })_;
+#define IF_CC(var) __this_function->If_ex([=](asys::Executable* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
 #define IF_EX(...) __this_function->If_ex(__VA_ARGS__)_;
@@ -40,7 +40,7 @@
 #define WHILE(var) __this_function->While(var)_;
 
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
-#define WHILE_CC(var) __this_function->While_ex([=](asys::Executable* asys_this){ return var; })_;
+#define WHILE_CC(var) __this_function->While_ex([=](asys::Executable* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
 #define WHILE_EX(express) __this_function->While_ex(express)_;
@@ -69,7 +69,3 @@
 //used to register asyn functions.
 #define asys_reg_funs asys::FunctionMap m_asynFunctions;
 #define asys_reg_funs_static_impl(class_name) asys::FunctionMap class_name::m_asynFunctions;
-
-// const value
-#define asys_null ""
-

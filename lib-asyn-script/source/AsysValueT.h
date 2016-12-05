@@ -9,6 +9,8 @@
 #pragma once
 
 #include "AsysValue.h"
+#include <assert.h>
+#include <string>
 
 namespace asys
 {

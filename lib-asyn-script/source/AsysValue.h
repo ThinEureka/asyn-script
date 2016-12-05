@@ -8,15 +8,8 @@
 
 #pragma once
 
-#include <assert.h>
-#include <initializer_list>
-#include <vector>
-#include <string>
-
 namespace asys
 {
-	class Executable;
-
 	class AsysValue
 	{
 	public:

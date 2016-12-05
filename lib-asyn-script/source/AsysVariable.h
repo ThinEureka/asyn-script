@@ -7,10 +7,10 @@
  */
 
 #pragma once
+
 #include <assert.h>
 #include <initializer_list>
 #include <vector>
-#include <string>
 #include "AsysValue.h"
 #include <functional>
 #include "AsysValueT.h"
@@ -197,7 +197,11 @@ namespace asys
 	class VariableList
 	{
 	public:
-		VariableList(std::initializer_list<AsysVariable> varList);
+		VariableList(std::initializer_list<AsysVariable> varList)
+		{
+			m_variables.insert(m_variables.begin(), varList.begin(), varList.end());
+		}
+
 		VariableList(){}
 
 		size_t getLength() const

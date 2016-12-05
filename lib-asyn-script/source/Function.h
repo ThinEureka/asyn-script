@@ -440,7 +440,6 @@ namespace asys
 		std::string m_fileNameForCurInstruction;
 		int m_lineNumerForCurInstruction{ -1 };
 		std::string m_functionNameForCurInstruction;
-		bool m_bCompiled{};
 	};
 
 	class FunctionExecutable : public Executable
