@@ -162,7 +162,13 @@ namespace asys
 	template <typename T>
 	class AsysValueT : public AsysValueGeneralT<T>
 	{
-
+	public:
+		virtual AsysValue* clone() const override
+		{
+			auto newValue = new AsysValueT<T>();
+			newValue->m_nativeValue = this->m_nativeValue;
+			return newValue;
+		}
 	};
 
 	template<>
