@@ -140,7 +140,7 @@ namespace asys
 			this->m_nativeValue = pCastValue->m_nativeValue;
 		}
 
-		const T& getNativeValue()
+		const T& getNativeValue() const
 		{
 			return this->m_nativeValue;
 		}
