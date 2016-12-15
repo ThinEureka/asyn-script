@@ -289,9 +289,9 @@ asys::FunctionExecutable::~FunctionExecutable()
 	m_instructions.clear();
 }
 
-asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
+asys::CodeFlow asys::FunctionExecutable::run()
 {
-	if (isInMainThread(context))
+	if (isInMainThread(m_context))
 	{
 		Executable::m_pMainExecutable = this;
 	}
@@ -305,7 +305,7 @@ asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
 
 		auto instruction = m_instructions[m_nCurIp];
 #if ASYS_BREAKPOINT == 1
-		auto codeFlow = processBreakpoint(instruction->breakPoint(), context);
+		auto codeFlow = processBreakpoint(instruction->breakPoint());
 		if (codeFlow == CodeFlow::redo_)
 		{
 			return m_retCodeFlow = CodeFlow::redo_;
@@ -316,37 +316,37 @@ asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
 		switch (instruction->instructionType())
 		{
 		case InstructionType::type_null:
-			m_nCurIp = processNullInstruction(m_nCurIp, context);
+			m_nCurIp = processNullInstruction(m_nCurIp);
 			break;
 		case InstructionType::type_do:
-			m_nCurIp = processDoInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstruction*>(instruction), context);
+			m_nCurIp = processDoInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<DoInstruction*>(instruction));
 			break;
 		case InstructionType::type_call:
-			m_nCurIp = processCallInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstruction*>(instruction), context);
+			m_nCurIp = processCallInstruction(m_retCodeFlow, m_nCurIp, dynamic_cast<CallInstruction*>(instruction));
 			break;
 		case InstructionType::type_if:
-			m_nCurIp = processIfInstruction(m_nCurIp, dynamic_cast<IfInstruction*>(instruction), context);
+			m_nCurIp = processIfInstruction(m_nCurIp, dynamic_cast<IfInstruction*>(instruction));
 			break;
 		case InstructionType::type_else:
-			m_nCurIp = processElseInstruction(m_nCurIp, dynamic_cast<ElseInstruction*>(instruction), context);
+			m_nCurIp = processElseInstruction(m_nCurIp, dynamic_cast<ElseInstruction*>(instruction));
 			break;
 		case InstructionType::type_endif:
-			m_nCurIp = processEndIfInstruction(m_nCurIp, dynamic_cast<EndIfInstruction*>(instruction), context);
+			m_nCurIp = processEndIfInstruction(m_nCurIp, dynamic_cast<EndIfInstruction*>(instruction));
 			break;
 		case InstructionType::type_while:
-			m_nCurIp = processWhileInstruction(m_nCurIp, dynamic_cast<WhileInstruction*>(instruction), context);
+			m_nCurIp = processWhileInstruction(m_nCurIp, dynamic_cast<WhileInstruction*>(instruction));
 			break;
 		case InstructionType::type_endwhile:
-			m_nCurIp = processEndWhileInstruction(m_nCurIp, dynamic_cast<EndWhileInstruction*>(instruction), context);
+			m_nCurIp = processEndWhileInstruction(m_nCurIp, dynamic_cast<EndWhileInstruction*>(instruction));
 			break;
 		case InstructionType::type_continue:
-			m_nCurIp = processContinueInstruction(m_nCurIp, dynamic_cast<ContinueInstruction*>(instruction), context);
+			m_nCurIp = processContinueInstruction(m_nCurIp, dynamic_cast<ContinueInstruction*>(instruction));
 			break;
 		case InstructionType::type_break:
-			m_nCurIp = processBreakInstruction(m_nCurIp, dynamic_cast<BreakInstruction*>(instruction), context);
+			m_nCurIp = processBreakInstruction(m_nCurIp, dynamic_cast<BreakInstruction*>(instruction));
 			break;
 		case InstructionType::type_return:
-			m_nCurIp = processReturnInstruction(m_nCurIp, dynamic_cast<ReturnInstruction*>(instruction), context);
+			m_nCurIp = processReturnInstruction(m_nCurIp, dynamic_cast<ReturnInstruction*>(instruction));
 			break;
 		default:
 			++m_nCurIp;
@@ -359,7 +359,7 @@ asys::CodeFlow asys::FunctionExecutable::run(Context* context /*= nullptr*/)
 		}
 	}
 
-	if (isInMainThread(context))
+	if (isInMainThread(m_context))
 	{
 		Executable::m_pMainExecutable = nullptr;
 	}
@@ -413,7 +413,7 @@ void asys::FunctionExecutable::detachDebugger()
 	}
 }
 
-int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction, Context* context)
+int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction)
 {
 	if (!expressInstruction->express)
 	{
@@ -462,7 +462,7 @@ int asys::FunctionExecutable::processDoInstruction(CodeFlow& retCode, int curIp,
 	return curIp + 1;
 }
 
-int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction, Context* context)
+int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction)
 {
 	retCode = CodeFlow::next_;
 
@@ -477,6 +477,7 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		if (!callInstruction->code) return curIp + 1;
 
 		callInstruction->executable = callInstruction->code->compile();
+		callInstruction->executable->setContext(m_context);
 		callInstruction->executable->retain();
 
 #if ASYS_DEBUG == 1
@@ -496,7 +497,7 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		}
 	}
 
-	retCode = callInstruction->executable->run(context);
+	retCode = callInstruction->executable->run();
 
 	if (retCode == CodeFlow::redo_) return curIp;
 
@@ -513,7 +514,7 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 		callInstruction->code = nullptr;
 	}
 
-	if (isInMainThread(context))
+	if (isInMainThread(m_context))
 	{
 		Executable::m_pMainExecutable = this;
 	}
@@ -521,7 +522,7 @@ int asys::FunctionExecutable::processCallInstruction(CodeFlow& retCode, int curI
 	return curIp + 1;
 }
 
-int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruction* retInstruction, Context* context)
+int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruction* retInstruction)
 {
 	if (retInstruction->returnCallback)
 	{
@@ -530,12 +531,12 @@ int asys::FunctionExecutable::processReturnInstruction(int curIp, ReturnInstruct
 	return static_cast<int>(m_instructions.size());
 }
 
-asys::CodeFlow asys::FunctionExecutable::processBreakpoint(const BreakPoint& breakPoint, Context* context)
+asys::CodeFlow asys::FunctionExecutable::processBreakpoint(const BreakPoint& breakPoint)
 {
 	auto callback = breakPoint.callback();
 	if (callback && m_retCodeFlow != CodeFlow::redo_)
 	{
-		callback(this, breakPoint, context);
+		callback(this, breakPoint, m_context);
 	}
 
 	if (m_pDebugInfo)
@@ -550,7 +551,7 @@ asys::CodeFlow asys::FunctionExecutable::processBreakpoint(const BreakPoint& bre
 
 		if (m_pDebugInfo->getDebugger())
 		{
-			return m_pDebugInfo->getDebugger()->onBreakPoint(this, breakPoint, context);
+			return m_pDebugInfo->getDebugger()->onBreakPoint(this, breakPoint, m_context);
 		}
 	}
 

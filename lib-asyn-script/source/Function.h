@@ -451,18 +451,18 @@ namespace asys
 		FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure);
 		virtual ~FunctionExecutable();
 
-		CodeFlow run(Context* context = nullptr) override;
+		CodeFlow run() override;
 
 		void attachDebugger(Debugger* debugger, DebugInfo* parentDebugInfo = nullptr);
 		void detachDebugger();
 
 	private:
-		int processNullInstruction(int curIp, Context* context) {return curIp + 1;}
+		int processNullInstruction(int curIp) {return curIp + 1;}
 
-		int processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction, Context* context);
-		int processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction, Context* context);
+		int processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction);
+		int processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction);
 
-		int processIfInstruction(int curIp, IfInstruction* ifInstruction, Context* context)
+		int processIfInstruction(int curIp, IfInstruction* ifInstruction)
 		{
 			bool condition = ifInstruction->express(this);
 			if (condition) return curIp + 1;
@@ -472,10 +472,10 @@ namespace asys
 			return ifInstruction->endIfIp + 1;
 		}
 
-		int processElseInstruction(int curIp, ElseInstruction* elseInstruction, Context* context) { return elseInstruction->endIfIp + 1; }
-		int processEndIfInstruction(int curIp, EndIfInstruction* endIfInstruction, Context* context) { return curIp + 1; }
+		int processElseInstruction(int curIp, ElseInstruction* elseInstruction) { return elseInstruction->endIfIp + 1; }
+		int processEndIfInstruction(int curIp, EndIfInstruction* endIfInstruction) { return curIp + 1; }
 
-		int processWhileInstruction(int curIp, WhileInstruction* whileInstruction, Context* context)
+		int processWhileInstruction(int curIp, WhileInstruction* whileInstruction)
 		{
 			bool condition = whileInstruction->express(this);
 			if (condition) return curIp + 1;
@@ -483,18 +483,18 @@ namespace asys
 			return whileInstruction->endWhileIp + 1;
 		}
 
-		int processEndWhileInstruction(int curIp, EndWhileInstruction* endWhileInstruction, Context* context) { return endWhileInstruction->whileIp; }
-		int processContinueInstruction(int curIp, ContinueInstruction* continueInstruction, Context* context) { return continueInstruction->whileIp; }
-		int processBreakInstruction(int curIp, BreakInstruction* breakInstruction, Context* context)
+		int processEndWhileInstruction(int curIp, EndWhileInstruction* endWhileInstruction) { return endWhileInstruction->whileIp; }
+		int processContinueInstruction(int curIp, ContinueInstruction* continueInstruction) { return continueInstruction->whileIp; }
+		int processBreakInstruction(int curIp, BreakInstruction* breakInstruction)
 		{
 			auto whileIp = breakInstruction->whileIp;
 			auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[whileIp]);
 			return whileInstruction->endWhileIp + 1;
 		}
 
-		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction, Context* context);
+		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction);
 
-		CodeFlow processBreakpoint(const BreakPoint& breakpoint, Context* context);
+		CodeFlow processBreakpoint(const BreakPoint& breakpoint);
 
 	private:
 		std::vector<Instruction*> m_instructions;

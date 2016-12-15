@@ -62,7 +62,7 @@ namespace asys
 		}
 
 	public:
-		virtual CodeFlow run(Context* context = nullptr) = 0;
+		virtual CodeFlow run() = 0;
 
 		void release()
 		{
@@ -144,6 +144,9 @@ namespace asys
 			m_outputs.clear();
 		}
 
+		void setContext(Context* context) { m_context = context; }
+		const Context* getContext() const { return m_context; }
+
 	protected:
 		bool isInMainThread(Context* context)
 		{
@@ -157,6 +160,7 @@ namespace asys
 		std::vector<AsysValue*> m_inputs;
 		std::vector<AsysValue*> m_outputs;
 		Stack m_stack;
+		Context* m_context{};
 
 	protected:
 		static Executable* m_pMainExecutable;
