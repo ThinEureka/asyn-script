@@ -59,10 +59,12 @@ namespace asys
 		const char* functionName() const { return m_functionName; }
 		int lineNumber() const { return m_lineNumber; }
 
-		void operator ()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback,
+		BreakPoint& operator ()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback,
 			const char* fileName = nullptr,
 			const char* functionName = nullptr,
 			int lineNumber = -1);
+
+		BreakPoint& operator >>= (std::initializer_list<AsysVariable> varList);
 
 		const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback() const { return m_callback; }
 
@@ -135,6 +137,11 @@ namespace asys
 			auto instruction = new CallInstruction(outputCallback, inputCallback, code, getCodeCallback);
 			instruction->setBreakPoint(breakPoint());
 			return instruction;
+		}
+
+		void setOutputCallback(const std::function<void(Executable* caller, Executable* callee)> outputCallback)
+		{
+			this->outputCallback = outputCallback;
 		}
 
 	public:
@@ -336,8 +343,12 @@ namespace asys
 		}
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
-		BreakPoint& Call(const VariableList& outputs, const ValueList& inputs, Code* code);
-		BreakPoint& Call(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code);
+		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, Code* code);
+		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code);
+
+
+		BreakPoint& Call(const AsysVariable& code, const ValueList& inputs);
+		BreakPoint& Call(Code* code, const ValueList& inputs);
 
 		template<typename V>
 		BreakPoint& If(const AsysVariableT<V>& var)

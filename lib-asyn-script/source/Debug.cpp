@@ -31,9 +31,6 @@ void asys::DebugInfo::initialize(FunctionExecutable* executable)
 		{
 			m_variables[viewer->getName()] = viewer;
 		}
-		// the variables will be constructed before its usage when debugging, this will never make any 
-		//difference on the result, however if you want the states to be exactly the same, uncomment the following
-		//statement.
-		//m_pExecutable->m_stack.destruct(*var);
+		m_pExecutable->m_stack.destruct(*var);
 	});
 }

@@ -27,7 +27,7 @@ asys::FunctionCode* sum(ASYS_P(int, n))
 		}CC_;
 
 		ASYS_VAR(int, sub_result);
-		CALL({ sub_result }, { n_minus_one }, sum());
+		CALL(sum(), n_minus_one) >>= {sub_result};
 
 		_CC{
 			asys_return(n + sub_result);
@@ -43,7 +43,7 @@ asys::FunctionCode* print()
 
 		WHILE_CC(true){
 			ASYS_VAR(int, result);
-			CALL({ result }, { n }, sum());
+			CALL(sum(), n) >>= {result};
 
 			_CC{
 				std::cout << "s(" << n << ") = " << result << std::endl;

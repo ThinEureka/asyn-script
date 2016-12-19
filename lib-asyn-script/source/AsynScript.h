@@ -24,7 +24,7 @@
 #define CC_ })_;
 
 //asys::FunctionCode::Call(outputs, inputs, code)
-#define CALL(...)  __this_function->Call(__VA_ARGS__)_;
+#define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})_
 
 #define IF(var) __this_function->If(var)_;
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.

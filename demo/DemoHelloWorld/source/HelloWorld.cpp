@@ -51,7 +51,7 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 		ASYS_VAR(short, sum_short);
 
 		WHILE_CC(index <= n){
-			CALL({ sum_int }, { index }, sum());
+			CALL(sum(), index) >>= {sum_int};
 
 			_CC{
 				sum_double = sum_int;
@@ -59,7 +59,7 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 			}CC_;
 
 			ASYS_VAR(int, sum2_int);
-			CALL({ sum2_int }, { index }, sum2());
+			CALL(sum2(), index) >>= {sum2_int};
 
 			_CC{
 				sum_short = static_cast<short>(sum_double);

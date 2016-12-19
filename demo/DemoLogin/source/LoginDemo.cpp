@@ -127,7 +127,7 @@ private:
 				ASYS_VAR(std::string, user_id);
 				ASYS_VAR(std::string, access_token);
 
-				CALL({ success, user_id, access_token }, { device_id }, platformLogin());
+				CALL(platformLogin(), device_id) >>= {success, user_id, access_token};
 
 				IF_NOT(success){
 					CONTINUE;
@@ -135,14 +135,14 @@ private:
 
 				ASYS_VAR(std::string, session_id);
 				ASYS_VAR(std::string, gameserver_ip);
-				CALL({ success, session_id, gameserver_ip }, { user_id, access_token }, userServerLogin());
+				CALL(userServerLogin(), user_id, access_token) >>= { success, session_id, gameserver_ip };
 
 				IF_NOT(success){
 					CONTINUE;
 				}END_IF;
 
 				ASYS_VAR(std::string, player_info);
-				CALL({ success, player_info }, { user_id, session_id, gameserver_ip }, gameServerLogin());
+				CALL(gameServerLogin(), user_id, session_id, gameserver_ip) >>= { success, player_info };
 
 				IF_NOT(success){
 					CONTINUE;

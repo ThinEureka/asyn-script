@@ -54,7 +54,29 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const ValueList& inputs, Code* code)
+asys::BreakPoint& asys::FunctionCode::Call(Code* code, const ValueList& inputs)
+{
+	return Call_ex(nullptr,
+		[=](Executable* caller, Executable* callee)->void{
+		callee->setInput(inputs, caller);
+	},
+		code,
+		nullptr);
+}
+
+asys::BreakPoint& asys::FunctionCode::Call(const AsysVariable& code, const ValueList& inputs)
+{
+	return Call_ex(nullptr,
+		[=](Executable* caller, Executable* callee)->void{
+		callee->setInput(inputs, caller);
+	},
+		nullptr,
+		[=](Executable* caller)->Code*{
+		return static_cast<Code*>(caller->getAsysValue(code)->toVoidPointer());
+	});
+}
+
+asys::BreakPoint& asys::FunctionCode::Call_ex(const VariableList& outputs, const ValueList& inputs, Code* code)
 {
 	return Call_ex([=](Executable* caller, Executable* callee)->void{
 		caller->fetchOutput(outputs, callee);
@@ -66,7 +88,7 @@ asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const Va
 		nullptr);
 }
 
-asys::BreakPoint& asys::FunctionCode::Call(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code)
+asys::BreakPoint& asys::FunctionCode::Call_ex(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code)
 {
 	return Call_ex([=](Executable* caller, Executable* callee)->void{
 		caller->fetchOutput(outputs, callee);
@@ -558,10 +580,26 @@ asys::CodeFlow asys::FunctionExecutable::processBreakpoint(const BreakPoint& bre
 	return CodeFlow::next_;
 }
 
-void asys::BreakPoint::operator()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback, const char* fileName /*= nullptr*/, const char* functionName /*= nullptr*/, int lineNumber /*= -1*/)
+asys::BreakPoint& asys::BreakPoint::operator()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback, const char* fileName /*= nullptr*/, const char* functionName /*= nullptr*/, int lineNumber /*= -1*/)
 {
 	m_callback = callback;
 	m_fileName = fileName;
 	m_functionName = functionName;
 	m_lineNumber = lineNumber;
+
+	return *this;
+}
+
+asys::BreakPoint& asys::BreakPoint::operator >>= (std::initializer_list<AsysVariable> initList)
+{
+	CallInstruction* callInstruction = dynamic_cast<CallInstruction*>(m_instruction);
+	if (callInstruction)
+	{
+		VariableList varList{ initList };
+		callInstruction->setOutputCallback([=](Executable* caller, Executable* callee)->void{
+			caller->fetchOutput(varList, callee);
+		});
+	}
+
+	return *this;
 }
