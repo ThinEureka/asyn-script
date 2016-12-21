@@ -4,6 +4,7 @@
  * 
  * 
  * \author cs (04nycs@gmail.com)
+ * https://github.com/ThinEureka/asyn-script
  */
 
 #pragma once
@@ -38,12 +39,12 @@ namespace asys
 		{
 			if (!m_pAsysValue)
 			{
-				if (!m_pExecutable)
+				if (!m_pMachine)
 				{
-					m_pExecutable = Executable::getMainExecutable();
+					m_pMachine = Machine::getCurMainThreadMachine();
 				}
 
-				m_pAsysValue = m_pExecutable->getAsysValue(*this);
+				m_pAsysValue = m_pMachine->getAsysValue(*this);
 			}
 
 			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
@@ -94,22 +95,22 @@ namespace asys
 			construct(m_pAddress);
 		}
 
-		virtual VariableViewer* createVariableViewer() const
-		{
-			auto viewer = new VariableViewerT<T>;
-			auto pCastValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
-			viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
+		//virtual VariableViewer* createVariableViewer() const
+		//{
+		//	auto viewer = new VariableViewerT<T>;
+		//	auto pCastValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
+		//	viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
 
-			return viewer;
-		}
+		//	return viewer;
+		//}
 
 	private:
 		void* m_pAddress{};
-		mutable Executable* m_pExecutable{};
+		mutable Machine* m_pMachine{};
 
-		void setExecutable(Executable* executable)
+		void setMachine(Machine* machine)
 		{
-			m_pExecutable = executable;
+			m_pMachine = machine;
 		}
 	};
 }

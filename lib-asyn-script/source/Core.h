@@ -5,6 +5,7 @@
  * 
  * 
  * \author cs 04nycs@gmail.com
+ * https://github.com/ThinEureka/asyn-script
  */
 
 #pragma once
@@ -20,22 +21,22 @@ namespace asys
 {
 	class Executable;
 
-	class Context
+	/*class Context
 	{
 	public:
-		virtual int threadId() = 0;
-	};
+	virtual int threadId() = 0;
+	};*/
 
-	class Code
+	/*class Code
 	{
 	public:
 		virtual Executable* compile() = 0;
 
 	protected:
 		StackStructure m_stackStructure;
-	};
+	};*/
 
-	class Executable
+	/*class Executable
 	{
 	public:
 		static Executable* getMainExecutable()
@@ -168,6 +169,6 @@ namespace asys
 	private:
 		friend class Debugger;
 		friend class DebugInfo;
-	};
+	};*/
 	
 }

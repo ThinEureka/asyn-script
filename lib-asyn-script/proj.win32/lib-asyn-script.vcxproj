@@ -76,6 +76,8 @@
     <ClCompile Include="..\source\Core.cpp" />
     <ClCompile Include="..\source\Debug.cpp" />
     <ClCompile Include="..\source\Function.cpp" />
+    <ClCompile Include="..\source\Instructions.cpp" />
+    <ClCompile Include="..\source\Machine.cpp" />
     <ClCompile Include="..\source\Stack.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +90,8 @@
     <ClInclude Include="..\source\Define.h" />
     <ClInclude Include="..\source\Function.h" />
     <ClInclude Include="..\source\AsysVariable.h" />
+    <ClInclude Include="..\source\Instructions.h" />
+    <ClInclude Include="..\source\Machine.h" />
     <ClInclude Include="..\source\Stack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

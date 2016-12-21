@@ -4,6 +4,7 @@
  *
  *
  * \author cs (04nycs@gmail.com)
+ * https://github.com/ThinEureka/asyn-script
  */
 
 #pragma once
@@ -186,12 +187,10 @@ namespace asys
 		mutable AsysValue* m_pAsysValue{};
 
 	private:
-		friend class Stack;
-		friend class StackStructure;
-		friend class Executable;
+		friend class StackFrame;
+		friend class Machine;
 		friend class ValueList;
-		friend class Debugger;
-		friend class DebugInfo;
+		friend class FunctionRuntime;
 	};
 
 	class VariableList
@@ -209,9 +208,9 @@ namespace asys
 			return m_variables.size();
 		}
 
-		const AsysVariable* getAsysVariable(int index) const
+		const AsysVariable* getAsysVariable(size_t index) const
 		{
-			if (index < 0 || index >= static_cast<int>(m_variables.size()))
+			if (index >= static_cast<int>(m_variables.size()))
 			{
 				return nullptr;
 			}
@@ -227,6 +226,7 @@ namespace asys
 	{
 	public:
 		friend class Executable;
+		friend class Machine;
 
 	public:
 		struct InnerValue
@@ -278,6 +278,16 @@ namespace asys
 					callback(val.isConst, val.asysVarible, val.asysConst);
 				}
 			}
+		}
+
+		const InnerValue* getInnerValueByIndex(size_t index) const
+		{
+			if (index >= static_cast<int>(m_values.size()))
+			{
+				return nullptr;
+			}
+
+			return &m_values[index];
 		}
 
 	private:

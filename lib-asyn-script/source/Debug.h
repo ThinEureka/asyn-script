@@ -4,6 +4,7 @@
  * 
  * 
  * \author cs (04nycs@gmail.com)
+ * https://github.com/ThinEureka/asyn-script
  */
 
 #pragma once
@@ -20,7 +21,7 @@ namespace asys
 	class Context;
 	class VariableViewer;
 
-	class Debugger
+	/*class Debugger
 	{
 	public:
 		virtual CodeFlow onBreakPoint(Executable* asys_this, const BreakPoint& breakPoint, Context* context) = 0;
@@ -96,5 +97,5 @@ namespace asys
 
 	private:
 		friend class Debugger;
-	};
+	};*/
 }

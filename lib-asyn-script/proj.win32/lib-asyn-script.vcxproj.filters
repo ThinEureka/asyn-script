@@ -5,6 +5,8 @@
     <ClCompile Include="..\source\Function.cpp" />
     <ClCompile Include="..\source\Stack.cpp" />
     <ClCompile Include="..\source\Debug.cpp" />
+    <ClCompile Include="..\source\Machine.cpp" />
+    <ClCompile Include="..\source\Instructions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Core.h" />
@@ -17,5 +19,7 @@
     <ClInclude Include="..\source\Debug.h" />
     <ClInclude Include="..\source\AsysValueT.h" />
     <ClInclude Include="..\source\AsysVariableT.h" />
+    <ClInclude Include="..\source\Machine.h" />
+    <ClInclude Include="..\source\Instructions.h" />
   </ItemGroup>
 </Project>

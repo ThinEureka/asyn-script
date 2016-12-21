@@ -1,9 +1,10 @@
 ﻿/*!
  * \file Function.h
  * \date 02-10-2016 15:29:48
- * 
- * 
+ *
+ *
  * \author cs 04nycs@gmail.com
+ * https://github.com/ThinEureka/asyn-script
  */
 
 #pragma once
@@ -14,310 +15,21 @@
 #include <functional>
 #include "AsysVariableT.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 namespace asys
 {
 	class FunctionExecutable;
 	class FunctionCode;
+	class Machine;
 
-	enum class InstructionType
-	{
-		type_null,
-		type_do,
-		type_call,
-		type_if,
-		type_else,
-		type_endif,
-		type_while,
-		type_endwhile,
-		type_continue,
-		type_break,
-		type_return,
-	};
-
-	const int INVALID_IP = -1;
-
-	class Instruction;
-
-	class BreakPoint
-	{
-	public:
-		BreakPoint(Instruction* instruction) : m_instruction(instruction) {}
-
-		BreakPoint& operator = (const BreakPoint& breakPoint)
-		{
-			//m_instruction does not change.
-			m_fileName = breakPoint.fileName();
-			m_functionName = breakPoint.functionName();
-			m_lineNumber = breakPoint.lineNumber();
-			m_callback = breakPoint.callback();
-			return *this;
-		}
-
-		Instruction* instruction() { return m_instruction; }
-		const char* fileName() const { return m_fileName; }
-		const char* functionName() const { return m_functionName; }
-		int lineNumber() const { return m_lineNumber; }
-
-		BreakPoint& operator ()(const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback,
-			const char* fileName = nullptr,
-			const char* functionName = nullptr,
-			int lineNumber = -1);
-
-		BreakPoint& operator >>= (std::initializer_list<AsysVariable> varList);
-
-		const std::function<void(FunctionExecutable*, const BreakPoint&, Context*)>& callback() const { return m_callback; }
-
-	private:
-		Instruction* m_instruction{ nullptr };
-		const char* m_fileName{};
-		const char* m_functionName{};
-		int m_lineNumber{ -1 };
-		std::function<void(FunctionExecutable*, const BreakPoint&, Context*)> m_callback;
-	};
-
-	class Instruction
-	{
-	public:
-		Instruction(InstructionType instructionType) : m_instructionType(instructionType) {}
-		virtual ~Instruction() {}
-
-		InstructionType instructionType() const { return m_instructionType; }
-
-		virtual Instruction* clone() const { return new Instruction(m_instructionType); }
-
-		const BreakPoint& breakPoint() const { return m_breakPoint; }
-		BreakPoint& breakPoint(){ return m_breakPoint; }
-
-		void setBreakPoint(const BreakPoint& breakPoint) { m_breakPoint = breakPoint; }
-
-	private:
-		InstructionType m_instructionType;
-		BreakPoint m_breakPoint{ this };
-	};
-
-	class DoInstruction : public Instruction
-	{
-	public:
-		DoInstruction(const std::function<void(Executable*)>& express) : Instruction(InstructionType::type_do), express(express){}
-
-		Instruction* clone() const override
-		{
-			auto instruction = new DoInstruction(express);
-			instruction->setBreakPoint(breakPoint());
-			return instruction;
-		}
-
-	public:
-		std::function<void(Executable*)> express{};
-	};
-
-	class CallInstruction : public Instruction
-	{
-	public:
-		CallInstruction(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback= nullptr)
-			: Instruction(InstructionType::type_call)
-			, outputCallback(outputCallback)
-			, inputCallback(inputCallback)
-			, getCodeCallback(getCodeCallback)
-			, code(code)
-		{}
-
-		virtual ~CallInstruction()
-		{
-			if (executable)
-			{
-				executable->release();
-				executable = nullptr;
-			}
-		}
-
-		Instruction* clone() const override 
-		{
-			auto instruction = new CallInstruction(outputCallback, inputCallback, code, getCodeCallback);
-			instruction->setBreakPoint(breakPoint());
-			return instruction;
-		}
-
-		void setOutputCallback(const std::function<void(Executable* caller, Executable* callee)> outputCallback)
-		{
-			this->outputCallback = outputCallback;
-		}
-
-	public:
-		std::function<void(Executable* caller, Executable* callee)> outputCallback{};
-		std::function<void(Executable* caller, Executable* callee)> inputCallback{};
-		std::function<Code*(Executable* caller)> getCodeCallback{};
-		Executable* executable{};
-		Code* code{};
-	};
-
-	class IfInstruction : public Instruction
-	{
-	public:
-		IfInstruction(const std::function<bool(Executable*)>& express) : Instruction(InstructionType::type_if), express(express) {};
-
-		Instruction* clone() const override 
-		{ 
-			auto copy = new IfInstruction(express);
-			copy->elseIp = elseIp;
-			copy->endIfIp = endIfIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		std::function<bool(Executable*)> express;
-		int elseIp{ INVALID_IP };
-		int endIfIp{ INVALID_IP };
-	};
-
-	class ElseInstruction : public Instruction
-	{
-	public:
-		ElseInstruction() : Instruction(InstructionType::type_else) {};
-
-		Instruction* clone() const override 
-		{ 
-			auto copy = new ElseInstruction();
-			copy->ifIp = ifIp;
-			copy->endIfIp = endIfIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		int ifIp{ INVALID_IP };
-		int endIfIp{ INVALID_IP };
-	};
-
-	class EndIfInstruction : public Instruction
-	{
-	public:
-		EndIfInstruction() : Instruction(InstructionType::type_endif) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new EndIfInstruction();
-			copy->ifIp = ifIp;
-			copy->elseIp = elseIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		int ifIp{ INVALID_IP };
-		int elseIp{ INVALID_IP };
-	};
-
-	class WhileInstruction : public Instruction
-	{
-	public:
-		WhileInstruction(const std::function<bool(Executable*)>& express) : Instruction(InstructionType::type_while), express(express) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new WhileInstruction(express);
-			copy->endWhileIp = endWhileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		std::function<bool(Executable*)> express;
-		int endWhileIp{ INVALID_IP };
-	};
-
-	class EndWhileInstruction : public Instruction
-	{
-	public:
-		EndWhileInstruction() : Instruction(InstructionType::type_endwhile) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new EndWhileInstruction();
-			copy->whileIp = whileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		int whileIp{ INVALID_IP };
-	};
-
-	class ContinueInstruction : public Instruction
-	{
-	public:
-		ContinueInstruction() : Instruction(InstructionType::type_continue) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new ContinueInstruction();
-			copy->whileIp = whileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public: 
-		int whileIp{ INVALID_IP };
-	};
-
-	class BreakInstruction : public Instruction
-	{
-	public:
-		BreakInstruction() : Instruction(InstructionType::type_break) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new BreakInstruction();
-			copy->whileIp = whileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		int whileIp{ INVALID_IP };
-	};
-
-	class ReturnInstruction : public Instruction
-	{
-	public: 
-		ReturnInstruction(const std::function<void(asys::Executable*)>& returnCallback) : Instruction(InstructionType::type_return), returnCallback(returnCallback){};
-
-		Instruction* clone() const override
-		{
-			auto copy = new ReturnInstruction(returnCallback);
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
-	public:
-		std::function<void(asys::Executable*)> returnCallback{};
-	};
-
-	class FunctionCode : public Code
+	class FunctionCode
 	{
 	public:
 		FunctionCode();
 		virtual ~FunctionCode();
 
-		BreakPoint& Do(const std::function<void(Executable*)>& express);
+		BreakPoint& Do(const std::function<void(Machine*)>& express);
 		BreakPoint& Declare(AsysVariable& var);
 
 		template<typename ...Args>
@@ -343,29 +55,29 @@ namespace asys
 		}
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
-		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, Code* code);
+		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, FunctionCode* code);
 		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code);
 
 
 		BreakPoint& Call(const AsysVariable& code, const ValueList& inputs);
-		BreakPoint& Call(Code* code, const ValueList& inputs);
+		BreakPoint& Call(FunctionCode* code, const ValueList& inputs);
 
 		template<typename V>
 		BreakPoint& If(const AsysVariableT<V>& var)
 		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+			return If_ex([=](asys::Machine* asys_this){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return pCastValue->getNativeValue();
 			});
 		}
 
-		BreakPoint& If_ex(const std::function<bool(Executable*)>& express);
+		BreakPoint& If_ex(const std::function<bool(asys::Machine*)>& express);
 
 		template<typename V>
 		BreakPoint& If_not(const AsysVariableT<V>& var)
 		{
-			return If_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+			return If_ex([=](asys::Machine* asys_this){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return !pCastValue->getNativeValue();
 			});
 		}
@@ -376,19 +88,19 @@ namespace asys
 		template<typename V>
 		BreakPoint& While(const AsysVariableT<V>& var)
 		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+			return While_ex([=](asys::Machine* asys_this){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return pCastValue->getNativeValue();
 			});
 		}
 
-		BreakPoint& While_ex(const std::function<bool(Executable*)>& express);
+		BreakPoint& While_ex(const std::function<bool(asys::Machine*)>& express);
 
 		template<typename V>
 		BreakPoint& While_not(const AsysVariableT<V>& var)
 		{
-			return While_ex([=](Executable* executable){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+			return While_ex([=](asys::Machine* asys_this){
+				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return !pCastValue->getNativeValue();
 			});
 		}
@@ -403,8 +115,10 @@ namespace asys
 		template<typename V1, typename V2>
 		BreakPoint& Assign(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
-			return Do([=](asys::Executable* executable){
-				executable->setAsysValue(var1, executable->getAsysValue(var2));
+			return Do([=](asys::Machine* asys_this){
+				auto* pCastValue1 = dynamic_cast<AsysValueT<V1>*>(asys_this->getAsysValue(var1));
+				auto* pCastValue2 = dynamic_cast<AsysValueT<V2>*>(asys_this->getAsysValue(var2));
+				pCastValue1->getNativeValueReference() = pCastValue2->getNativeValue();
 			});
 		}
 
@@ -412,32 +126,20 @@ namespace asys
 		BreakPoint& Assign(const AsysVariableT<V>& var, const C& constValue)
 		{
 			return Do([=](asys::Executable* executable){
-				auto* pCastValue = dynamic_cast<AsysValueT<V>*>(executable->getAsysValue(var));
+				auto* pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				pCastValue->getNativeValueReference() = constValue;
 			});
 		}
 
-		Executable* compile() override;
-
 		void clear();
 
 	private:
-		BreakPoint& Call_ex(const std::function<void(Executable* caller, Executable* callee)> outputCallback, const std::function<void(Executable* caller, Executable* callee)> inputCallback, Code* code, const std::function<Code*(Executable* caller)> getCodeCallback = nullptr);
 		BreakPoint& Return_ex(const std::function<void(asys::Executable*)>& returnCallback);
+		const AsysVariable* getInputVariable(int index) const;
+		int getNumInputs() const;
 
 		template<typename ...Args>
-		void Input_ex(int inputIndex, AsysVariable& var, Args&... args)
-		{
-			Do([=](asys::Executable* executable){
-				auto pAsysValue = executable->getInput(inputIndex);
-				if (pAsysValue)
-				{
-					executable->setAsysValue(var, pAsysValue);
-				}
-			});
-
-			Input_ex(inputIndex + 1, args...);
-		}
+		void Input_ex(int inputIndex, AsysVariable& var, Args&... args);
 
 		template<typename ...Args>
 		void Input_ex(int)
@@ -451,67 +153,14 @@ namespace asys
 		std::string m_fileNameForCurInstruction;
 		int m_lineNumerForCurInstruction{ -1 };
 		std::string m_functionNameForCurInstruction;
-	};
 
-	class FunctionExecutable : public Executable
-	{
-	public:
-		friend class Debugger;
+		int m_numInputs{};
 
-	public:
-		FunctionExecutable(const std::vector<Instruction*> instructions, const StackStructure& stackStructure);
-		virtual ~FunctionExecutable();
-
-		CodeFlow run() override;
-
-		void attachDebugger(Debugger* debugger, DebugInfo* parentDebugInfo = nullptr);
-		void detachDebugger();
+		StackFrame m_stackFrame;
 
 	private:
-		int processNullInstruction(int curIp) {return curIp + 1;}
-
-		int processDoInstruction(CodeFlow& retCode, int curIp, DoInstruction* expressInstruction);
-		int processCallInstruction(CodeFlow& retCode, int curIp, CallInstruction* callInstruction);
-
-		int processIfInstruction(int curIp, IfInstruction* ifInstruction)
-		{
-			bool condition = ifInstruction->express(this);
-			if (condition) return curIp + 1;
-
-			if (ifInstruction->elseIp != INVALID_IP) return ifInstruction->elseIp + 1;
-
-			return ifInstruction->endIfIp + 1;
-		}
-
-		int processElseInstruction(int curIp, ElseInstruction* elseInstruction) { return elseInstruction->endIfIp + 1; }
-		int processEndIfInstruction(int curIp, EndIfInstruction* endIfInstruction) { return curIp + 1; }
-
-		int processWhileInstruction(int curIp, WhileInstruction* whileInstruction)
-		{
-			bool condition = whileInstruction->express(this);
-			if (condition) return curIp + 1;
-
-			return whileInstruction->endWhileIp + 1;
-		}
-
-		int processEndWhileInstruction(int curIp, EndWhileInstruction* endWhileInstruction) { return endWhileInstruction->whileIp; }
-		int processContinueInstruction(int curIp, ContinueInstruction* continueInstruction) { return continueInstruction->whileIp; }
-		int processBreakInstruction(int curIp, BreakInstruction* breakInstruction)
-		{
-			auto whileIp = breakInstruction->whileIp;
-			auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[whileIp]);
-			return whileInstruction->endWhileIp + 1;
-		}
-
-		int processReturnInstruction(int curIp, ReturnInstruction* retInstruction);
-
-		CodeFlow processBreakpoint(const BreakPoint& breakpoint);
-
-	private:
-		std::vector<Instruction*> m_instructions;
-		DebugInfo* m_pDebugInfo{};
-		int m_nCurIp{ INVALID_IP  + 1};
-		CodeFlow m_retCodeFlow{CodeFlow::next_};
+		friend class Machine;
+		friend class FunctionRuntime;
 	};
 
 	class FunctionMap : public std::map <std::string, asys::FunctionCode*>

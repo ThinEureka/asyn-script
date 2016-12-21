@@ -4,6 +4,7 @@
  * 
  * 
  * \author cs (04nycs@gmail.com)
+ * https://github.com/ThinEureka/asyn-script
  */
 
 #pragma once
@@ -39,43 +40,60 @@ namespace asys
 
 		AsysVariable* getVariable(size_t memoryOffset);
 		const AsysVariable* getVariable(size_t memoryOffset) const;
-		
+
 
 	private:
 		std::map<size_t, AsysVariable*>  m_variables;
 		size_t m_curSize{};
+	};
 
-	private:
-		friend class Debugger;
-		friend class DebugInfo;
+	class StackFrame
+	{
+	public:
+		size_t getSize() const;
+		void declare(AsysVariable& var);
+
+		void constructFrame(Stack* stack, size_t frameOffset) const;
+		void destructFrame(Stack* stack, size_t frameOffset) const;
+
+		AsysVariable* getVariable(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
 	};
 
 	class Stack
 	{
 	public:
-		Stack(const StackStructure& structure);
-		Stack() = delete;
-
+		Stack();
 		virtual ~Stack();
 
-		bool hasAsysValue(const AsysVariable& var) const;
+		size_t getRemainSize() const;
+		void* getAddressByFrameOffset(size_t size) const;
+		size_t getCurFrameOffset() const;
 
-		const AsysVariable* getMetaVariable(const AsysVariable& var) const;
-
-		AsysVariable* getMetaVariable(const AsysVariable& var);
-
-		void construct(const AsysVariable& var);
-		void destruct(const AsysVariable& var);
+		bool allocate(size_t size);
+		bool dellocate(size_t size);
 
 	private:
 		void* getAddress(const AsysVariable& var) const;
 
 	private:
-		StackStructure m_structure;
 		char* const m_pRawMem{};
+	};
 
-	private:
-		friend class Debugger;
-		friend class DebugInfo;
+	class StackPool
+	{
+	public:
+		virtual Stack* checkout(size_t size) = 0;
+		virtual void checkIn(Stack* stack) = 0;
+		virtual size_t getDefaultSize() = 0;
+	};
+
+	class DefaultStackPool : public StackPool
+	{
+	public:
+		DefaultStackPool(size_t defaultSize = 4*1024);
+
+		virtual Stack* checkout(size_t size) override;
+		virtual void checkIn(Stack* stack) override;
+		virtual size_t getDefaultSize() override;
 	};
 }
