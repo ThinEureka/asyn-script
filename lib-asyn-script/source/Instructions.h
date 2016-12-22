@@ -113,12 +113,16 @@ namespace asys
 	class CallInstruction : public Instruction
 	{
 	public:
-		CallInstruction(const VariableList& outputs, const ValueList& inputs, const FunctionCode* code, const AsysVariable& codeVar)
+		CallInstruction(const FunctionCode* code, const ValueList& inputs)
 			: Instruction(InstructionType::type_call)
-			, outputs(outputs)
+			, inputs(inputs)
+			, code(code)
+		{}
+
+		CallInstruction(const AsysVariable& codeVar, const ValueList& inputs)
+			: Instruction(InstructionType::type_call)
 			, inputs(inputs)
 			, codeVar(codeVar)
-			, code(code)
 		{}
 
 		virtual ~CallInstruction()

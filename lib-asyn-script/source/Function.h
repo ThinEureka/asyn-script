@@ -54,11 +54,6 @@ namespace asys
 			//do nothing.
 		}
 
-		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
-		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, FunctionCode* code);
-		BreakPoint& Call_ex(const VariableList& outputs, const ValueList& inputs, const AsysVariable& code);
-
-
 		BreakPoint& Call(const AsysVariable& code, const ValueList& inputs);
 		BreakPoint& Call(FunctionCode* code, const ValueList& inputs);
 
@@ -157,7 +152,6 @@ namespace asys
 		std::list<int> m_unmatchedWhileIps;
 
 		int m_numInputs{};
-
 		StackFrame m_stackFrame;
 
 	private:

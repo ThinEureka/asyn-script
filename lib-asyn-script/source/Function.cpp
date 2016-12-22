@@ -35,6 +35,22 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 	});
 }
 
+asys::BreakPoint& asys::FunctionCode::Call(const AsysVariable& code, const ValueList& inputs)
+{
+	auto instruction = new CallInstruction(code, inputs);
+	m_instructions.push_back(instruction);
+
+	return instruction->breakPoint();
+}
+
+asys::BreakPoint& asys::FunctionCode::Call(FunctionCode* code, const ValueList& inputs)
+{
+	auto instruction = new CallInstruction(code, inputs);
+	m_instructions.push_back(instruction);
+
+	return instruction->breakPoint();
+}
+
 asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Machine*)>& express)
 {
 	int ip = static_cast<int>(m_instructions.size());
@@ -182,6 +198,28 @@ void asys::FunctionCode::compile()
 {
 	assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
 	assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+
+#if ASYS_BREAKPOINT == 1
+	BreakPoint* pLastValidBreakPoint = nullptr;
+	for (size_t i = 0; i < m_instructions.size(); ++i)
+	{
+		if (!pLastValidBreakPoint)
+		{
+			pLastValidBreakPoint = &m_instructions[i]->breakPoint();
+		}
+		else
+		{
+			if (m_instructions[i]->breakPoint().lineNumber() == -1)
+			{
+				m_instructions[i]->breakPoint()(nullptr, pLastValidBreakPoint->fileName(), pLastValidBreakPoint->functionName(), pLastValidBreakPoint->lineNumber());
+			}
+			else
+			{
+				pLastValidBreakPoint = &m_instructions[i]->breakPoint();
+			}
+		}
+	}
+#endif
 }
 
 const asys::AsysVariable* asys::FunctionCode::getInputVariable(int index) const
