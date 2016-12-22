@@ -75,7 +75,7 @@ namespace asys
 		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller, const ValueList& valueList)
 		{
 			pushFunctionRuntime(code, caller);
-			setupInputs(valueList);
+			setupInputs(caller, valueList);
 		}
 
 		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller);
@@ -165,10 +165,9 @@ namespace asys
 
 		void setoutput(int index, const AsysVariable& var)
 		{
-			auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
-
 			if (m_funRuntimes.size() == 1)
 			{
+				auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
 				m_outputs[index] = pRetValue->clone();
 			}
 			else
@@ -176,6 +175,7 @@ namespace asys
 				auto pCallerOutValue = getCallerOutputValue(index);
 				if (pCallerOutValue)
 				{
+					auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
 					pCallerOutValue->assign(*pRetValue);
 				}
 			}
@@ -253,16 +253,17 @@ namespace asys
 	private:
 		std::vector<FunctionRuntime> m_funRuntimes;
 		FunctionRuntime* m_pCurFunRuntime{};
-		CodeFlow m_codeFlow{ CodeFlow::next_ };
-		std::vector<AsysValue*> m_outputs;
-		int m_threadId;
 
 		std::vector<Stack*> m_stacks;
 		int m_stackIndex{ -1 };
 
-		bool m_isUsingBuiltInStackPool{ false };
 		StackPool* m_pStackPool{ nullptr };
 		bool m_isSharingStackPool{ false };
+
+		std::vector<AsysValue*> m_outputs;
+
+		CodeFlow m_codeFlow{ CodeFlow::next_ };
+		int m_threadId{ THREAD_ID_MAIN};
 
 	private:
 		static Machine* m_pCurMainThreadMachine;

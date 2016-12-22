@@ -71,4 +71,5 @@ namespace asys
 	}
 
 	const int INVALID_IP = -1;
+	const int THREAD_ID_MAIN = 0;
 }

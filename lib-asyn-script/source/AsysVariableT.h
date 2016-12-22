@@ -51,6 +51,14 @@ namespace asys
 			return asysValue->getNativeValueReference();
 		}
 
+		//for thread-safe
+		T& sr(Machine* machine) const
+		{
+			auto pAsysValue = machine->getAsysValue(*this);
+			auto pCastValue = dynamic_cast<AsysValueT<T>*>(pAsysValue);
+			return pCastValue->getNativeValueReference();
+		}
+
 		template<typename T1>
 		const AsysVariableT& operator = (const T1& var) const
 		{

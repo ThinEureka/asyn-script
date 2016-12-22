@@ -41,6 +41,7 @@ asys::Machine::Machine(StackPool* stackPool/* = nullptr*/, bool sharingStackPool
 	if (!stackPool)
 	{
 		stackPool = new DefaultStackPool();
+		sharingStackPool = false;
 	}
 	m_pStackPool = stackPool;
 	m_isSharingStackPool = sharingStackPool;
@@ -66,7 +67,7 @@ asys::Machine::~Machine()
 
 asys::CodeFlow asys::Machine::run()
 {
-	if (getThreadId() == 0)
+	if (getThreadId() == THREAD_ID_MAIN)
 	{
 		m_pCurMainThreadMachine = this;
 	}
@@ -132,10 +133,12 @@ asys::CodeFlow asys::Machine::run()
 		}
 	}
 
-	if (getThreadId() == 0)
+	if (getThreadId() == THREAD_ID_MAIN)
 	{
 		m_pCurMainThreadMachine = nullptr;
 	}
+
+	return m_codeFlow;
 }
 
 void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
@@ -188,8 +191,14 @@ void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
 
 	if (m_codeFlow == CodeFlow::return_)
 	{
-		m_codeFlow = CodeFlow::next_;
+		if (m_funRuntimes.size() > 1)
+		{
+			auto pCallerRuntime = &m_funRuntimes[m_funRuntimes.size() - 2];
+			pCallerRuntime->m_curIp++;
+		}
+
 		popFunctionRuntime();
+		m_codeFlow = CodeFlow::next_;
 	}
 }
 
@@ -209,8 +218,10 @@ void asys::Machine::processCallInstruction(const CallInstruction* callInstructio
 	{
 		m_pCurFunRuntime->m_curIp++;
 	}
-
-	pushFunctionRuntime(code, m_pCurFunRuntime, callInstruction->inputs);
+	else
+	{
+		pushFunctionRuntime(code, m_pCurFunRuntime, callInstruction->inputs);
+	}
 }
 
 void asys::Machine::processIfInstruction(const IfInstruction* ifInstruction)
@@ -292,6 +303,8 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 				pOutputValue->assign(*pRetValue);
 			}
 		}
+
+		pCallerRuntime->m_curIp++;
 	}
 
 	popFunctionRuntime();
@@ -330,6 +343,8 @@ void asys::Machine::cleanupRuntime()
 		delete output;
 	}
 	m_outputs.clear();
+
+	m_codeFlow = CodeFlow::next_;
 }
 
 void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller)
