@@ -15,10 +15,10 @@
 #include "AsysVariableT.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "Stack.h"
 
 namespace asys
 {
-	class FunctionExecutable;
 	class FunctionCode;
 	class Machine;
 
@@ -120,7 +120,7 @@ namespace asys
 		template<typename V, typename C>
 		BreakPoint& Assign(const AsysVariableT<V>& var, const C& constValue)
 		{
-			return Do([=](asys::Executable* executable){
+			return Do([=](asys::Machine* asys_this){
 				auto* pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				pCastValue->getNativeValueReference() = constValue;
 			});

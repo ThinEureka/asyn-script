@@ -13,6 +13,7 @@
 #include "Function.h"
 #include "Define.h"
 #include "Machine.h"
+#include "Instructions.h"
 
 //key words
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \

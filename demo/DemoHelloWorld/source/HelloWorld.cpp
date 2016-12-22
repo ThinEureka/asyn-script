@@ -14,6 +14,12 @@ asys_reg_funs;
 asys::FunctionCode* sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
+		asys::AsysVariableT<int> g;
+		__this_function->Declare(g)(nullptr, nullptr, nullptr, -1);
+		__this_function->Declare(g)([](asys::Machine*, const asys::BreakPoint& breakPoint){}, nullptr, nullptr, -1);
+
+		__this_function->Declare(g)_;
+
 		ASYS_VAR(int, sum);
 		ASYS_VAR(int, i);
 

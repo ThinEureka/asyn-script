@@ -18,6 +18,8 @@
 
 namespace asys
 {
+	class Machine;
+
 	class Const
 	{
 	public:
@@ -180,6 +182,8 @@ namespace asys
 		{
 			return nullptr;
 		}
+
+		AsysValue* getAsysValue(Machine* asys_this) const;
 
 	protected:
 		size_t m_memoryOffset{};

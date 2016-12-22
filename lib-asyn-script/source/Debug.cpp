@@ -8,8 +8,8 @@
  * https://github.com/ThinEureka/asyn-script
  */
 
-#include "Debug.h"
-#include "Function.h"
+//#include "Debug.h"
+//#include "Function.h"
 
 //asys::DebugInfo::~DebugInfo()
 //{

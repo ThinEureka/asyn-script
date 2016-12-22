@@ -75,7 +75,7 @@ namespace asys
 		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller, const ValueList& valueList)
 		{
 			pushFunctionRuntime(code, caller);
-			setupInputs(caller, valueList);
+			setupInputs(valueList, caller);
 		}
 
 		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller);
@@ -117,20 +117,11 @@ namespace asys
 
 		void processReturnInstruction(const ReturnInstruction* retInstruction);
 
-		AsysValue* getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var)
-		{
-			return funRuntime->m_pFunction->m_stackFrame.getValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
-		}
+		AsysValue* getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var);
 
-		void constructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
-		{
-			funRuntime->m_pFunction->m_stackFrame.constructValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
-		}
+		void constructValue(FunctionRuntime* funRuntime, const AsysVariable& var);
 
-		void destructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
-		{
-			funRuntime->m_pFunction->m_stackFrame.destructValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
-		}
+		void destructValue(FunctionRuntime* funRuntime, const AsysVariable& var);
 
 		Stack* getCurStack()
 		{
@@ -141,61 +132,6 @@ namespace asys
 			}
 
 			return m_stacks[m_stackIndex];
-		}
-
-		template<typename ...Args>
-		void output_ex(int index, const AsysVariable& var, const Args&... args)
-		{
-			setoutput(index, var);
-			output_ex(index + 1, args...);
-		}
-
-		template<typename ...Args>
-		void output_ex(int index, const AsysValue& value, const Args&... args)
-		{
-			setoutput(index, value);
-			output_ex(index + 1, args...);
-		}
-
-		template<typename ...Args>
-		void output_ex(int num)
-		{
-			//do nothing.
-		}
-
-		void setoutput(int index, const AsysVariable& var)
-		{
-			if (m_funRuntimes.size() == 1)
-			{
-				auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
-				m_outputs[index] = pRetValue->clone();
-			}
-			else
-			{
-				auto pCallerOutValue = getCallerOutputValue(index);
-				if (pCallerOutValue)
-				{
-					auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
-					pCallerOutValue->assign(*pRetValue);
-				}
-			}
-		}
-
-		template<typename T>
-		void setOutput(int index, const AsysValue& value)
-		{
-			if (m_funRuntimes.size() == 1)
-			{
-				m_outputs[index] = value.clone();
-			}
-			else
-			{
-				auto pCallerOutValue = getCallerOutputValue(index);
-				if (pCallerOutValue)
-				{
-					pCallerOutValue->assign(value);
-				}
-			}
 		}
 
 		AsysValue* getCallerOutputValue(int index);
@@ -238,11 +174,68 @@ namespace asys
 			}
 
 			output_ex(0, args...);
-		}
+		} 
 
 		void output()
 		{
 			//do nothing.
+		}
+
+		template<typename ...Args>
+		void output_ex(int index, const AsysVariable& var, const Args&... args)
+		{
+			setOutputByVar(index, var);
+			output_ex(index + 1, args...);
+		}
+
+		template<typename T, typename ...Args>
+		void output_ex(int index, const T& value, const Args&... args)
+		{
+			AsysValueT<T> asysValue;
+			asysValue.setNativeValue(value);
+
+			setOutputByValue(index, asysValue);
+			output_ex(index + 1, args...);
+		}
+
+		template<typename ...Args>
+		void output_ex(int num)
+		{
+			//do nothing.
+		}
+
+		void setOutputByVar(int index, const AsysVariable& var)
+		{
+			if (m_funRuntimes.size() == 1)
+			{
+				auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
+				m_outputs[index] = pRetValue->clone();
+			}
+			else
+			{
+				auto pCallerOutValue = getCallerOutputValue(index);
+				if (pCallerOutValue)
+				{
+					auto pRetValue = getAsysValue(m_pCurFunRuntime, var);
+					pCallerOutValue->assign(*pRetValue);
+				}
+			}
+		}
+
+		void setOutputByValue(int index, const AsysValue& value)
+		{
+			if (m_funRuntimes.size() == 1)
+			{
+				m_outputs[index] = value.clone();
+			}
+			else
+			{
+				auto pCallerOutValue = getCallerOutputValue(index);
+				if (pCallerOutValue)
+				{
+					pCallerOutValue->assign(value);
+				}
+			}
 		}
 
 		void setCodeFlow(CodeFlow codeFlow)
@@ -269,7 +262,7 @@ namespace asys
 		static Machine* m_pCurMainThreadMachine;
 
 	private:
-		friend class Variable;
+		friend class AsysVariable;
 		friend class FunctionCode;
 
 		friend void asysRedo(Machine* asys_this);
@@ -281,22 +274,22 @@ namespace asys
 		friend void asysReturn(Machine* asys_this, const Args&... args);
 	};
 
-	void asysContinue(Machine* asys_this)
+	inline void asysContinue(Machine* asys_this)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::continue_);
 	}
 
-	void asysNext(Machine* asys_this)
+	inline void asysNext(Machine* asys_this)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::next_);
 	}
 
-	void asysRedo(Machine* asys_this)
+	inline void asysRedo(Machine* asys_this)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::redo_);
 	}
 
-	void asysBreak(Machine* asys_this)
+	inline void asysBreak(Machine* asys_this)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::break_);
 	}

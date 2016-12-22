@@ -15,7 +15,6 @@
 
 namespace asys
 {
-	class FunctionExecutable;
 	class FunctionCode;
 	class Machine;
 
@@ -64,14 +63,14 @@ namespace asys
 
 		BreakPoint& operator >>= (const VariableList& valueList);
 
-		const std::function<void(FunctionExecutable*, const BreakPoint&)>& callback() const { return m_callback; }
+		const std::function<void(Machine*, const BreakPoint&)>& callback() const { return m_callback; }
 
 	private:
 		Instruction* m_instruction{ nullptr };
 		const char* m_fileName{};
 		const char* m_functionName{};
 		int m_lineNumber{ -1 };
-		std::function<void(FunctionExecutable*, const BreakPoint&)> m_callback;
+		std::function<void(Machine*, const BreakPoint&)> m_callback;
 	};
 
 	class Instruction
@@ -130,7 +129,9 @@ namespace asys
 
 		Instruction* clone() const override 
 		{
-			auto instruction = new CallInstruction(outputs, inputs, code, codeVar);
+			auto instruction = new CallInstruction(code, inputs);
+			instruction->outputs = outputs;
+			instruction->codeVar = codeVar;
 			instruction->setBreakPoint(breakPoint());
 			return instruction;
 		}

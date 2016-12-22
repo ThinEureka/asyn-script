@@ -73,6 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\AsysVariable.cpp" />
     <ClCompile Include="..\source\Debug.cpp" />
     <ClCompile Include="..\source\Function.cpp" />
     <ClCompile Include="..\source\Instructions.cpp" />

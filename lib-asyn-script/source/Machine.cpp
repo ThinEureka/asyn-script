@@ -331,6 +331,21 @@ asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
 	return getAsysValue(pCallerRuntime, *pOutputVar);
 }
 
+asys::AsysValue* asys::Machine::getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var)
+{
+	return funRuntime->m_pFunction->m_stackFrame.getValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
+}
+
+void asys::Machine::constructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
+{
+	funRuntime->m_pFunction->m_stackFrame.constructValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
+}
+
+void asys::Machine::destructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
+{
+	funRuntime->m_pFunction->m_stackFrame.destructValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
+}
+
 void asys::Machine::cleanupRuntime()
 {
 	while (m_funRuntimes.size() > 0)

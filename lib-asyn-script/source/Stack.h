@@ -16,52 +16,8 @@
 namespace asys
 {
 	class AsysVariable;
-
-	class StackFrame
-	{
-	public:
-		StackFrame(){}
-		~StackFrame()
-		{
-			clear();
-		}
-
-		void clear();
-
-		size_t getSize() const
-		{
-			return m_curSize;
-		}
-
-		void declare(AsysVariable& var);
-
-		void constructFrame(Stack* stack, size_t frameOffset) const;
-		void destructFrame(Stack* stack, size_t frameOffset) const;
-
-		AsysValue* getValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
-
-		void constructValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
-		void destructValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
-
-		const AsysVariable* getVariableByIndex(int index) const;
-
-	private:
-		void* getValuePointerAddress(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
-		AsysValue** getPointerToAsysValuePointer(Stack* stack, size_t frameOffset, const AsysVariable& var) const
-		{
-			return static_cast<AsysValue**>(getValuePointerAddress(stack, frameOffset, var));
-		}
-
-		AsysValue* getValueAddressByValuePointerAddress(AsysValue** ppAsysValue) const
-		{
-			return (AsysValue*)((char*)ppAsysValue + sizeof(AsysValue*));
-		}
-
-	private:
-		std::map<size_t, AsysVariable*>  m_variables;
-		size_t m_curSize{};
-	};
-
+	class AsysValue;
+	
 	class Stack
 	{
 	public:
@@ -125,10 +81,55 @@ namespace asys
 		size_t m_usedSize{};
 	};
 
+	class StackFrame
+	{
+	public:
+		StackFrame(){}
+		~StackFrame()
+		{
+			clear();
+		}
+
+		void clear();
+
+		size_t getSize() const
+		{
+			return m_curSize;
+		}
+
+		void declare(AsysVariable& var);
+
+		void constructFrame(Stack* stack, size_t frameOffset) const;
+		void destructFrame(Stack* stack, size_t frameOffset) const;
+
+		AsysValue* getValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
+
+		void constructValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
+		void destructValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
+
+		const AsysVariable* getVariableByIndex(int index) const;
+
+	private:
+		void* getValuePointerAddress(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
+		AsysValue** getPointerToAsysValuePointer(Stack* stack, size_t frameOffset, const AsysVariable& var) const
+		{
+			return static_cast<AsysValue**>(getValuePointerAddress(stack, frameOffset, var));
+		}
+
+		AsysValue* getValueAddressByValuePointerAddress(AsysValue** ppAsysValue) const
+		{
+			return (AsysValue*)((char*)ppAsysValue + sizeof(AsysValue*));
+		}
+
+	private:
+		std::map<size_t, AsysVariable*>  m_variables;
+		size_t m_curSize{};
+	};
+
 	class StackPool
 	{
 	public:
-		virtual virtual ~StackPool() = 0;
+		virtual ~StackPool(){};
 
 		virtual Stack* checkout(size_t size) = 0;
 		virtual void checkIn(Stack* stack) = 0;

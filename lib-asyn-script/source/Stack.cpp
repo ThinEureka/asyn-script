@@ -70,6 +70,25 @@ void asys::StackFrame::destructValue(Stack* stack, size_t frameOffset, const Asy
 	var.destruct(*ppAsysValue);
 }
 
+const asys::AsysVariable* asys::StackFrame::getVariableByIndex(int index) const
+{
+	if (index < 0 || index >= static_cast<int>(m_variables.size()))
+	{
+		return nullptr;
+	}
+
+	for (auto it = m_variables.begin(); it != m_variables.end(); ++it)
+	{
+		if (index == 0)
+		{
+			return it->second;
+		}
+		--index;
+	}
+
+	return nullptr;
+}
+
 void* asys::StackFrame::getValuePointerAddress(Stack* stack, size_t frameOffset, const AsysVariable& var) const
 {
 	return static_cast<char*>(stack->getAddressByFrameOffset(frameOffset)) + var.getMemoryOffset();

@@ -6,6 +6,7 @@
     <ClCompile Include="..\source\Debug.cpp" />
     <ClCompile Include="..\source\Machine.cpp" />
     <ClCompile Include="..\source\Instructions.cpp" />
+    <ClCompile Include="..\source\AsysVariable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Define.h" />

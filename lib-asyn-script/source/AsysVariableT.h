@@ -44,7 +44,7 @@ namespace asys
 
 			if (!m_pAsysValue)
 			{
-				m_pAsysValue = m_pMachine->getAsysValue(*this);
+				m_pAsysValue = getAsysValue(m_pMachine);
 			}
 
 			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
@@ -54,7 +54,7 @@ namespace asys
 		//for thread-safe
 		T& sr(Machine* machine) const
 		{
-			auto pAsysValue = machine->getAsysValue(*this);
+			auto pAsysValue = getAsysValue(machine);
 			auto pCastValue = dynamic_cast<AsysValueT<T>*>(pAsysValue);
 			return pCastValue->getNativeValueReference();
 		}
@@ -87,8 +87,8 @@ namespace asys
 
 		virtual void destruct(AsysValue* address) const override
 		{
-			auto* pCastValue = static_cast<AsysValue<T>*>(address);
-			pCastValue->~AsysValue<T>();
+			auto* pCastValue = static_cast<AsysValueT<T>*>(address);
+			pCastValue->~AsysValueT<T>();
 		}
 
 		//virtual VariableViewer* createVariableViewer() const

@@ -21,7 +21,7 @@ public:
 	{
 		if (!m_bStarted)
 		{
-			m_machine.installCode(deviceId, { deviceId });
+			m_machine.installCode(login(), { deviceId });
 			m_bStarted = true;
 		}
 
