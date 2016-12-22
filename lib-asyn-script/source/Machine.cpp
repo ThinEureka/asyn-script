@@ -17,9 +17,9 @@ void asys::FunctionRuntime::construct(const FunctionCode* funCode, Stack* stack)
 {
 	m_pFunction = funCode;
 	m_pStack = stack;
-	m_baseFrameOffset = stack->getCurFrameOffset();
+	m_frameOffset = stack->getCurFrameOffset();
 
-	m_pFunction->m_stackFrame.constructFrame(m_pStack, m_baseFrameOffset);
+	m_pFunction->m_stackFrame.constructFrame(m_pStack, m_frameOffset);
 }
 
 void asys::FunctionRuntime::destruct(asys::Machine* machine)
@@ -33,7 +33,7 @@ void asys::FunctionRuntime::destruct(asys::Machine* machine)
 		delete m_pDeallocators;
 	}
 
-	m_pFunction->m_stackFrame.destructFrame(m_pStack, m_baseFrameOffset);
+	m_pFunction->m_stackFrame.destructFrame(m_pStack, m_frameOffset);
 }
 
 asys::Machine::Machine(StackPool* stackPool/* = nullptr*/, bool sharingStackPool/* = false*/)
@@ -240,11 +240,6 @@ void asys::Machine::processWhileInstruction(const WhileInstruction* whileInstruc
 	m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
 }
 
-void asys::Machine::processContinueInstruction(const ContinueInstruction* continueInstruction)
-{
-	m_pCurFunRuntime->m_curIp = continueInstruction->whileIp;
-}
-
 void asys::Machine::processBreakInstruction(const BreakInstruction* breakInstruction)
 {
 	auto& instructions = m_pCurFunRuntime->m_pFunction->m_instructions;
@@ -302,21 +297,6 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 	popFunctionRuntime();
 }
 
-asys::AsysValue* asys::Machine::getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var)
-{
-	return funRuntime->m_pFunction->m_stackFrame.getValue(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
-}
-
-void asys::Machine::constructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
-{
-	funRuntime->m_pFunction->m_stackFrame.constructValue(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
-}
-
-void asys::Machine::destructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
-{
-	funRuntime->m_pFunction->m_stackFrame.destructValue(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
-}
-
 asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
 {
 	if (m_funRuntimes.size() < 2)
@@ -338,16 +318,6 @@ asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
 	return getAsysValue(pCallerRuntime, *pOutputVar);
 }
 
-asys::AsysValue* asys::Machine::getAsysValue(const AsysVariable& var)
-{
-	if (!m_pCurFunRuntime)
-	{
-		return nullptr;
-	}
-
-	return getAsysValue(m_pCurFunRuntime, var);
-}
-
 void asys::Machine::cleanupRuntime()
 {
 	while (m_funRuntimes.size() > 0)
@@ -360,27 +330,6 @@ void asys::Machine::cleanupRuntime()
 		delete output;
 	}
 	m_outputs.clear();
-}
-
-void asys::Machine::popFunctionRuntime()
-{
-	m_pCurFunRuntime->destruct(this);
-
-	if (getCurStack()->getCurFrameOffset() == 0)
-	{
-		--m_stackIndex;
-	}
-
-	m_funRuntimes.pop_back();
-
-	if (m_funRuntimes.size() > 0)
-	{
-		m_pCurFunRuntime = &m_funRuntimes.back();
-	}
-	else
-	{
-		m_pCurFunRuntime = nullptr;
-	}
 }
 
 void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller)
@@ -421,11 +370,12 @@ void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntim
 	m_pCurFunRuntime->construct(code, getCurStack());
 }
 
-void asys::Machine::setupInputs(const ValueList& valueList)
+void asys::Machine::setupInputs(const ValueList& valueList, FunctionRuntime* caller)
 {
-	for (int i = 0; i < code->getNumInputs(); ++i)
+	auto pFunction = m_pCurFunRuntime->m_pFunction;
+	for (int i = 0; i < pFunction->getNumInputs(); ++i)
 	{
-		auto pInputVar = code->getInputVariable(i);
+		auto pInputVar = pFunction->getInputVariable(i);
 		constructValue(m_pCurFunRuntime, *pInputVar);
 
 		if (i < static_cast<int>(valueList.getLength()))
@@ -445,5 +395,26 @@ void asys::Machine::setupInputs(const ValueList& valueList)
 				}
 			}
 		}
+	}
+}
+
+void asys::Machine::popFunctionRuntime()
+{
+	m_pCurFunRuntime->destruct(this);
+
+	if (getCurStack()->getCurFrameOffset() == 0)
+	{
+		--m_stackIndex;
+	}
+
+	m_funRuntimes.pop_back();
+
+	if (m_funRuntimes.size() > 0)
+	{
+		m_pCurFunRuntime = &m_funRuntimes.back();
+	}
+	else
+	{
+		m_pCurFunRuntime = nullptr;
 	}
 }

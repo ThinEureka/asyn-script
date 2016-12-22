@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "Core.h"
 #include <vector>
 #include <list>
 #include <functional>

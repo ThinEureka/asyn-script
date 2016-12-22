@@ -10,9 +10,7 @@
 #pragma once
 
 #include "AsysVariable.h"
-#include "Core.h"
 #include "AsysValueT.h"
-#include "Core.h"
 
 namespace asys
 {

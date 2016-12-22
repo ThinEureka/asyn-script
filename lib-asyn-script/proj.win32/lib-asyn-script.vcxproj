@@ -73,7 +73,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\source\Core.cpp" />
     <ClCompile Include="..\source\Debug.cpp" />
     <ClCompile Include="..\source\Function.cpp" />
     <ClCompile Include="..\source\Instructions.cpp" />
@@ -85,7 +84,6 @@
     <ClInclude Include="..\source\AsysValue.h" />
     <ClInclude Include="..\source\AsysValueT.h" />
     <ClInclude Include="..\source\AsysVariableT.h" />
-    <ClInclude Include="..\source\Core.h" />
     <ClInclude Include="..\source\Debug.h" />
     <ClInclude Include="..\source\Define.h" />
     <ClInclude Include="..\source\Function.h" />

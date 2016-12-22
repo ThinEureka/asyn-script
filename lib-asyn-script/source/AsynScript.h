@@ -61,11 +61,11 @@
 #define D_ASYS_P(type, name) asys::AsysVariableT<type> name
 
 //keywords used in embedded c++ codes
-#define asys_redo {asys_this->setCodeFlow(asys::CodeFlow::redo_); return;}
-#define asys_next {asys_this->setCodeFlow(asys::CodeFlow::next_); return;}
-#define asys_return(...) {asys_this->output(__VA_ARGS__); asys_this->setCodeFlow(asys::CodeFlow::return_); return;}
-#define asys_break {asys_this->setCodeFlow(asys::CodeFlow::break_); return;}
-#define asys_continue {asys_this->setCodeFlow(asys::CodeFlow::continue_); return;}
+#define asys_redo {asysRedo(asys_this); return;}
+#define asys_next {asysNext(asys_this); return;}
+#define asys_return(...) {asysReturn(asys_this, __VA_ARGS__); return;}
+#define asys_break {asysBreak(asys_this); return;}
+#define asys_continue {asysContinue(asys_this); return;}
 #define asys_this asys_this
 
 //used to register asyn functions.

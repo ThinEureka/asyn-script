@@ -29,6 +29,7 @@ void asys::StackFrame::declare(AsysVariable& var)
 
 void asys::StackFrame::constructFrame(Stack* stack, size_t frameOffset) const
 {
+	stack->allocate(m_curSize);
 	for (const auto& pair : m_variables)
 	{
 		auto ppAsysValue = getPointerToAsysValuePointer(stack, frameOffset, *pair.second);
@@ -46,6 +47,7 @@ void asys::StackFrame::destructFrame(Stack* stack, size_t frameOffset) const
 			pair.second->destruct(*ppAsysValue);
 		}
 	}
+	stack->dellocate(m_curSize);
 }
 
 asys::AsysValue* asys::StackFrame::getValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const
