@@ -39,13 +39,9 @@ namespace asys
 			if (m_pMachine != Machine::getCurMainThreadMachine())
 			{
 				m_pMachine = Machine::getCurMainThreadMachine();
-				m_pAsysValue = nullptr;
 			}
 
-			if (!m_pAsysValue)
-			{
-				m_pAsysValue = getAsysValue(m_pMachine);
-			}
+			m_pAsysValue = getAsysValue(m_pMachine);
 
 			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
 			return asysValue->getNativeValueReference();
