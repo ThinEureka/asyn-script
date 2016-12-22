@@ -17,6 +17,16 @@
 namespace asys
 {
 	class Machine;
+	class Variable;
+	class FunctionCode;
+
+	void asysRedo(Machine* asys_this);
+	void asysNext(Machine* asys_this);
+	void asysContinue(Machine* asys_this);
+	void asysBreak(Machine* asys_this);
+
+	template<typename ...Args>
+	void asysReturn(Machine* asys_this, const Args&... args);
 
 	class FunctionRuntime
 	{
@@ -27,7 +37,7 @@ namespace asys
 	private:
 		int m_curIp{ asys::INVALID_IP };
 		const FunctionCode* m_pFunction{ nullptr };
-		size_t m_baseFrameOffset{ 0 };
+		size_t m_frameOffset{ 0 };
 		Stack* m_pStack{ nullptr };
 		std::vector<std::function<void(asys::Machine*)>>* m_pDeallocators;
 
@@ -58,47 +68,6 @@ namespace asys
 
 		CodeFlow run();
 
-		bool hasAsysValue(const AsysVariable& var)
-		{
-			return getAsysValue(var) != nullptr;
-		}
-
-		AsysValue* getAsysValue(const AsysVariable& var);
-
-		int getThreadId() const { return m_threadId; };
-		void setThreadId(int threadId) { m_threadId = threadId; }
-
-		void constructValue(const AsysVariable& var)
-		{
-			constructValue(m_pCurFunRuntime, var);
-		}
-
-		void destructValue(const AsysVariable& var)
-		{
-			destructValue(m_pCurFunRuntime, var);
-		}
-
-		template<typename ...Args>
-		void output(const Args&... args)
-		{
-			if (m_funRuntimes.size() == 1)
-			{
-				m_outputs.resize(sizeof...(Args));
-			}
-
-			output_ex(0, args...);
-		}
-
-		void output()
-		{
-			//do nothing.
-		}
-
-		void setCodeFlow(CodeFlow codeFlow)
-		{
-			m_codeFlow = codeFlow;
-		}
-
 	private:
 		void cleanupRuntime();
 
@@ -110,7 +79,7 @@ namespace asys
 		}
 
 		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller);
-		void setupInputs(const ValueList& valueList);
+		void setupInputs(const ValueList& valueList, FunctionRuntime* caller);
 
 		void processNullInstruction()
 		{
@@ -139,15 +108,29 @@ namespace asys
 			m_pCurFunRuntime->m_curIp = endWhileInstruction->whileIp;
 		}
 
-		void processContinueInstruction(const ContinueInstruction* continueInstruction);
+		void processContinueInstruction(const ContinueInstruction* continueInstruction)
+		{
+			m_pCurFunRuntime->m_curIp = continueInstruction->whileIp;
+		}
+
 		void processBreakInstruction(const BreakInstruction* breakInstruction);
 
 		void processReturnInstruction(const ReturnInstruction* retInstruction);
 
-		AsysValue* getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var);
+		AsysValue* getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var)
+		{
+			return funRuntime->m_pFunction->m_stackFrame.getValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
+		}
 
-		void constructValue(FunctionRuntime* funRuntime, const AsysVariable& var);
-		void destructValue(FunctionRuntime* funRuntime, const AsysVariable& var);
+		void constructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
+		{
+			funRuntime->m_pFunction->m_stackFrame.constructValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
+		}
+
+		void destructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
+		{
+			funRuntime->m_pFunction->m_stackFrame.destructValue(funRuntime->m_pStack, funRuntime->m_frameOffset, var);
+		}
 
 		Stack* getCurStack()
 		{
@@ -217,6 +200,56 @@ namespace asys
 
 		AsysValue* getCallerOutputValue(int index);
 
+
+		bool hasAsysValue(const AsysVariable& var)
+		{
+			return getAsysValue(var) != nullptr;
+		}
+
+		AsysValue* getAsysValue(const AsysVariable& var)
+		{
+			if (!m_pCurFunRuntime)
+			{
+				return nullptr;
+			}
+
+			return getAsysValue(m_pCurFunRuntime, var);
+		}
+
+		int getThreadId() const { return m_threadId; };
+		void setThreadId(int threadId) { m_threadId = threadId; }
+
+		void constructValue(const AsysVariable& var)
+		{
+			constructValue(m_pCurFunRuntime, var);
+		}
+
+		void destructValue(const AsysVariable& var)
+		{
+			destructValue(m_pCurFunRuntime, var);
+		}
+
+		template<typename ...Args>
+		void output(const Args&... args)
+		{
+			if (m_funRuntimes.size() == 1)
+			{
+				m_outputs.resize(sizeof...(Args));
+			}
+
+			output_ex(0, args...);
+		}
+
+		void output()
+		{
+			//do nothing.
+		}
+
+		void setCodeFlow(CodeFlow codeFlow)
+		{
+			m_codeFlow = codeFlow;
+		}
+
 	private:
 		std::vector<FunctionRuntime> m_funRuntimes;
 		FunctionRuntime* m_pCurFunRuntime{};
@@ -233,5 +266,45 @@ namespace asys
 
 	private:
 		static Machine* m_pCurMainThreadMachine;
+
+	private:
+		friend class Variable;
+		friend class FunctionCode;
+
+		friend void asysRedo(Machine* asys_this);
+		friend void asysNext(Machine* asys_this);
+		friend void asysBreak(Machine* asys_this);
+		friend void asysContinue(Machine* asys_this);
+
+		template<typename ...Args>
+		friend void asysReturn(Machine* asys_this, const Args&... args);
 	};
+
+	void asysContinue(Machine* asys_this)
+	{
+		asys_this->setCodeFlow(asys::CodeFlow::continue_);
+	}
+
+	void asysNext(Machine* asys_this)
+	{
+		asys_this->setCodeFlow(asys::CodeFlow::next_);
+	}
+
+	void asysRedo(Machine* asys_this)
+	{
+		asys_this->setCodeFlow(asys::CodeFlow::redo_);
+	}
+
+	void asysBreak(Machine* asys_this)
+	{
+		asys_this->setCodeFlow(asys::CodeFlow::break_);
+	}
+
+	template<typename ...Args>
+	void asysReturn(Machine* asys_this, const Args&... args)
+	{
+		asys_this->output(args...);
+		asys_this->setCodeFlow(asys::CodeFlow::return_);
+	}
 }
+
