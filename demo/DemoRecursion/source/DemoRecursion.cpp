@@ -55,9 +55,9 @@ asys::FunctionCode* print()
 
 int main()
 {
-	auto executable = print()->compile();
-	while (executable->run() == asys::CodeFlow::redo_);
-	executable->release();
+	asys::Machine machine;
+	machine.installCode(print());
+	while (machine.run() == asys::CodeFlow::redo_);
 
 	char c{};
 	std::cin >> c;

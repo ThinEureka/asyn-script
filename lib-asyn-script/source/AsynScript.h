@@ -12,16 +12,17 @@
 #include "AsysVariable.h"
 #include "Function.h"
 #include "Define.h"
+#include "Machine.h"
 
 //key words
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \
 					if (__this_function) return __this_function; \
 					__this_function = new asys::FunctionCode; \
-					__this_function->Input(__VA_ARGS__)_; 
+					__this_function->Input(__VA_ARGS__);
 
-#define END_FUN return __this_function;
+#define END_FUN __this_function->compile(); return __this_function;
 
-#define _CC __this_function->Do([=](asys::Executable* asys_this){
+#define _CC __this_function->Do([=](asys::Machine* asys_this){
 #define CC_ })_;
 
 //asys::FunctionCode::Call(outputs, inputs, code)
@@ -29,7 +30,7 @@
 
 #define IF(var) __this_function->If(var)_;
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
-#define IF_CC(var) __this_function->If_ex([=](asys::Executable* asys_this){ return var; })_d_no_callback;
+#define IF_CC(var) __this_function->If_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
 #define IF_EX(...) __this_function->If_ex(__VA_ARGS__)_;
@@ -41,7 +42,7 @@
 #define WHILE(var) __this_function->While(var)_;
 
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
-#define WHILE_CC(var) __this_function->While_ex([=](asys::Executable* asys_this){ return var; })_d_no_callback;
+#define WHILE_CC(var) __this_function->While_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
 #define WHILE_EX(express) __this_function->While_ex(express)_;
@@ -60,11 +61,11 @@
 #define D_ASYS_P(type, name) asys::AsysVariableT<type> name
 
 //keywords used in embedded c++ codes
-#define asys_redo {asys_this->setReturnCodeFlow(asys::CodeFlow::redo_); return;}
-#define asys_next {asys_this->setReturnCodeFlow(asys::CodeFlow::next_); return;}
-#define asys_return(...) {asys_this->setOutput({__VA_ARGS__}); asys_this->setReturnCodeFlow(asys::CodeFlow::return_); return;}
-#define asys_break {asys_this->setReturnCodeFlow(asys::CodeFlow::break_); return;}
-#define asys_continue {asys_this->setReturnCodeFlow(asys::CodeFlow::continue_); return;}
+#define asys_redo {asys_this->setCodeFlow(asys::CodeFlow::redo_); return;}
+#define asys_next {asys_this->setCodeFlow(asys::CodeFlow::next_); return;}
+#define asys_return(...) {asys_this->output(__VA_ARGS__); asys_this->setCodeFlow(asys::CodeFlow::return_); return;}
+#define asys_break {asys_this->setCodeFlow(asys::CodeFlow::break_); return;}
+#define asys_continue {asys_this->setCodeFlow(asys::CodeFlow::continue_); return;}
 #define asys_this asys_this
 
 //used to register asyn functions.

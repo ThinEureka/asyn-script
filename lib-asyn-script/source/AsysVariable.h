@@ -146,12 +146,12 @@ namespace asys
 			return 0;
 		}
 
-		virtual void construct(void* address)
+		virtual void construct(AsysValue* address) const
 		{
 			//do nothing
 		}
 
-		virtual void destruct()
+		virtual void destruct(AsysValue* address) const
 		{
 			//do nothing
 		}

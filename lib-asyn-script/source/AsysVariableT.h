@@ -35,15 +35,17 @@ namespace asys
 			return r();
 		}
 
+		//not thread-safe
 		T& r() const
 		{
+			if (m_pMachine != Machine::getCurMainThreadMachine())
+			{
+				m_pMachine = Machine::getCurMainThreadMachine();
+				m_pAsysValue = nullptr;
+			}
+
 			if (!m_pAsysValue)
 			{
-				if (!m_pMachine)
-				{
-					m_pMachine = Machine::getCurMainThreadMachine();
-				}
-
 				m_pAsysValue = m_pMachine->getAsysValue(*this);
 			}
 
@@ -72,27 +74,15 @@ namespace asys
 			return sizeof(AsysValueT<T>);
 		}
 
-		virtual void construct(void* address) override
+		virtual void construct(AsysValue* address) const override
 		{
-			m_pAsysValue = new (address)AsysValueT<T>;
-			m_pAddress = address;
+			new (address)AsysValueT<T>;
 		}
 
-		virtual void destruct() override
+		virtual void destruct(AsysValue* address) const override
 		{
-			auto* pCastValue = dynamic_cast<AsysVariableT<T>*>(m_pAsysValue);
-			pCastValue->~AsysVariableT<T>();
-			m_pAsysValue = nullptr;
-		}
-
-		virtual void reset() override
-		{
-			if (m_pAsysValue)
-			{
-				destruct();
-			}
-
-			construct(m_pAddress);
+			auto* pCastValue = static_cast<AsysValue<T>*>(address);
+			pCastValue->~AsysValue<T>();
 		}
 
 		//virtual VariableViewer* createVariableViewer() const
@@ -105,7 +95,6 @@ namespace asys
 		//}
 
 	private:
-		void* m_pAddress{};
 		mutable Machine* m_pMachine{};
 
 		void setMachine(Machine* machine)

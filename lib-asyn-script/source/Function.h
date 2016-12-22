@@ -26,8 +26,11 @@ namespace asys
 	class FunctionCode
 	{
 	public:
-		FunctionCode();
-		virtual ~FunctionCode();
+		FunctionCode(){}
+		virtual ~FunctionCode()
+		{
+			clear();
+		}
 
 		BreakPoint& Do(const std::function<void(Machine*)>& express);
 		BreakPoint& Declare(AsysVariable& var);
@@ -42,16 +45,14 @@ namespace asys
 		}
 
 		template<typename ...Args>
-		BreakPoint& Input(Args&... args)
+		void Input(Args&... args)
 		{
-			auto& breakPoint = Declare(args...);
 			Input_ex(0, args...);
-			return breakPoint;
 		}
 
-		BreakPoint& Input()
+		void Input()
 		{
-			return Do(nullptr);
+			//do nothing.
 		}
 
 		//CALL returns multiple variable from the called function, which in turn are assigned to the outputParams.
@@ -132,27 +133,29 @@ namespace asys
 		}
 
 		void clear();
+		void compile();
 
 	private:
-		BreakPoint& Return_ex(const std::function<void(asys::Executable*)>& returnCallback);
 		const AsysVariable* getInputVariable(int index) const;
-		int getNumInputs() const;
+		int getNumInputs() const { return m_numInputs; }
 
 		template<typename ...Args>
-		void Input_ex(int inputIndex, AsysVariable& var, Args&... args);
+		void Input_ex(int inputIndex, AsysVariable& var, Args&... args)
+		{
+			m_stackFrame.declare(var);
+			Input_ex(inputIndex + 1, args...);
+		}
 
 		template<typename ...Args>
-		void Input_ex(int)
-		{}
+		void Input_ex(int num)
+		{
+			m_numInputs = num;
+		}
 
 	private:
 		std::vector<Instruction*> m_instructions;
 		std::list<int> m_unmatchedIfIps;
 		std::list<int> m_unmatchedWhileIps;
-
-		std::string m_fileNameForCurInstruction;
-		int m_lineNumerForCurInstruction{ -1 };
-		std::string m_functionNameForCurInstruction;
 
 		int m_numInputs{};
 

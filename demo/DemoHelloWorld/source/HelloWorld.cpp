@@ -72,11 +72,10 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 
 int main()
 {
-	auto executable = print_sum()->compile();
-	executable->setInput({100});
+	asys::Machine machine;
+	machine.installCode(print_sum(), { 100 });
 
-	while (executable->run() == asys::CodeFlow::redo_);
-	executable->release();
+	while (machine.run() == asys::CodeFlow::redo_);
 
 	char c{};
 	std::cin >> c;

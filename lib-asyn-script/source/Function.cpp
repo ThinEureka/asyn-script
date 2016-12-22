@@ -11,16 +11,7 @@
 #include "Function.h"
 #include <assert.h>
 #include "Debug.h"
-
-asys::FunctionCode::FunctionCode()
-{
-
-}
-
-asys::FunctionCode::~FunctionCode()
-{
-	clear();
-}
+#include "Machine.h"
 
 asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Machine*)>& express)
 {
@@ -30,7 +21,21 @@ asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Machine*)>& ex
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
+asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
+{
+	m_stackFrame.declare(var);
+
+	return Do([=](asys::Machine* asys_this){
+		if (asys_this->hasAsysValue(var))
+		{
+			asys_this->destructValue(var);
+		}
+
+		asys_this->constructValue(var);
+	});
+}
+
+asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Machine*)>& express)
 {
 	int ip = static_cast<int>(m_instructions.size());
 	auto instruction = new IfInstruction(express);
@@ -88,7 +93,7 @@ asys::BreakPoint& asys::FunctionCode::End_if()
 	return endIfInstruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
+asys::BreakPoint& asys::FunctionCode::While_ex(const std::function<bool(Machine*)>& express)
 {
 	int ip = static_cast<int>(m_instructions.size());
 	auto instruction = new WhileInstruction(express);
@@ -151,12 +156,47 @@ asys::BreakPoint& asys::FunctionCode::Break()
 
 asys::BreakPoint& asys::FunctionCode::Return()
 {
-	return Return_ex(nullptr);
+	auto instruction = new ReturnInstruction();
+	m_instructions.push_back(instruction);
+
+	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::Return_ex(const std::function<void(asys::Executable*)>& returnCallback)
+void asys::FunctionCode::clear()
 {
-	auto instruction = new ReturnInstruction(returnCallback);
+	for (auto instruction : m_instructions)
+	{
+		delete instruction;
+	}
+
+	m_instructions.clear();
+	m_stackFrame.clear();
+
+	m_unmatchedIfIps.clear();
+	m_unmatchedWhileIps.clear();
+
+	m_numInputs = 0;
+}
+
+void asys::FunctionCode::compile()
+{
+	assert(m_unmatchedIfIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+	assert(m_unmatchedWhileIps.size() == 0);// "Asynscript compile error: There are unmatched ifs in this function.");
+}
+
+const asys::AsysVariable* asys::FunctionCode::getInputVariable(int index) const
+{
+	if (index < 0 || index >= m_numInputs)
+	{
+		return nullptr;
+	}
+
+	return m_stackFrame.getVariableByIndex(index);
+}
+
+asys::BreakPoint& asys::FunctionCode::Return(const ValueList& vars)
+{
+	auto instruction = new ReturnInstruction(vars);
 	m_instructions.push_back(instruction);
 
 	return instruction->breakPoint();

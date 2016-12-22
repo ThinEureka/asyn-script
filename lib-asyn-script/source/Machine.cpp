@@ -36,13 +36,14 @@ void asys::FunctionRuntime::destruct(asys::Machine* machine)
 	m_pFunction->m_stackFrame.destructFrame(m_pStack, m_baseFrameOffset);
 }
 
-asys::Machine::Machine(StackPool* stackPool/* = nullptr*/)
+asys::Machine::Machine(StackPool* stackPool/* = nullptr*/, bool sharingStackPool/* = false*/)
 {
 	if (!stackPool)
 	{
 		stackPool = new DefaultStackPool();
 	}
 	m_pStackPool = stackPool;
+	m_isSharingStackPool = sharingStackPool;
 }
 
 asys::Machine::~Machine()
@@ -53,10 +54,14 @@ asys::Machine::~Machine()
 	{
 		m_pStackPool->checkIn(stack);
 	}
+
 	m_stacks.clear();
 	m_stackIndex = -1;
 
-	delete m_pStackPool;
+	if (!m_isSharingStackPool)
+	{
+		delete m_pStackPool;
+	}
 }
 
 asys::CodeFlow asys::Machine::run()
@@ -131,11 +136,6 @@ asys::CodeFlow asys::Machine::run()
 	{
 		m_pCurMainThreadMachine = nullptr;
 	}
-}
-
-void asys::Machine::processNullInstruction()
-{
-	m_pCurFunRuntime->m_curIp++;
 }
 
 void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
@@ -229,16 +229,6 @@ void asys::Machine::processIfInstruction(const IfInstruction* ifInstruction)
 	m_pCurFunRuntime->m_curIp = ifInstruction->endIfIp + 1;
 }
 
-void asys::Machine::processElseInstruction(const ElseInstruction* elseInstruction)
-{
-	m_pCurFunRuntime->m_curIp = elseInstruction->endIfIp + 1;
-}
-
-void asys::Machine::processEndIfInstruction(const EndIfInstruction* endIfInstruction)
-{
-	m_pCurFunRuntime->m_curIp++;
-}
-
 void asys::Machine::processWhileInstruction(const WhileInstruction* whileInstruction)
 {
 	bool condition = whileInstruction->express(this);
@@ -248,11 +238,6 @@ void asys::Machine::processWhileInstruction(const WhileInstruction* whileInstruc
 	}
 
 	m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
-}
-
-void asys::Machine::processEndWhileInstruction(const EndWhileInstruction* endWhileInstruction)
-{
-	m_pCurFunRuntime->m_curIp = endWhileInstruction->whileIp;
 }
 
 void asys::Machine::processContinueInstruction(const ContinueInstruction* continueInstruction)
@@ -319,19 +304,38 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 
 asys::AsysValue* asys::Machine::getAsysValue(FunctionRuntime* funRuntime, const AsysVariable& var)
 {
-	auto pAsysVar = funRuntime->m_pFunction->m_stackFrame.getVariable(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
-	return static_cast<AsysValue*>(funRuntime->m_pStack->getAddressByFrameOffset(funRuntime->m_baseFrameOffset) + pAsysVar->getMemoryOffset());
+	return funRuntime->m_pFunction->m_stackFrame.getValue(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
 }
 
-void asys::Machine::construct(FunctionRuntime* funRuntime, const AsysVariable& var)
+void asys::Machine::constructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
 {
-	auto pAsynVar = funRuntime->m_pFunction->m_stackFrame.getVariable(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
-	pAsynVar->construct(var);
+	funRuntime->m_pFunction->m_stackFrame.constructValue(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
 }
 
-void asys::Machine::destruct(FunctionRuntime* funRuntime, const AsysVariable& var)
+void asys::Machine::destructValue(FunctionRuntime* funRuntime, const AsysVariable& var)
 {
+	funRuntime->m_pFunction->m_stackFrame.destructValue(funRuntime->m_pStack, funRuntime->m_baseFrameOffset, var);
+}
 
+asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
+{
+	if (m_funRuntimes.size() < 2)
+	{
+		return nullptr;
+	}
+
+	auto pCallerRuntime = &m_funRuntimes[m_funRuntimes.size() - 2];
+	auto pCallerFunction = pCallerRuntime->m_pFunction;
+	const auto& callerInstructions = pCallerFunction->m_instructions;
+	auto callInstruction = dynamic_cast<const CallInstruction*>(callerInstructions[pCallerRuntime->m_curIp]);
+
+	if (index < 0 || index >= static_cast<int>(callInstruction->outputs.getLength()))
+	{
+		return nullptr;
+	}
+
+	auto pOutputVar = callInstruction->outputs.getAsysVariable(index);
+	return getAsysValue(pCallerRuntime, *pOutputVar);
 }
 
 asys::AsysValue* asys::Machine::getAsysValue(const AsysVariable& var)
@@ -350,6 +354,12 @@ void asys::Machine::cleanupRuntime()
 	{
 		popFunctionRuntime();
 	}
+
+	for (auto output : m_outputs)
+	{
+		delete output;
+	}
+	m_outputs.clear();
 }
 
 void asys::Machine::popFunctionRuntime()
@@ -373,7 +383,7 @@ void asys::Machine::popFunctionRuntime()
 	}
 }
 
-void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller, const ValueList& valueList)
+void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller)
 {
 	m_funRuntimes.resize(m_funRuntimes.size() + 1);
 	m_pCurFunRuntime = &m_funRuntimes.back();
@@ -408,12 +418,15 @@ void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntim
 		}
 	}
 
-	m_pCurFunRuntime->construct(code, getCurStack(), getCurStack()->getCurFrameOffset());
+	m_pCurFunRuntime->construct(code, getCurStack());
+}
 
+void asys::Machine::setupInputs(const ValueList& valueList)
+{
 	for (int i = 0; i < code->getNumInputs(); ++i)
 	{
 		auto pInputVar = code->getInputVariable(i);
-		construct(m_pCurFunRuntime, *pInputVar);
+		constructValue(m_pCurFunRuntime, *pInputVar);
 
 		if (i < static_cast<int>(valueList.getLength()))
 		{
@@ -434,10 +447,3 @@ void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntim
 		}
 	}
 }
-
-void asys::Machine::installCode(const FunctionCode* code, const ValueList& valueList)
-{
-	cleanupRuntime();
-	pushFunctionRuntime(code, nullptr, valueList);
-}
-

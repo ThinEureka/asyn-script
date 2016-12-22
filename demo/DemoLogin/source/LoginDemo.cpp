@@ -19,13 +19,13 @@ public:
 
 	bool run(const std::string& deviceId)
 	{
-		if (!m_pExecutable)
+		if (!m_bStarted)
 		{
-			m_pExecutable = login()->compile();
-			m_pExecutable->setInput({deviceId});
+			m_machine.installCode(deviceId, { deviceId });
+			m_bStarted = true;
 		}
 
-		auto retCode = m_pExecutable->run();
+		auto retCode = m_machine.run();
 		return retCode == asys::CodeFlow::redo_;
 	}
 
@@ -162,7 +162,8 @@ private:
 
 private:
 	asys_reg_funs;
-	asys::Executable* m_pExecutable{};
+	asys::Machine m_machine;
+	bool m_bStarted{ false };
 };
 
 int main()

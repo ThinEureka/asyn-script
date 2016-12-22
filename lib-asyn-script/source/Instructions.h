@@ -62,7 +62,7 @@ namespace asys
 			const char* functionName = nullptr,
 			int lineNumber = -1);
 
-		BreakPoint& operator >>= (std::initializer_list<AsysVariable> varList);
+		BreakPoint& operator >>= (const VariableList& valueList);
 
 		const std::function<void(FunctionExecutable*, const BreakPoint&)>& callback() const { return m_callback; }
 
@@ -131,7 +131,7 @@ namespace asys
 			return instruction;
 		}
 
-		void setOutputCallback(const VariableList& outputs)
+		void setOutputs(const VariableList& outputs)
 		{
 			this->outputs = outputs;
 		}
@@ -177,7 +177,6 @@ namespace asys
 			copy->endIfIp = endIfIp;
 
 			copy->setBreakPoint(breakPoint());
-
 			return copy;
 		}
 
@@ -290,6 +289,8 @@ namespace asys
 		ReturnInstruction(const ValueList& valueList) 
 			: Instruction(InstructionType::type_return),
 			valueList(valueList){}
+
+		ReturnInstruction() : Instruction(InstructionType::type_return){}
 
 		Instruction* clone() const override
 		{
