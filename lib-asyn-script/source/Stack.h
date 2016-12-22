@@ -95,6 +95,7 @@ namespace asys
 			}
 
 			m_usedSize += size;
+			return true;
 		}
 
 		bool dellocate(size_t size)
@@ -105,6 +106,7 @@ namespace asys
 			}
 
 			m_usedSize -= size;
+			return true;
 		}
 
 		size_t getSize() const
@@ -118,7 +120,7 @@ namespace asys
 		}
 
 	private:
-		const char* const m_pRawMem{};
+		char* const m_pRawMem{};
 		const size_t m_size{};
 		size_t m_usedSize{};
 	};

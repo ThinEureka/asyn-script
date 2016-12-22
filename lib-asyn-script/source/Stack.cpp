@@ -18,6 +18,7 @@ void asys::StackFrame::clear()
 		delete pair.second;
 	}
 	m_variables.clear();
+	m_curSize = 0;
 }
 
 void asys::StackFrame::declare(AsysVariable& var)
