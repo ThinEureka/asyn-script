@@ -85,6 +85,15 @@ asys::CodeFlow asys::Machine::run()
 
 		auto instruction = instructions[m_pCurFunRuntime->m_curIp];
 
+#if ASYS_BREAKPOINT == 1
+		auto codeFlow = processBreakpoint(instruction->breakPoint());
+		if (codeFlow == CodeFlow::redo_)
+		{
+			return m_codeFlow = CodeFlow::redo_;
+		}
+#endif
+		
+
 		m_codeFlow = CodeFlow::next_;
 
 		switch (instruction->instructionType())
@@ -220,7 +229,7 @@ void asys::Machine::processCallInstruction(const CallInstruction* callInstructio
 	}
 	else
 	{
-		pushFunctionRuntime(code, m_pCurFunRuntime, callInstruction->inputs);
+		pushFunctionRuntime(code, callInstruction->inputs);
 	}
 }
 
@@ -247,8 +256,10 @@ void asys::Machine::processWhileInstruction(const WhileInstruction* whileInstruc
 	{
 		m_pCurFunRuntime->m_curIp++;
 	}
-
-	m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
+	else
+	{
+		m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
+	}
 }
 
 void asys::Machine::processBreakInstruction(const BreakInstruction* breakInstruction)
@@ -310,6 +321,18 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 	popFunctionRuntime();
 }
 
+asys::CodeFlow asys::Machine::processBreakpoint(const BreakPoint& breakPoint)
+{
+	auto callback = breakPoint.callback();
+	if (callback && m_codeFlow != CodeFlow::redo_)
+	{
+		callback(this, breakPoint);
+	}
+
+	return CodeFlow::next_;
+}
+
+
 asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
 {
 	if (m_funRuntimes.size() < 2)
@@ -362,10 +385,11 @@ void asys::Machine::cleanupRuntime()
 	m_codeFlow = CodeFlow::next_;
 }
 
-void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller)
+void asys::Machine::pushFunctionRuntime(const FunctionCode* code)
 {
 	m_funRuntimes.resize(m_funRuntimes.size() + 1);
 	m_pCurFunRuntime = &m_funRuntimes.back();
+	m_pCurFunRuntime->m_curIp = 0;
 
 	if (!getCurStack())
 	{
@@ -400,7 +424,7 @@ void asys::Machine::pushFunctionRuntime(const FunctionCode* code, FunctionRuntim
 	m_pCurFunRuntime->construct(code, getCurStack());
 }
 
-void asys::Machine::setupInputs(const ValueList& valueList, FunctionRuntime* caller)
+void asys::Machine::setupInputs(const ValueList& valueList)
 {
 	auto pFunction = m_pCurFunRuntime->m_pFunction;
 	for (int i = 0; i < pFunction->getNumInputs(); ++i)
@@ -420,8 +444,16 @@ void asys::Machine::setupInputs(const ValueList& valueList, FunctionRuntime* cal
 				}
 				else
 				{
-					auto pRealArguemntValue = getAsysValue(caller, innerValue->asysVarible);
-					pInputValue->assign(*pRealArguemntValue);
+					if (m_funRuntimes.size() >= 2)
+					{
+						auto caller = &m_funRuntimes[m_funRuntimes.size() - 2];
+						auto pRealArguemntValue = getAsysValue(caller, innerValue->asysVarible);
+						pInputValue->assign(*pRealArguemntValue);
+					}
+					else
+					{
+						assert(false);
+					}
 				}
 			}
 		}
