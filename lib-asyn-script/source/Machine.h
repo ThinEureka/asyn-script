@@ -39,7 +39,7 @@ namespace asys
 		const FunctionCode* m_pFunction{ nullptr };
 		size_t m_frameOffset{ 0 };
 		Stack* m_pStack{ nullptr };
-		std::vector<std::function<void(asys::Machine*)>>* m_pDeallocators;
+		std::vector<std::function<void(asys::Machine*)>>* m_pDeallocators{};
 
 	private:
 		friend class Machine;
@@ -57,13 +57,13 @@ namespace asys
 		void installCode(const FunctionCode* code, const ValueList& valueList)
 		{
 			cleanupRuntime();
-			pushFunctionRuntime(code, nullptr, valueList);
+			pushFunctionRuntime(code, valueList);
 		}
 
 		void installCode(const FunctionCode* code)
 		{
 			cleanupRuntime();
-			pushFunctionRuntime(code, nullptr);
+			pushFunctionRuntime(code);
 		}
 
 		CodeFlow run();
@@ -72,14 +72,14 @@ namespace asys
 		void cleanupRuntime();
 
 		void popFunctionRuntime();
-		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller, const ValueList& valueList)
+		void pushFunctionRuntime(const FunctionCode* code, const ValueList& valueList)
 		{
-			pushFunctionRuntime(code, caller);
-			setupInputs(valueList, caller);
+			pushFunctionRuntime(code);
+			setupInputs(valueList);
 		}
 
-		void pushFunctionRuntime(const FunctionCode* code, FunctionRuntime* caller);
-		void setupInputs(const ValueList& valueList, FunctionRuntime* caller);
+		void pushFunctionRuntime(const FunctionCode* code);
+		void setupInputs(const ValueList& valueList);
 
 		void processNullInstruction()
 		{
@@ -242,6 +242,8 @@ namespace asys
 		{
 			m_codeFlow = codeFlow;
 		}
+
+		CodeFlow processBreakpoint(const BreakPoint& breakpoint);
 
 	private:
 		std::vector<FunctionRuntime> m_funRuntimes;
