@@ -28,6 +28,8 @@ namespace asys
 			delete m_pRawMem;
 		}
 
+		Stack(const Stack& stack) = delete;
+
 		size_t getRemainSize() const
 		{
 			return m_size - m_usedSize;

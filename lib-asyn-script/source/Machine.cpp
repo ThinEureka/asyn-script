@@ -67,8 +67,10 @@ asys::Machine::~Machine()
 
 asys::CodeFlow asys::Machine::run()
 {
+	Machine* pOldMainThreadMacine = nullptr;
 	if (getThreadId() == THREAD_ID_MAIN)
 	{
+		pOldMainThreadMacine = m_pCurMainThreadMachine;
 		m_pCurMainThreadMachine = this;
 	}
 
@@ -144,7 +146,7 @@ asys::CodeFlow asys::Machine::run()
 
 	if (getThreadId() == THREAD_ID_MAIN)
 	{
-		m_pCurMainThreadMachine = nullptr;
+		m_pCurMainThreadMachine = pOldMainThreadMacine;
 	}
 
 	return m_codeFlow;
@@ -200,12 +202,6 @@ void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
 
 	if (m_codeFlow == CodeFlow::return_)
 	{
-		if (m_funRuntimes.size() > 1)
-		{
-			auto pCallerRuntime = &m_funRuntimes[m_funRuntimes.size() - 2];
-			pCallerRuntime->m_curIp++;
-		}
-
 		popFunctionRuntime();
 		m_codeFlow = CodeFlow::next_;
 	}
@@ -239,11 +235,13 @@ void asys::Machine::processIfInstruction(const IfInstruction* ifInstruction)
 	if (condition)
 	{
 		m_pCurFunRuntime->m_curIp++;
+		return;
 	}
 
 	if (ifInstruction->elseIp != INVALID_IP)
 	{
 		m_pCurFunRuntime->m_curIp = ifInstruction->elseIp + 1;
+		return;
 	}
 
 	m_pCurFunRuntime->m_curIp = ifInstruction->endIfIp + 1;
@@ -314,8 +312,6 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 				pOutputValue->assign(*pRetValue);
 			}
 		}
-
-		pCallerRuntime->m_curIp++;
 	}
 
 	popFunctionRuntime();
@@ -474,9 +470,41 @@ void asys::Machine::popFunctionRuntime()
 	if (m_funRuntimes.size() > 0)
 	{
 		m_pCurFunRuntime = &m_funRuntimes.back();
+		m_pCurFunRuntime->m_curIp++;
 	}
 	else
 	{
 		m_pCurFunRuntime = nullptr;
 	}
+}
+
+const asys::AsysValue* asys::Machine::getOutput(int index)
+{
+	if (index < 0 || index >= static_cast<int>(m_outputs.size()))
+	{
+		return nullptr;
+	}
+
+	return m_outputs[index];
+}
+
+void asys::Machine::addDeallocator(std::function<void(asys::Machine*)> deallocator)
+{
+	if (!m_pCurFunRuntime->m_pDeallocators)
+	{
+		m_pCurFunRuntime->m_pDeallocators = new std::vector<std::function<void(asys::Machine*)>>;
+	}
+
+	m_pCurFunRuntime->m_pDeallocators->push_back(deallocator);
+}
+
+asys::AsysValue* asys::Machine::getInput(int index)
+{
+	auto pAsysVar = m_pCurFunRuntime->m_pFunction->getInputVariable(index);
+	if (!pAsysVar)
+	{
+		return nullptr;
+	}
+
+	return getAsysValue(*pAsysVar);
 }

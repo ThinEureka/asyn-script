@@ -13,6 +13,7 @@
 #include "Instructions.h"
 #include <vector>
 #include "Stack.h"
+#include "AsysVariableT.h"
 
 namespace asys
 {
@@ -54,6 +55,8 @@ namespace asys
 		Machine(StackPool* stackPool = nullptr, bool sharingStackPool = false);
 		virtual ~Machine();
 
+		Machine(const Machine& machine) = delete;
+
 		void installCode(const FunctionCode* code, const ValueList& valueList)
 		{
 			cleanupRuntime();
@@ -67,6 +70,13 @@ namespace asys
 		}
 
 		CodeFlow run();
+
+		const asys::AsysValue* getOutput(int index);
+
+		void addDeallocator(std::function<void(asys::Machine*)> deallocator);
+
+		//deprecated
+		asys::AsysValue* getInput(int index);
 
 	private:
 		void cleanupRuntime();
@@ -181,8 +191,8 @@ namespace asys
 			//do nothing.
 		}
 
-		template<typename ...Args>
-		void output_ex(int index, const AsysVariable& var, const Args&... args)
+		template<typename T, typename ...Args>
+		void output_ex(int index, const AsysVariableT<T>& var, const Args&... args)
 		{
 			setOutputByVar(index, var);
 			output_ex(index + 1, args...);

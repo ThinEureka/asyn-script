@@ -31,6 +31,8 @@ namespace asys
 			clear();
 		}
 
+		FunctionCode(const FunctionCode& code) = delete;
+
 		BreakPoint& Do(const std::function<void(Machine*)>& express);
 		BreakPoint& Declare(AsysVariable& var);
 
