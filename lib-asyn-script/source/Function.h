@@ -16,6 +16,7 @@
 #include "Debug.h"
 #include "Instructions.h"
 #include "Stack.h"
+#include "Machine.h"
 
 namespace asys
 {

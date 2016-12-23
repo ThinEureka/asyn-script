@@ -78,6 +78,27 @@ namespace asys
 		//deprecated
 		asys::AsysValue* getInput(int index);
 
+		template<typename ...Args>
+		void output(const Args&... args)
+		{
+			if (m_funRuntimes.size() == 1)
+			{
+				m_outputs.resize(sizeof...(Args));
+			}
+
+			output_ex(0, args...);
+		}
+
+		void output()
+		{
+			//do nothing.
+		}
+
+		void setCodeFlow(CodeFlow codeFlow)
+		{
+			m_codeFlow = codeFlow;
+		}
+
 	private:
 		void cleanupRuntime();
 
@@ -175,22 +196,6 @@ namespace asys
 			destructValue(m_pCurFunRuntime, var);
 		}
 
-		template<typename ...Args>
-		void output(const Args&... args)
-		{
-			if (m_funRuntimes.size() == 1)
-			{
-				m_outputs.resize(sizeof...(Args));
-			}
-
-			output_ex(0, args...);
-		} 
-
-		void output()
-		{
-			//do nothing.
-		}
-
 		template<typename T, typename ...Args>
 		void output_ex(int index, const AsysVariableT<T>& var, const Args&... args)
 		{
@@ -246,11 +251,6 @@ namespace asys
 					pCallerOutValue->assign(value);
 				}
 			}
-		}
-
-		void setCodeFlow(CodeFlow codeFlow)
-		{
-			m_codeFlow = codeFlow;
 		}
 
 		CodeFlow processBreakpoint(const BreakPoint& breakpoint);

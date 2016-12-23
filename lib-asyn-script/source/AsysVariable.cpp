@@ -14,3 +14,8 @@ asys::AsysValue* asys::AsysVariable::getAsysValue(Machine* asys_this) const
 {
 	return asys_this->getAsysValue(*this);
 }
+
+asys::AsysValue* asys::AsysVariable::getAsysValueFromCurMainThreadMachine() const
+{
+	return getAsysValue(Machine::getCurMainThreadMachine());
+}

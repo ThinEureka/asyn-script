@@ -184,6 +184,7 @@ namespace asys
 		}
 
 		AsysValue* getAsysValue(Machine* asys_this) const;
+		AsysValue* getAsysValueFromCurMainThreadMachine() const;
 
 	protected:
 		size_t m_memoryOffset{};
