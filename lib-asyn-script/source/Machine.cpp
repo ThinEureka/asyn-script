@@ -387,17 +387,10 @@ void asys::Machine::pushFunctionRuntime(const FunctionCode* code)
 	m_pCurFunRuntime = &m_funRuntimes.back();
 	m_pCurFunRuntime->m_curIp = 0;
 
-	if (!getCurStack())
-	{
-		auto stack = m_pStackPool->checkout(code->m_stackFrame.getSize());
-		m_stacks.push_back(stack);
-		++m_stackIndex;
-	}
-
-	if (getCurStack()->getRemainSize() < code->m_stackFrame.getSize())
+	if (!getCurStack() || getCurStack()->getRemainSize() < code->m_stackFrame.getSize())
 	{
 		int i = m_stackIndex + 1;
-		for (int i = m_stackIndex + 1; i < static_cast<int>(m_stacks.size()); ++i)
+		for (; i < static_cast<int>(m_stacks.size()); ++i)
 		{
 			auto newStack = m_stacks[i];
 			if (newStack->getRemainSize() >= code->m_stackFrame.getSize())

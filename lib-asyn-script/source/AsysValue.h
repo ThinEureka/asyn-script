@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace asys
 {
 	class AsysValue
