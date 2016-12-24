@@ -61,14 +61,15 @@ void asys::StackFrame::constructValue(Stack* stack, size_t frameOffset, const As
 {
 	auto ppAsysValue = getPointerToAsysValuePointer(stack, frameOffset, var);
 	*ppAsysValue = getValueAddressByValuePointerAddress(ppAsysValue);
-	auto metaVar = m_variables.find(var.getMemoryOffset());
-	metaVar->second->construct(*ppAsysValue);
+	auto itMetaVar = m_variables.find(var.getMemoryOffset());
+	itMetaVar->second->construct(*ppAsysValue);
 }
 
 void asys::StackFrame::destructValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const
 {
 	auto ppAsysValue = getPointerToAsysValuePointer(stack, frameOffset, var);
-	var.destruct(*ppAsysValue);
+	auto itMetaVar = m_variables.find(var.getMemoryOffset());
+	itMetaVar->second->destruct(*ppAsysValue);
 }
 
 const asys::AsysVariable* asys::StackFrame::getVariableByIndex(int index) const
