@@ -82,14 +82,14 @@ namespace asys
 			pCastValue->~AsysValueT<T>();
 		}
 
-		//virtual VariableViewer* createVariableViewer() const
-		//{
-		//	auto viewer = new VariableViewerT<T>;
-		//	auto pCastValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
-		//	viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
+		virtual VariableViewer* createVariableViewer(void* address) const override
+		{
+			auto viewer = new VariableViewerT<T>;
+			auto pCastValue = static_cast<AsysValueT<T>*>(address);
+			viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
 
-		//	return viewer;
-		//}
+			return viewer;
+		}
 
 	private:
 		mutable Machine* m_pMachine{};

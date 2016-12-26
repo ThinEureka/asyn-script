@@ -23,7 +23,8 @@ namespace asys
 	public:
 		Stack(size_t size) : m_size(size), m_pRawMem(new char[size]){}
 
-		virtual ~Stack()
+		//not meant to be used as base class.
+		~Stack()
 		{
 			delete m_pRawMem;
 		}
@@ -87,6 +88,8 @@ namespace asys
 	{
 	public:
 		StackFrame(){}
+
+		//not meant to be base class.
 		~StackFrame()
 		{
 			clear();
@@ -110,6 +113,8 @@ namespace asys
 		void destructValue(Stack* stack, size_t frameOffset, const AsysVariable& var) const;
 
 		const AsysVariable* getVariableByIndex(int index) const;
+
+		void forEachVariable(const std::function<void(AsysVariable*)>& callback) const;
 
 	private:
 		void* getValuePointerAddress(Stack* stack, size_t frameOffset, const AsysVariable& var) const;

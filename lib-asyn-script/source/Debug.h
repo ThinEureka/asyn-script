@@ -15,87 +15,80 @@
 
 namespace asys
 {
-	class Executable;
 	class BreakPoint;
-	class FunctionExecutable;
-	class Context;
 	class VariableViewer;
+	class DebugInfo;
+	class CallInfo;
 
-	/*class Debugger
+	class Debugger
 	{
 	public:
-		virtual CodeFlow onBreakPoint(Executable* asys_this, const BreakPoint& breakPoint, Context* context) = 0;
+		Debugger() = default;
+		virtual ~Debugger() = default;
+
+		virtual CodeFlow onBreakPoint(const BreakPoint& breakPoint) = 0;
+
+		void setMachine(Machine* machine) { m_pMachine = machine; }
+		Machine* getMachine() { return m_pMachine; }
+
+		const DebugInfo* getDebugInfo();
+		const CallInfo* getCallInfo(int index);
+
+		int getCallStackSize();
+
+	protected:
+		Machine* m_pMachine{};
+	};
+
+	class CallInfo
+	{
+	public:
+		CallInfo(){}
+
+		//not to be used as base class
+		~CallInfo();
+
+		const std::vector<VariableViewer*>& getVariables() { return m_variables; }
+		const BreakPoint* getBreakPoint() { return m_pCurBreakpoint; }
+
+	private:
+		void init(Machine* machine, int callIndex);
+		void updateBreakPoint(Machine*, int callIndex);
+
+	private:
+		std::vector<VariableViewer*> m_variables;
+		const BreakPoint* m_pCurBreakpoint{ nullptr };
+
+	private:
+		friend class DebugInfo;
 	};
 
 	class DebugInfo
 	{
 	public:
-		virtual ~DebugInfo();
+		DebugInfo(Machine* machine);
 
-		Debugger* getDebugger()
-		{
-			return m_pDebugger;
-		}
+		//not to be used as base class
+		~DebugInfo();
 
-		void setDebugger(Debugger* debugger)
-		{
-			m_pDebugger = debugger;
-		}
+	public:
+		void onPushCallStack();
 
-		void setParentDebugInfo(DebugInfo* debugInfo)
-		{
-			m_pParentDebugInfo = debugInfo;
-		}
+		void onPopCallStack();
 
-		void initialize(FunctionExecutable* executable);
-
-		void setFileName(const char* fileName)
-		{
-			m_fileName = fileName;
-		}
-
-		void setFunName(const char* funName)
-		{
-			m_funName = funName;
-		}
-
-		void setLineNumber(int lineNumber)
-		{
-			m_lineNumber = lineNumber;
-		}
-
-		const char* fileName() const
-		{
-			return m_fileName;
-		}
-
-		const char* funName() const
-		{
-			return m_funName;
-		}
-
-		int lineNumber() const
-		{
-			return m_lineNumber;
-		}
-
-		void setCurLocation(const char* fileName, const char* funName, int lineNumber)
-		{
-			m_fileName = fileName;
-			m_funName = funName;
-			m_lineNumber = lineNumber;
-		}
+		void onBreakPoint(const BreakPoint& breakPoint);
 
 	private:
-		const char* m_fileName;
-		const char* m_funName;
-		int m_lineNumber{ -1 };
-		std::map<const char*, VariableViewer*> m_variables;
-		DebugInfo* m_pParentDebugInfo{};
-		Debugger* m_pDebugger{};
-		FunctionExecutable* m_pExecutable{};
+		void generateCallStack();
+
+		void pushCallInfo(int index);
+		void popCallInfo();
 
 	private:
-		friend class Debugger;
-	};*/
+		std::vector<CallInfo*> m_callStack;
+		Machine* m_pMachine{};
+		const BreakPoint* m_pCurBreakPoint{ nullptr };
+		int m_nCurCallIndex{ -1 };
+		std::vector<VariableViewer*>* m_pLocalVariables{ nullptr };
+	};
 }

@@ -19,6 +19,9 @@
 namespace asys
 {
 	class Machine;
+	class Debugger;
+	class DebugInfo;
+	class CallInfo;
 
 	class Const
 	{
@@ -178,7 +181,7 @@ namespace asys
 
 		void setAsysValue(AsysValue* asysValue) { m_pAsysValue = asysValue; }
 
-		virtual VariableViewer* createVariableViewer() const
+		virtual VariableViewer* createVariableViewer(void* address) const
 		{
 			return nullptr;
 		}
@@ -196,6 +199,9 @@ namespace asys
 		friend class Machine;
 		friend class ValueList;
 		friend class FunctionRuntime;
+		friend class Debugger;
+		friend class DebugInfo;
+		friend class CallInfo;
 	};
 
 	class VariableList

@@ -22,6 +22,9 @@ namespace asys
 {
 	class FunctionCode;
 	class Machine;
+	class Debugger;
+	class CallInfo;
+	class DebugInfo;
 
 	class FunctionCode
 	{
@@ -160,6 +163,9 @@ namespace asys
 	private:
 		friend class Machine;
 		friend class FunctionRuntime;
+		friend class Debugger;
+		friend class DebugInfo;
+		friend class CallInfo;
 	};
 
 	class FunctionMap : public std::map <std::string, asys::FunctionCode*>

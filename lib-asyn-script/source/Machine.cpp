@@ -45,6 +45,10 @@ asys::Machine::Machine(StackPool* stackPool/* = nullptr*/, bool sharingStackPool
 	}
 	m_pStackPool = stackPool;
 	m_isSharingStackPool = sharingStackPool;
+
+#if ASYS_DEBUG == 1
+	m_pDebugInfo = new DebugInfo(this);
+#endif
 }
 
 asys::Machine::~Machine()
@@ -63,6 +67,10 @@ asys::Machine::~Machine()
 	{
 		delete m_pStackPool;
 	}
+
+#if ASYS_BREAKPOINT == 1
+	delete m_pDebugInfo;
+#endif
 }
 
 asys::CodeFlow asys::Machine::run()
@@ -91,10 +99,14 @@ asys::CodeFlow asys::Machine::run()
 		auto codeFlow = processBreakpoint(instruction->breakPoint());
 		if (codeFlow == CodeFlow::redo_)
 		{
+			if (getThreadId() == THREAD_ID_MAIN)
+			{
+				m_pCurMainThreadMachine = pOldMainThreadMacine;
+			}
+
 			return m_codeFlow = CodeFlow::redo_;
 		}
 #endif
-		
 
 		m_codeFlow = CodeFlow::next_;
 
@@ -317,18 +329,6 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 	popFunctionRuntime();
 }
 
-asys::CodeFlow asys::Machine::processBreakpoint(const BreakPoint& breakPoint)
-{
-	auto callback = breakPoint.callback();
-	if (callback && m_codeFlow != CodeFlow::redo_)
-	{
-		callback(this, breakPoint);
-	}
-
-	return CodeFlow::next_;
-}
-
-
 asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
 {
 	if (m_funRuntimes.size() < 2)
@@ -411,6 +411,13 @@ void asys::Machine::pushFunctionRuntime(const FunctionCode* code)
 	}
 
 	m_pCurFunRuntime->construct(code, getCurStack());
+
+#if ASYS_BREAKPOINT == 1
+	if (m_pDebugInfo)
+	{
+		m_pDebugInfo->onPushCallStack();
+	}
+#endif
 }
 
 void asys::Machine::setupInputs(const ValueList& valueList)
@@ -469,6 +476,13 @@ void asys::Machine::popFunctionRuntime()
 	{
 		m_pCurFunRuntime = nullptr;
 	}
+
+#if ASYS_BREAKPOINT == 1
+	if (m_pDebugInfo)
+	{
+		m_pDebugInfo->onPopCallStack();
+	}
+#endif
 }
 
 const asys::AsysValue* asys::Machine::getOutput(int index)
@@ -501,3 +515,56 @@ asys::AsysValue* asys::Machine::getInput(int index)
 
 	return getAsysValue(*pAsysVar);
 }
+
+#if ASYS_BREAKPOINT == 1
+
+asys::CodeFlow asys::Machine::processBreakpoint(const BreakPoint& breakPoint)
+{
+#if ASYS_DEBUG == 1
+	const auto& callback = breakPoint.callback();
+	if (callback && m_codeFlow != CodeFlow::redo_)
+	{
+		callback(this, breakPoint);
+	}
+#endif
+
+	if (m_pDebugInfo)
+	{
+		m_pDebugInfo->onBreakPoint(breakPoint);
+	}
+
+	if (m_pDebugger)
+	{
+		return m_pDebugger->onBreakPoint(breakPoint);
+	}
+
+	return CodeFlow::next_;
+}
+
+asys::Debugger* asys::Machine::getDebugger()
+{
+	return m_pDebugger;
+}
+
+void asys::Machine::attachDebugger(Debugger* debugger)
+{
+	if (m_pDebugger == debugger)
+	{
+		return;
+	}
+
+	delete m_pDebugger;
+	m_pDebugger = debugger;
+
+	if (m_pDebugger && !m_pDebugInfo)
+	{
+		m_pDebugInfo = new DebugInfo(this);
+	}
+	else if (!m_pDebugger && m_pDebugInfo)
+	{
+		delete m_pDebugInfo;
+		m_pDebugInfo = nullptr;
+	}
+}
+
+#endif

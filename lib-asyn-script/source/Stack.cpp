@@ -91,6 +91,17 @@ const asys::AsysVariable* asys::StackFrame::getVariableByIndex(int index) const
 	return nullptr;
 }
 
+void asys::StackFrame::forEachVariable(const std::function<void(AsysVariable*)>& callback) const
+{
+	if (callback)
+	{
+		for (const auto& pair : m_variables)
+		{
+			callback(pair.second);
+		}
+	}
+}
+
 void* asys::StackFrame::getValuePointerAddress(Stack* stack, size_t frameOffset, const AsysVariable& var) const
 {
 	return static_cast<char*>(stack->getAddressByFrameOffset(frameOffset)) + var.getMemoryOffset();

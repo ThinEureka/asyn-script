@@ -20,6 +20,9 @@ namespace asys
 	class Machine;
 	class Variable;
 	class FunctionCode;
+	class Debugger;
+	class DebugInfo;
+	class CallInfo;
 
 	void asysRedo(Machine* asys_this);
 	void asysNext(Machine* asys_this);
@@ -44,6 +47,9 @@ namespace asys
 
 	private:
 		friend class Machine;
+		friend class Debugger;
+		friend class DebugInfo;
+		friend class CallInfo;
 	};
 
 	class Machine
@@ -98,6 +104,10 @@ namespace asys
 		{
 			m_codeFlow = codeFlow;
 		}
+
+#if ASYS_BREAKPOINT == 1
+		void attachDebugger(Debugger* debugger);
+#endif
 
 	private:
 		void cleanupRuntime();
@@ -253,7 +263,10 @@ namespace asys
 			}
 		}
 
+#if ASYS_BREAKPOINT == 1
 		CodeFlow processBreakpoint(const BreakPoint& breakpoint);
+		Debugger* getDebugger();
+#endif // ASYS_BREAKPOINT
 
 	private:
 		std::vector<FunctionRuntime> m_funRuntimes;
@@ -270,12 +283,18 @@ namespace asys
 		CodeFlow m_codeFlow{ CodeFlow::next_ };
 		int m_threadId{ THREAD_ID_MAIN};
 
+		Debugger* m_pDebugger{};
+		DebugInfo* m_pDebugInfo{};
+
 	private:
 		static Machine* m_pCurMainThreadMachine;
 
 	private:
 		friend class AsysVariable;
 		friend class FunctionCode;
+		friend class Debugger;
+		friend class DebugInfo;
+		friend class CallInfo;
 
 		friend void asysRedo(Machine* asys_this);
 		friend void asysNext(Machine* asys_this);
