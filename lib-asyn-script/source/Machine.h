@@ -107,6 +107,7 @@ namespace asys
 
 #if ASYS_BREAKPOINT == 1
 		void attachDebugger(Debugger* debugger);
+		Debugger* getDebugger();
 #endif
 
 	private:
@@ -265,7 +266,6 @@ namespace asys
 
 #if ASYS_BREAKPOINT == 1
 		CodeFlow processBreakpoint(const BreakPoint& breakpoint);
-		Debugger* getDebugger();
 #endif // ASYS_BREAKPOINT
 
 	private:

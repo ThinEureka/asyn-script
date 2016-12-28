@@ -26,7 +26,7 @@ namespace asys
 		Debugger() = default;
 		virtual ~Debugger() = default;
 
-		virtual CodeFlow onBreakPoint(const BreakPoint& breakPoint) = 0;
+		virtual CodeFlow onBreakPoint(const BreakPoint& breakPoint, asys::CodeFlow lastCodeFlow, int callStackIndex) = 0;
 
 		void setMachine(Machine* machine) { m_pMachine = machine; }
 		Machine* getMachine() { return m_pMachine; }

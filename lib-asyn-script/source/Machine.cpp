@@ -535,7 +535,7 @@ asys::CodeFlow asys::Machine::processBreakpoint(const BreakPoint& breakPoint)
 
 	if (m_pDebugger)
 	{
-		return m_pDebugger->onBreakPoint(breakPoint);
+		return m_pDebugger->onBreakPoint(breakPoint, m_codeFlow, m_funRuntimes.size() - 1);
 	}
 
 	return CodeFlow::next_;
@@ -562,8 +562,10 @@ void asys::Machine::attachDebugger(Debugger* debugger)
 	}
 	else if (!m_pDebugger && m_pDebugInfo)
 	{
+#if ASYS_DEBUG == 0
 		delete m_pDebugInfo;
 		m_pDebugInfo = nullptr;
+#endif
 	}
 }
 
