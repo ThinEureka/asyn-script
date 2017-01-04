@@ -460,9 +460,16 @@ void asys::Machine::popFunctionRuntime()
 {
 	m_pCurFunRuntime->destruct(this);
 
-	if (getCurStack()->getCurFrameOffset() == 0)
+	if (m_funRuntimes.size() == 1)
 	{
 		--m_stackIndex;
+	}
+	else
+	{
+		if (m_funRuntimes[m_funRuntimes.size() - 2].m_pStack != getCurStack())
+		{
+			--m_stackIndex;
+		}
 	}
 
 	m_funRuntimes.pop_back();
