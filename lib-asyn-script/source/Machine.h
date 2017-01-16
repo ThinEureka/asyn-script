@@ -24,13 +24,11 @@ namespace asys
 	class DebugInfo;
 	class CallInfo;
 
-	void asysRedo(Machine* asys_this);
-	void asysNext(Machine* asys_this);
-	void asysContinue(Machine* asys_this);
-	void asysBreak(Machine* asys_this);
-
-	template<typename ...Args>
-	void asysReturn(Machine* asys_this, const Args&... args);
+	void asysRedo(Machine* asys_this, int lineNumber);
+	void asysNext(Machine* asys_this, int lineNumber);
+	void asysContinue(Machine* asys_this, int lineNumber);
+	void asysBreak(Machine* asys_this, int lineNumber);
+	void asysReturn(Machine* asys_this, int lineNumber);
 
 	class FunctionRuntime
 	{
@@ -100,17 +98,21 @@ namespace asys
 			//do nothing.
 		}
 
-		void setCodeFlow(CodeFlow codeFlow)
-		{
-			m_codeFlow = codeFlow;
-		}
-
 #if ASYS_BREAKPOINT == 1
 		void attachDebugger(Debugger* debugger);
 		Debugger* getDebugger();
 #endif
 
 	private:
+		void setCodeFlow(CodeFlow codeFlow)
+		{
+			m_codeFlow = codeFlow;
+		}
+
+#if ASYS_BREAKPOINT == 1
+		void setDoInstructionLineNumber(asys::CodeFlow codeFlow, int lineNumber);
+#endif
+
 		void cleanupRuntime();
 
 		void popFunctionRuntime();
@@ -296,40 +298,52 @@ namespace asys
 		friend class DebugInfo;
 		friend class CallInfo;
 
-		friend void asysRedo(Machine* asys_this);
-		friend void asysNext(Machine* asys_this);
-		friend void asysBreak(Machine* asys_this);
-		friend void asysContinue(Machine* asys_this);
-
-		template<typename ...Args>
-		friend void asysReturn(Machine* asys_this, const Args&... args);
+		friend void asysRedo(Machine* asys_this, int lineNumber);
+		friend void asysNext(Machine* asys_this, int lineNumber);
+		friend void asysContinue(Machine* asys_this, int lineNumber);
+		friend void asysBreak(Machine* asys_this, int lineNumber);
+		friend void asysReturn(Machine* asys_this, int lineNumber);
 	};
 
-	inline void asysContinue(Machine* asys_this)
+	inline void asysContinue(Machine* asys_this, int lineNumber)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::continue_);
+
+#if ASYS_BREAKPOINT == 1
+		asys_this->setDoInstructionLineNumber(CodeFlow::continue_, lineNumber);
+#endif
 	}
 
-	inline void asysNext(Machine* asys_this)
+	inline void asysNext(Machine* asys_this, int lineNumber)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::next_);
+#if ASYS_BREAKPOINT == 1
+		asys_this->setDoInstructionLineNumber(CodeFlow::next_, lineNumber);
+#endif
 	}
 
-	inline void asysRedo(Machine* asys_this)
+	inline void asysRedo(Machine* asys_this, int lineNumber)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::redo_);
+#if ASYS_BREAKPOINT == 1
+		asys_this->setDoInstructionLineNumber(CodeFlow::redo_, lineNumber);
+#endif
 	}
 
-	inline void asysBreak(Machine* asys_this)
+	inline void asysBreak(Machine* asys_this, int lineNumber)
 	{
 		asys_this->setCodeFlow(asys::CodeFlow::break_);
+#if ASYS_BREAKPOINT == 1
+		asys_this->setDoInstructionLineNumber(CodeFlow::break_, lineNumber);
+#endif
 	}
 
-	template<typename ...Args>
-	void asysReturn(Machine* asys_this, const Args&... args)
+	inline void asysReturn(Machine* asys_this, int lineNumber)
 	{
-		asys_this->output(args...);
 		asys_this->setCodeFlow(asys::CodeFlow::return_);
+#if ASYS_BREAKPOINT == 1
+		asys_this->setDoInstructionLineNumber(CodeFlow::return_, lineNumber);
+#endif
 	}
 }
 

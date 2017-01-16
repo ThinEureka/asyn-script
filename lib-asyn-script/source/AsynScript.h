@@ -23,7 +23,7 @@
 
 #define END_FUN __this_function->compile(); return __this_function;
 
-#define _CC __this_function->Do([=](asys::Machine* asys_this){
+#define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
 #define CC_ })_;
 
 //asys::FunctionCode::Call(outputs, inputs, code)
@@ -62,11 +62,11 @@
 #define D_ASYS_P(type, name) asys::AsysVariableT<type> name
 
 //keywords used in embedded c++ codes
-#define asys_redo { asysRedo(asys_this); return;}
-#define asys_next { asysNext(asys_this); return;}
-#define asys_return(...) { asys_this->output(__VA_ARGS__); asys_this->setCodeFlow(asys::CodeFlow::return_); return; }
-#define asys_break { asysBreak(asys_this); return; }
-#define asys_continue { asysContinue(asys_this); return;}
+#define asys_redo { asysRedo(asys_this, __LINE__); return;}
+#define asys_next { asysNext(asys_this, __LINE__); return;}
+#define asys_return(...) { asys_this->output(__VA_ARGS__); asysReturn(asys_this, __LINE__); return; }
+#define asys_break { asysBreak(asys_this, __LINE__); return; }
+#define asys_continue { asysContinue(asys_this, __LINE__); return;}
 #define asys_this asys_this
 
 //used to register asyn functions.

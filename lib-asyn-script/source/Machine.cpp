@@ -576,4 +576,12 @@ void asys::Machine::attachDebugger(Debugger* debugger)
 	}
 }
 
+void asys::Machine::setDoInstructionLineNumber(asys::CodeFlow codeFlow, int lineNumber)
+{
+	if (m_pDebugger)
+	{
+		return m_pDebugger->onDoInstructionLineNumber(codeFlow, lineNumber);
+	}
+}
+
 #endif

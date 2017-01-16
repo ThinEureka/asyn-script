@@ -56,6 +56,8 @@ namespace asys
 		const char* functionName() const { return m_functionName; }
 		int lineNumber() const { return m_lineNumber; }
 
+		void setLineNumber(int lineNumber) { m_lineNumber = lineNumber; }
+
 		BreakPoint& operator ()(const std::function<void(Machine*, const BreakPoint&)>& callback,
 			const char* fileName = nullptr,
 			const char* functionName = nullptr,

@@ -27,6 +27,7 @@ namespace asys
 		virtual ~Debugger() = default;
 
 		virtual CodeFlow onBreakPoint(const BreakPoint& breakPoint, asys::CodeFlow lastCodeFlow, int callStackIndex) = 0;
+		virtual void onDoInstructionLineNumber(asys::CodeFlow codeFlow, int lineNumber) = 0;
 
 		void setMachine(Machine* machine) { m_pMachine = machine; }
 		Machine* getMachine() { return m_pMachine; }

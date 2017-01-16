@@ -21,6 +21,15 @@ asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Machine*)>& ex
 	return instruction->breakPoint();
 }
 
+asys::BreakPoint& asys::FunctionCode::Do(int lineNumber, const std::function<void(Machine*)>& express)
+{
+	auto instruction = new DoInstruction(express);
+	m_instructions.push_back(instruction);
+	instruction->breakPoint().setLineNumber(lineNumber);
+
+	return instruction->breakPoint();
+}
+
 asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 {
 	m_stackFrame.declare(var);

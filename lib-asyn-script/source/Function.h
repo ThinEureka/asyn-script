@@ -38,6 +38,8 @@ namespace asys
 		FunctionCode(const FunctionCode& code) = delete;
 
 		BreakPoint& Do(const std::function<void(Machine*)>& express);
+		BreakPoint& Do(int lineNumber, const std::function<void(Machine*)>& express);
+
 		BreakPoint& Declare(AsysVariable& var);
 
 		template<typename ...Args>

@@ -15,7 +15,10 @@ asys::BreakPoint& asys::BreakPoint::operator()(const std::function<void(Machine*
 	m_callback = callback;
 	m_fileName = fileName;
 	m_functionName = functionName;
-	m_lineNumber = lineNumber;
+	if (m_lineNumber == -1)
+	{
+		m_lineNumber = lineNumber;
+	}
 
 	return *this;
 }
