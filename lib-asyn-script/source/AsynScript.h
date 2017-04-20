@@ -69,6 +69,13 @@
 #define asys_continue { asysContinue(asys_this, __LINE__); return;}
 #define asys_this asys_this
 
+//log to debugger
+#if ASYS_BREAKPOINT == 1
+	#define asys_log(...) if (asys_this->getDebugger()) { asys_this->getDebugger()->log(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); }
+#else
+	#define asys_log(...)
+#endif
+
 //used to register asyn functions.
 #define asys_reg_funs asys::FunctionMap m_asynFunctions;
 #define asys_reg_funs_static_impl(class_name) asys::FunctionMap class_name::m_asynFunctions;
