@@ -383,6 +383,11 @@ void asys::Machine::cleanupRuntime()
 
 void asys::Machine::pushFunctionRuntime(const FunctionCode* code)
 {
+	if (!code)
+	{
+		return;
+	}
+
 	m_funRuntimes.resize(m_funRuntimes.size() + 1);
 	m_pCurFunRuntime = &m_funRuntimes.back();
 	m_pCurFunRuntime->m_curIp = 0;
