@@ -27,7 +27,7 @@ asys::FunctionCode* helloWorld()
 
 		ASYS_VAR(size_t, index);
 		_CC{
-			if (index <= str.r().length())
+			if (index < str.r().length())
 			{
 				std::cout << str.r()[index];
 				index = index + 1;
