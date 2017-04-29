@@ -12,8 +12,11 @@
 
 asys_reg_funs;
 
+//The "Hello World!" string will be printed by one char per "frame",
 //which demonstrates a core feature of asyn-script and the usage of
 //the asys_redo keyword.
+//In this demo, the virtual machine is invoked once per second, so
+//it will take one second to output a character to the console. 
 asys::FunctionCode* helloWorld()
 {
 	BEGIN_FUN(){
