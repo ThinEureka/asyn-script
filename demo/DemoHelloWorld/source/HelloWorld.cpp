@@ -12,7 +12,6 @@
 
 asys_reg_funs;
 
-//The "Hello World!" string will be printed by one char per second,
 //which demonstrates a core feature of asyn-script and the usage of
 //the asys_redo keyword.
 asys::FunctionCode* helloWorld()
