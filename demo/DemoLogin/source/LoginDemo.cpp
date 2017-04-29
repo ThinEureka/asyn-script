@@ -178,7 +178,7 @@ int main()
 
 	SYSTEMTIME time;        // System time structure
 	GetSystemTime(&time);    // Curren time
-	time.wSecond += 3;        // Wait 3 sec
+	time.wSecond += 1;        // Wait 1 sec
 
 	FILETIME ftime;    // File time (expected by SetWaitableTimer)
 	SystemTimeToFileTime(&time, &ftime);    // Convert system to file time
@@ -196,7 +196,7 @@ int main()
 
 
 	Game game;
-	std::cout << "Start game" << GetLastError() << std::endl;
+	std::cout << "Start game" << std::endl;
 	while (WaitForSingleObject(hTimer, 5000) == WAIT_OBJECT_0){    // Wait for timer event
 		if (!game.run("SAMSUM_NT7100__123")) break;;
 	}

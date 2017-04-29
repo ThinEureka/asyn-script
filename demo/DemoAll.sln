@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoHelloWorld", "DemoHello
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoRecursion", "DemoRecursion\DemoRecursion.vcxproj", "{1505F3F9-4879-40C6-B637-C1ECE05D0E36}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoSum", "DemoSum\DemoSum.vcxproj", "{8CECC561-CFC4-4735-B09A-70B6F495E3DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Debug|Win32.Build.0 = Debug|Win32
 		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Release|Win32.ActiveCfg = Release|Win32
 		{1505F3F9-4879-40C6-B637-C1ECE05D0E36}.Release|Win32.Build.0 = Release|Win32
+		{8CECC561-CFC4-4735-B09A-70B6F495E3DE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8CECC561-CFC4-4735-B09A-70B6F495E3DE}.Debug|Win32.Build.0 = Debug|Win32
+		{8CECC561-CFC4-4735-B09A-70B6F495E3DE}.Release|Win32.ActiveCfg = Release|Win32
+		{8CECC561-CFC4-4735-B09A-70B6F495E3DE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
