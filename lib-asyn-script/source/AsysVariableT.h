@@ -36,9 +36,9 @@ namespace asys
 		//not thread-safe
 		T& r() const
 		{
-			m_pAsysValue = getAsysValueFromCurMainThreadMachine();
+			auto pAsysValue = getAsysValueFromCurMainThreadMachine();
+			auto asysValue = dynamic_cast<AsysValueT<T>*>(pAsysValue);
 
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(m_pAsysValue);
 			return asysValue->getNativeValueReference();
 		}
 

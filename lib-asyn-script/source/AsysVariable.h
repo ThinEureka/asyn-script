@@ -176,11 +176,6 @@ namespace asys
 			m_memoryOffset = memoryOffset;
 		}
 
-		virtual AsysValue* getAsysValue() const { return m_pAsysValue; }
-		virtual AsysValue* getAsysValue() { return m_pAsysValue; }
-
-		void setAsysValue(AsysValue* asysValue) { m_pAsysValue = asysValue; }
-
 		virtual VariableViewer* createVariableViewer(void* address) const
 		{
 			return nullptr;
@@ -192,7 +187,6 @@ namespace asys
 	protected:
 		size_t m_memoryOffset{};
 		const char* m_pName{};
-		mutable AsysValue* m_pAsysValue{};
 
 	private:
 		friend class StackFrame;
