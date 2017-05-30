@@ -43,13 +43,15 @@ private:
 			_CC{
 				if (index < 5)
 				{
-					std::cout << "user-server  login... " << "device_id=" << device_id.r() << std::endl;
+					std::cout << "user-server  login... " <<
+						"device_id=" << device_id.r() << std::endl;
 					index = index + 1;
 					asys_redo;
 				}
 				else
 				{
-					std::cout << "platform login succeeded " << "device_id=" << device_id.r() << std::endl;
+					std::cout << "platform login succeeded " <<
+						"device_id=" << device_id.r() << std::endl;
 					index = index + 1;
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
@@ -71,14 +73,16 @@ private:
 			_CC{
 				if (index < 5)
 				{
-					std::cout << "login-server login... " << "$user_id=" << user_id.r() << std::endl
+					std::cout << "login-server login... "
+						<< "$user_id=" << user_id.r() << std::endl
 						<< "$access_token=" << access_token.r() << std::endl;
 					index = index + 1;
 					asys_redo;
 				}
 				else
 				{
-					std::cout << "login-server login succeeded " << std::endl;
+					std::cout << "login-server login succeeded "
+						<< std::endl;
 					index = index + 1;
 					session_id = "123456";
 				}
@@ -101,7 +105,8 @@ private:
 
 				if (index < 5)
 				{
-					std::cout << "game-server login... " << "$user_id=" << user_id.r() << std::endl
+					std::cout << "game-server login... " << "$user_id=" 
+						<< user_id.r() << std::endl
 						<< "$session_id=" << session_id.r() << std::endl;
 					index = index + 1;
 					asys_redo;
@@ -127,7 +132,8 @@ private:
 				ASYS_VAR(std::string, user_id);
 				ASYS_VAR(std::string, access_token);
 
-				CALL(platformLogin(), device_id) >>= {success, user_id, access_token};
+				CALL(platformLogin(), device_id) 
+					>>= {success, user_id, access_token};
 
 				IF_NOT(success){
 					CONTINUE;
@@ -135,25 +141,29 @@ private:
 
 				ASYS_VAR(std::string, session_id);
 				ASYS_VAR(std::string, gameserver_ip);
-				CALL(userServerLogin(), user_id, access_token) >>= { success, session_id, gameserver_ip };
+				CALL(userServerLogin(), user_id, access_token) 
+						>>= { success, session_id, gameserver_ip };
 
 				IF_NOT(success){
 					CONTINUE;
 				}END_IF;
 
 				ASYS_VAR(std::string, player_info);
-				CALL(gameServerLogin(), user_id, session_id, gameserver_ip) >>= { success, player_info };
+				CALL(gameServerLogin(), user_id, session_id, gameserver_ip) 
+					>>= { success, player_info };
 
 				IF_NOT(success){
 					CONTINUE;
 				}END_IF;
 
 				_CC{
-					std::cout << "login-success: " << player_info.r() << std::endl;
+					std::cout << "login-success: " 
+						<< player_info.r() << std::endl;
 				}CC_;
 
 				_CC{
-					std::cout << player_info.r() << " is playing the game." << std::endl;
+					std::cout << player_info.r() 
+						<< " is playing the game." << std::endl;
 					asys_redo;
 				}CC_;
 			}END_WHILE;
