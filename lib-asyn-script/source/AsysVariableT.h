@@ -90,13 +90,5 @@ namespace asys
 
 			return viewer;
 		}
-
-	private:
-		mutable Machine* m_pMachine{};
-
-		void setMachine(Machine* machine)
-		{
-			m_pMachine = machine;
-		}
 	};
 }
