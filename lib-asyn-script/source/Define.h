@@ -10,9 +10,6 @@
 
 #pragma once
 
-#include <string>
-#include <sstream>
-
 #ifndef ASYS_BREAKPOINT
 	#ifdef _DEBUG
 		#define ASYS_BREAKPOINT 1
