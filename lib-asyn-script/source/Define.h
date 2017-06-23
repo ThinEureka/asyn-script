@@ -54,22 +54,6 @@ namespace asys
 		return_, //function as return in a function
 	};
 
-	template < typename T > std::string toString(const T& n)
-	{
-		std::ostringstream stm;
-		stm << n;
-		return stm.str();
-	}
-
-	template <typename T> T toType(const std::string& str)
-	{
-		T value;
-		std::istringstream stm(str);
-		stm >> value;
-
-		return value;
-	}
-
 	const int INVALID_IP = -1;
 	const int THREAD_ID_MAIN = 0;
 }

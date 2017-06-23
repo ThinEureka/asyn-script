@@ -101,6 +101,8 @@ namespace asys
 #if ASYS_BREAKPOINT == 1
 		void attachDebugger(Debugger* debugger);
 		Debugger* getDebugger();
+
+		const DebugInfo* getDebugInfo() const { return m_pDebugInfo; }
 #endif
 
 	private:
@@ -285,8 +287,10 @@ namespace asys
 		CodeFlow m_codeFlow{ CodeFlow::next_ };
 		int m_threadId{ THREAD_ID_MAIN};
 
+#if ASYS_BREAKPOINT == 1
 		Debugger* m_pDebugger{};
 		DebugInfo* m_pDebugInfo{};
+#endif // ASYS_BREAKPOINT
 
 	private:
 		static Machine* m_pCurMainThreadMachine;

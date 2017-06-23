@@ -52,7 +52,7 @@ namespace asys
 		~CallInfo();
 
 		const std::vector<VariableViewer*>& getVariables() { return m_variables; }
-		const BreakPoint* getBreakPoint() { return m_pCurBreakpoint; }
+		const BreakPoint* getBreakPoint() const { return m_pCurBreakpoint; }
 
 	private:
 		void init(Machine* machine, int callIndex);
@@ -80,6 +80,8 @@ namespace asys
 		void onPopCallStack();
 
 		void onBreakPoint(const BreakPoint& breakPoint);
+
+		const std::vector<CallInfo*>& getCallStack() const { return m_callStack; }
 
 	private:
 		void generateCallStack();

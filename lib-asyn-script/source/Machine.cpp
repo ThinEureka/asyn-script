@@ -568,6 +568,11 @@ void asys::Machine::attachDebugger(Debugger* debugger)
 	delete m_pDebugger;
 	m_pDebugger = debugger;
 
+	if (m_pDebugger)
+	{
+		m_pDebugger->setMachine(this); 
+	}
+
 	if (m_pDebugger && !m_pDebugInfo)
 	{
 		m_pDebugInfo = new DebugInfo(this);

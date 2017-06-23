@@ -121,3 +121,18 @@ void asys::DebugInfo::popCallInfo()
 		m_pLocalVariables = nullptr;
 	}
 }
+
+const asys::DebugInfo* asys::Debugger::getDebugInfo()
+{
+#if ASYS_BREAKPOINT == 1
+	if (!m_pMachine)
+	{
+		return nullptr;
+	}
+
+	return m_pMachine->getDebugInfo();
+#endif
+
+	return nullptr;
+	
+}
