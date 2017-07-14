@@ -17,7 +17,6 @@ namespace asys
 {
 	class FunctionCode;
 	class Machine;
-	class CallInstruction;
 
 	enum class InstructionType
 	{

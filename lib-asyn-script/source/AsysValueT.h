@@ -61,7 +61,7 @@ namespace asys
 			return 0;
 		}
 
-		virtual long toLong() const
+		virtual long toLong() const override
 		{
 			assert(false); // "no default conversion to long for custom class");
 			return 0;
