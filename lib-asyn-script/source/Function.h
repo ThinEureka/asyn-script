@@ -69,7 +69,7 @@ namespace asys
 		BreakPoint& If(const AsysVariableT<V>& var)
 		{
 			return If_ex([=](asys::Machine* asys_this){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				auto pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return pCastValue->getNativeValue();
 			});
 		}
@@ -80,7 +80,7 @@ namespace asys
 		BreakPoint& If_not(const AsysVariableT<V>& var)
 		{
 			return If_ex([=](asys::Machine* asys_this){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				auto pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return !pCastValue->getNativeValue();
 			});
 		}
@@ -92,7 +92,7 @@ namespace asys
 		BreakPoint& While(const AsysVariableT<V>& var)
 		{
 			return While_ex([=](asys::Machine* asys_this){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				auto pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return pCastValue->getNativeValue();
 			});
 		}
@@ -103,7 +103,7 @@ namespace asys
 		BreakPoint& While_not(const AsysVariableT<V>& var)
 		{
 			return While_ex([=](asys::Machine* asys_this){
-				auto pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				auto pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				return !pCastValue->getNativeValue();
 			});
 		}
@@ -119,8 +119,8 @@ namespace asys
 		BreakPoint& Assign(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
 			return Do([=](asys::Machine* asys_this){
-				auto* pCastValue1 = dynamic_cast<AsysValueT<V1>*>(asys_this->getAsysValue(var1));
-				auto* pCastValue2 = dynamic_cast<AsysValueT<V2>*>(asys_this->getAsysValue(var2));
+				auto* pCastValue1 = static_cast<AsysValueT<V1>*>(asys_this->getAsysValue(var1));
+				auto* pCastValue2 = static_cast<AsysValueT<V2>*>(asys_this->getAsysValue(var2));
 				pCastValue1->getNativeValueReference() = pCastValue2->getNativeValue();
 			});
 		}
@@ -129,7 +129,7 @@ namespace asys
 		BreakPoint& Assign(const AsysVariableT<V>& var, const C& constValue)
 		{
 			return Do([=](asys::Machine* asys_this){
-				auto* pCastValue = dynamic_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				auto* pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
 				pCastValue->getNativeValueReference() = constValue;
 			});
 		}

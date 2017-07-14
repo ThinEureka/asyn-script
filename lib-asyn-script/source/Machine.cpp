@@ -116,34 +116,34 @@ asys::CodeFlow asys::Machine::run()
 			processNullInstruction();
 			break;
 		case InstructionType::type_do:
-			processDoInstruction(dynamic_cast<DoInstruction*>(instruction));
+			processDoInstruction(static_cast<DoInstruction*>(instruction));
 			break;
 		case InstructionType::type_call:
-			processCallInstruction(dynamic_cast<CallInstruction*>(instruction));
+			processCallInstruction(static_cast<CallInstruction*>(instruction));
 			break;
 		case InstructionType::type_if:
-			processIfInstruction(dynamic_cast<IfInstruction*>(instruction));
+			processIfInstruction(static_cast<IfInstruction*>(instruction));
 			break;
 		case InstructionType::type_else:
-			processElseInstruction(dynamic_cast<ElseInstruction*>(instruction));
+			processElseInstruction(static_cast<ElseInstruction*>(instruction));
 			break;
 		case InstructionType::type_endif:
-			processEndIfInstruction(dynamic_cast<EndIfInstruction*>(instruction));
+			processEndIfInstruction(static_cast<EndIfInstruction*>(instruction));
 			break;
 		case InstructionType::type_while:
-			processWhileInstruction(dynamic_cast<WhileInstruction*>(instruction));
+			processWhileInstruction(static_cast<WhileInstruction*>(instruction));
 			break;
 		case InstructionType::type_endwhile:
-			processEndWhileInstruction(dynamic_cast<EndWhileInstruction*>(instruction));
+			processEndWhileInstruction(static_cast<EndWhileInstruction*>(instruction));
 			break;
 		case InstructionType::type_continue:
-			processContinueInstruction(dynamic_cast<ContinueInstruction*>(instruction));
+			processContinueInstruction(static_cast<ContinueInstruction*>(instruction));
 			break;
 		case InstructionType::type_break:
-			processBreakInstruction(dynamic_cast<BreakInstruction*>(instruction));
+			processBreakInstruction(static_cast<BreakInstruction*>(instruction));
 			break;
 		case InstructionType::type_return:
-			processReturnInstruction(dynamic_cast<ReturnInstruction*>(instruction));
+			processReturnInstruction(static_cast<ReturnInstruction*>(instruction));
 			break;
 		default:
 			assert(false); //there should be no other instruction types.
@@ -197,7 +197,7 @@ void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
 			if (instruction->instructionType() ==
 				InstructionType::type_while)
 			{
-				auto whileInstruction = dynamic_cast<WhileInstruction*>(instruction);
+				auto whileInstruction = static_cast<WhileInstruction*>(instruction);
 				if (m_codeFlow == CodeFlow::continue_)
 				{
 					m_pCurFunRuntime->m_curIp = ip;
@@ -275,7 +275,7 @@ void asys::Machine::processWhileInstruction(const WhileInstruction* whileInstruc
 void asys::Machine::processBreakInstruction(const BreakInstruction* breakInstruction)
 {
 	auto& instructions = m_pCurFunRuntime->m_pFunction->m_instructions;
-	auto whileInstruction = dynamic_cast<WhileInstruction*>(instructions[breakInstruction->whileIp]);
+	auto whileInstruction = static_cast<WhileInstruction*>(instructions[breakInstruction->whileIp]);
 	m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
 }
 
@@ -305,7 +305,7 @@ void asys::Machine::processReturnInstruction(const ReturnInstruction* retInstruc
 		auto pCallerRuntime = &m_funRuntimes[m_funRuntimes.size() - 2];
 		auto pCallerFunction = pCallerRuntime->m_pFunction;
 		const auto& callerInstructions = pCallerFunction->m_instructions;
-		auto callInstruction = dynamic_cast<const CallInstruction*>(callerInstructions[pCallerRuntime->m_curIp]);
+		auto callInstruction = static_cast<const CallInstruction*>(callerInstructions[pCallerRuntime->m_curIp]);
 
 		for (size_t i = 0; i < static_cast<int>(retInstruction->valueList.getLength()) &&
 			i < callInstruction->outputs.getLength(); ++i)
@@ -339,7 +339,7 @@ asys::AsysValue* asys::Machine::getCallerOutputValue(int index)
 	auto pCallerRuntime = &m_funRuntimes[m_funRuntimes.size() - 2];
 	auto pCallerFunction = pCallerRuntime->m_pFunction;
 	const auto& callerInstructions = pCallerFunction->m_instructions;
-	auto callInstruction = dynamic_cast<const CallInstruction*>(callerInstructions[pCallerRuntime->m_curIp]);
+	auto callInstruction = static_cast<const CallInstruction*>(callerInstructions[pCallerRuntime->m_curIp]);
 
 	if (index < 0 || index >= static_cast<int>(callInstruction->outputs.getLength()))
 	{

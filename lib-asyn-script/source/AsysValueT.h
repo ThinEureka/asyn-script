@@ -43,7 +43,7 @@ namespace asys
 			return 0;
 		}
 
-		virtual unsigned short toUShort() const
+		virtual unsigned short toUShort() const override
 		{
 			assert(false); // "no default conversion to ushort for custom class");
 			return 0;

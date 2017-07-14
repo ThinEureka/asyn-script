@@ -75,7 +75,7 @@ asys::BreakPoint& asys::FunctionCode::Else()
 	assert(m_unmatchedIfIps.size() > 0);//  "Asynscript compile error, there is no unmatched if expression for this else-expression";
 
 	int unMatchedIfIp = m_unmatchedIfIps.back();
-	auto ifInstruction = dynamic_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
+	auto ifInstruction = static_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
 
 	assert(ifInstruction->elseIp == INVALID_IP);// "Asynscript compile error, there is already an else expression for if.");
 
@@ -94,7 +94,7 @@ asys::BreakPoint& asys::FunctionCode::End_if()
 	assert(m_unmatchedIfIps.size() > 0);// "Asynscript compile error, there is no unmatched if expression for this endif-expression");
 
 	int unMatchedIfIp = m_unmatchedIfIps.back();
-	auto ifInstruction = dynamic_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
+	auto ifInstruction = static_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
 
 	assert(ifInstruction->endIfIp == INVALID_IP);// "Asynscript compile error, there is already an endif expression for if.");
 
@@ -108,7 +108,7 @@ asys::BreakPoint& asys::FunctionCode::End_if()
 	int elseIp = ifInstruction->elseIp;
 	if (elseIp != INVALID_IP)
 	{
-		auto elseInstruction = dynamic_cast<ElseInstruction*>(m_instructions[elseIp]);
+		auto elseInstruction = static_cast<ElseInstruction*>(m_instructions[elseIp]);
 		elseInstruction->endIfIp = ip;
 		endIfInstruction->elseIp = elseIp;
 	}
@@ -133,7 +133,7 @@ asys::BreakPoint& asys::FunctionCode::End_while()
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this endwhile-expression");
 
 	int unMatchedWhileIp = m_unmatchedWhileIps.back();
-	auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
+	auto whileInstruction = static_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
 
 	assert(whileInstruction->endWhileIp == INVALID_IP);// "Asynscript compile error, there is already an endwhile expression for while.");
 
@@ -154,7 +154,7 @@ asys::BreakPoint& asys::FunctionCode::Continue()
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this continue-expression");
 
 	int unMatchedWhileIp = m_unmatchedWhileIps.back();
-	auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
+	auto whileInstruction = static_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
 
 	auto continueInstruction = new ContinueInstruction();
 	m_instructions.push_back(continueInstruction);
@@ -169,7 +169,7 @@ asys::BreakPoint& asys::FunctionCode::Break()
 	assert(m_unmatchedWhileIps.size() > 0);// "Asynscript compile error, there is no unmatched while expression for this break-expression");
 
 	int unMatchedWhileIp = m_unmatchedWhileIps.back();
-	auto whileInstruction = dynamic_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
+	auto whileInstruction = static_cast<WhileInstruction*>(m_instructions[unMatchedWhileIp]);
 
 	auto breakInstruction = new BreakInstruction();
 	m_instructions.push_back(breakInstruction);

@@ -17,6 +17,7 @@ namespace asys
 {
 	class FunctionCode;
 	class Machine;
+	class CallInstruction;
 
 	enum class InstructionType
 	{
@@ -63,7 +64,7 @@ namespace asys
 			const char* functionName = nullptr,
 			int lineNumber = -1);
 
-		BreakPoint& operator >>= (const VariableList& valueList);
+		BreakPoint& operator >>= (const VariableList& variableList);
 
 		const std::function<void(Machine*, const BreakPoint&)>& callback() const { return m_callback; }
 
@@ -83,8 +84,6 @@ namespace asys
 
 		InstructionType instructionType() const { return m_instructionType; }
 
-		virtual Instruction* clone() const { return new Instruction(m_instructionType); }
-
 		const BreakPoint& breakPoint() const { return m_breakPoint; }
 		BreakPoint& breakPoint(){ return m_breakPoint; }
 
@@ -99,13 +98,6 @@ namespace asys
 	{
 	public:
 		DoInstruction(const std::function<void(Machine*)>& express) : Instruction(InstructionType::type_do), express(express){}
-
-		Instruction* clone() const override
-		{
-			auto instruction = new DoInstruction(express);
-			instruction->setBreakPoint(breakPoint());
-			return instruction;
-		}
 
 	public:
 		std::function<void(Machine*)> express{};
@@ -129,15 +121,6 @@ namespace asys
 		virtual ~CallInstruction()
 		{}
 
-		Instruction* clone() const override 
-		{
-			auto instruction = new CallInstruction(code, inputs);
-			instruction->outputs = outputs;
-			instruction->codeVar = codeVar;
-			instruction->setBreakPoint(breakPoint());
-			return instruction;
-		}
-
 		void setOutputs(const VariableList& outputs)
 		{
 			this->outputs = outputs;
@@ -155,17 +138,6 @@ namespace asys
 	public:
 		IfInstruction(const std::function<bool(Machine*)>& express) : Instruction(InstructionType::type_if), express(express) {};
 
-		Instruction* clone() const override 
-		{ 
-			auto copy = new IfInstruction(express);
-			copy->elseIp = elseIp;
-			copy->endIfIp = endIfIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
 	public:
 		std::function<bool(Machine*)> express;
 		int elseIp{ INVALID_IP };
@@ -177,16 +149,6 @@ namespace asys
 	public:
 		ElseInstruction() : Instruction(InstructionType::type_else) {};
 
-		Instruction* clone() const override 
-		{ 
-			auto copy = new ElseInstruction();
-			copy->ifIp = ifIp;
-			copy->endIfIp = endIfIp;
-
-			copy->setBreakPoint(breakPoint());
-			return copy;
-		}
-
 	public:
 		int ifIp{ INVALID_IP };
 		int endIfIp{ INVALID_IP };
@@ -196,17 +158,6 @@ namespace asys
 	{
 	public:
 		EndIfInstruction() : Instruction(InstructionType::type_endif) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new EndIfInstruction();
-			copy->ifIp = ifIp;
-			copy->elseIp = elseIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
 
 	public:
 		int ifIp{ INVALID_IP };
@@ -218,16 +169,6 @@ namespace asys
 	public:
 		WhileInstruction(const std::function<bool(Machine*)>& express) : Instruction(InstructionType::type_while), express(express) {};
 
-		Instruction* clone() const override
-		{
-			auto copy = new WhileInstruction(express);
-			copy->endWhileIp = endWhileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
 	public:
 		std::function<bool(Machine*)> express;
 		int endWhileIp{ INVALID_IP };
@@ -238,16 +179,6 @@ namespace asys
 	public:
 		EndWhileInstruction() : Instruction(InstructionType::type_endwhile) {};
 
-		Instruction* clone() const override
-		{
-			auto copy = new EndWhileInstruction();
-			copy->whileIp = whileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
 	public:
 		int whileIp{ INVALID_IP };
 	};
@@ -257,16 +188,6 @@ namespace asys
 	public:
 		ContinueInstruction() : Instruction(InstructionType::type_continue) {};
 
-		Instruction* clone() const override
-		{
-			auto copy = new ContinueInstruction();
-			copy->whileIp = whileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
-
 	public: 
 		int whileIp{ INVALID_IP };
 	};
@@ -275,16 +196,6 @@ namespace asys
 	{
 	public:
 		BreakInstruction() : Instruction(InstructionType::type_break) {};
-
-		Instruction* clone() const override
-		{
-			auto copy = new BreakInstruction();
-			copy->whileIp = whileIp;
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
 
 	public:
 		int whileIp{ INVALID_IP };
@@ -298,15 +209,6 @@ namespace asys
 			valueList(valueList){}
 
 		ReturnInstruction() : Instruction(InstructionType::type_return){}
-
-		Instruction* clone() const override
-		{
-			auto copy = new ReturnInstruction(valueList);
-
-			copy->setBreakPoint(breakPoint());
-
-			return copy;
-		}
 
 	public:
 		ValueList valueList;
