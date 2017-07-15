@@ -45,14 +45,14 @@ private:
 				{
 					std::cout << "user-server  login... " <<
 						"device_id=" << device_id.r() << std::endl;
-					index = index + 1;
+					index++;
 					asys_redo;
 				}
 				else
 				{
 					std::cout << "platform login succeeded " <<
 						"device_id=" << device_id.r() << std::endl;
-					index = index + 1;
+					index++;
 					user_id = "user_172034";
 					access_token = "6534B029C4FA65";
 				}
@@ -76,14 +76,14 @@ private:
 					std::cout << "login-server login... "
 						<< "$user_id=" << user_id.r() << std::endl
 						<< "$access_token=" << access_token.r() << std::endl;
-					index = index + 1;
+					index++;
 					asys_redo;
 				}
 				else
 				{
 					std::cout << "login-server login succeeded "
 						<< std::endl;
-					index = index + 1;
+					index++;
 					session_id = "123456";
 				}
 			}CC_;
@@ -108,7 +108,7 @@ private:
 					std::cout << "game-server login... " << "$user_id=" 
 						<< user_id.r() << std::endl
 						<< "$session_id=" << session_id.r() << std::endl;
-					index = index + 1;
+					index++;
 					asys_redo;
 				}
 				else
