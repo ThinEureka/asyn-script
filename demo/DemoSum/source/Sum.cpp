@@ -43,6 +43,22 @@ asys::FunctionCode* sum2(ASYS_P(int, n))
 	}END_FUN;
 }
 
+asys::FunctionCode* sum3(ASYS_P(int, n))
+{
+	BEGIN_FUN(n){
+		ASYS_VAR(int, sum);
+		ASYS_VAR(int, i);
+
+		FOR_CC(i = 0, i < n, ++i.r()){
+			_CC{
+				sum = sum + i;
+			}CC_;
+		}END_FOR;
+
+		RETURN(sum);
+	}END_FUN;
+}
+
 asys::FunctionCode* print_sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
@@ -65,6 +81,15 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 			_CC{
 				sum_short = static_cast<short>(sum_double);
 				std::cout << "index, sum2_int, sum_short = " << index << " " << sum2_int << " " << sum_short << std::endl;
+				index = index + 1;
+			}CC_;
+
+			ASYS_VAR(int, sum3_int);
+			CALL(sum3(), index) >>= {sum3_int};
+
+			_CC{
+				sum_short = static_cast<short>(sum_double);
+				std::cout << "index, sum3_int, sum_short = " << index << " " << sum3_int << " " << sum_short << std::endl;
 				index = index + 1;
 			}CC_;
 		}END_WHILE;
