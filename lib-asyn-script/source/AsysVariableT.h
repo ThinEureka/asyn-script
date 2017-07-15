@@ -15,15 +15,15 @@
 namespace asys
 {
 	template<typename T>
-	class AsysVariableT : public AsysVariable
+	class AsysGeneralVariableT : public AsysVariable
 	{
 	public:
-		AsysVariableT()
+		AsysGeneralVariableT()
 		{
 
 		}
 
-		AsysVariableT(const char* name, int)
+		AsysGeneralVariableT(const char* name, int)
 		{
 			m_pName = name;
 		}
@@ -50,33 +50,26 @@ namespace asys
 			return pCastValue->getNativeValueReference();
 		}
 
-		template<typename T1>
-		const AsysVariableT& operator = (const T1& var) const
-		{
-			r() = var;
-			return *this;
-		}
-
 		// prefix ++
-		T& operator++ () const
+		T& operator ++ () const
 		{
 			return ++r();
 		}
 
 		// postfix ++
-		T operator++ (int) const
+		T operator ++ (int) const
 		{
 			return r()++;
 		}
 
 		// prefix --
-		T& operator-- () const
+		T& operator -- () const
 		{
 			return --r();
 		}
 
 		// postfix ++
-		T operator-- (int) const
+		T operator -- (int) const
 		{
 			return r()--;
 		}
@@ -84,7 +77,7 @@ namespace asys
 	private:
 		virtual AsysVariable* clone() const override
 		{
-			auto newVar = new AsysVariableT<T>();
+			auto newVar = new AsysGeneralVariableT<T>();
 			newVar->deepCopy(*this);
 
 			return newVar;
@@ -113,6 +106,79 @@ namespace asys
 			viewer->setTarget(m_pName, &pCastValue->getNativeValueReference());
 
 			return viewer;
+		}
+	};
+
+
+	template<typename T>
+	class AsysVariableT : public AsysGeneralVariableT<T>
+	{
+	public:
+		AsysVariableT()
+		{
+
+		}
+
+		AsysVariableT(const char* name, int)
+			: AsysGeneralVariableT(name, 0)
+		{
+			m_pName = name;
+		}
+
+		template<typename T1>
+		T& operator = (const T1& var) const
+		{
+			return r() = var;
+		}
+
+	private:
+		virtual AsysVariableT* clone() const override
+		{
+			auto newVar = new AsysVariableT<T>();
+			newVar->deepCopy(*this);
+
+			return newVar;
+		}
+	};
+
+	template<typename T>
+	class AsysVariableT<T*> : public AsysGeneralVariableT<T*>
+	{
+	public:
+		AsysVariableT()
+		{
+
+		}
+
+		AsysVariableT(const char* name, int)
+			: AsysGeneralVariableT(name, 0)
+		{
+			m_pName = name;
+		}
+
+		T& operator *() const
+		{
+			return *r();
+		}
+
+		T* operator ->() const
+		{
+			return r();
+		}
+
+		template<typename T1>
+		T*& operator = (const T1& var) const
+		{
+			return r() = var;
+		}
+
+	private:
+		virtual AsysVariableT* clone() const override
+		{
+			auto newVar = new AsysVariableT<T*>();
+			newVar->deepCopy(*this);
+
+			return newVar;
 		}
 	};
 }
