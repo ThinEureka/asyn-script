@@ -13,7 +13,7 @@
 
 asys_reg_funs;
 
-asys::FunctionCode* sum_while(ASYS_P(int, n))
+asys::FunctionCode* sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		ASYS_VAR(int, n_minus_one);
@@ -27,7 +27,7 @@ asys::FunctionCode* sum_while(ASYS_P(int, n))
 		}CC_;
 
 		ASYS_VAR(int, sub_result);
-		CALL(sum_while(), n_minus_one)
+		CALL(sum(), n_minus_one)
 			>>= {sub_result};
 
 		_CC{
@@ -44,7 +44,7 @@ asys::FunctionCode* print()
 
 		WHILE_CC(true){
 			ASYS_VAR(int, result);
-			CALL(sum_while(), n) >>= {result};
+			CALL(sum(), n) >>= {result};
 
 			_CC{
 				std::cout << "s(" << n << ") = " 
