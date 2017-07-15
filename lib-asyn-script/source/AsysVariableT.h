@@ -24,9 +24,7 @@ namespace asys
 		}
 
 		AsysGeneralVariableT(const char* name, int)
-		{
-			m_pName = name;
-		}
+		{}
 
 		operator T() const
 		{
@@ -121,9 +119,7 @@ namespace asys
 
 		AsysVariableT(const char* name, int)
 			: AsysGeneralVariableT(name, 0)
-		{
-			m_pName = name;
-		}
+		{}
 
 		template<typename T1>
 		T& operator = (const T1& var) const
