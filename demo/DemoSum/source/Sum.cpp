@@ -29,7 +29,7 @@ asys::FunctionCode* sum(ASYS_P(int, n))
 	}END_FUN;
 }
 
-asys::FunctionCode* sum2(ASYS_P(int, n))
+asys::FunctionCode* sum_while(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		_CC{
@@ -43,17 +43,34 @@ asys::FunctionCode* sum2(ASYS_P(int, n))
 	}END_FUN;
 }
 
-asys::FunctionCode* sum3(ASYS_P(int, n))
+asys::FunctionCode* sum_for(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
 		ASYS_VAR(int, sum);
 		ASYS_VAR(int, i);
 
-		FOR_CC(i = 0, i < n, ++i.r()){
+		FOR_CC(i = 0, i <= n, ++i.r()){
 			_CC{
 				sum = sum + i;
 			}CC_;
 		}END_FOR;
+
+		RETURN(sum);
+	}END_FUN;
+}
+
+asys::FunctionCode* sum_dowhile(ASYS_P(int, n))
+{
+	BEGIN_FUN(n){
+		ASYS_VAR(int, sum);
+		ASYS_VAR(int, i);
+
+		DOWHILE_CC(i <= n){
+			_CC{
+				sum = sum + i;
+				i = i + 1;
+			}CC_;
+		}END_DOWHILE;
 
 		RETURN(sum);
 	}END_FUN;
@@ -75,21 +92,25 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 				std::cout << "index, sum_int, sum_double = " << index << " " << sum_int << " " << sum_double << std::endl;
 			}CC_;
 
-			ASYS_VAR(int, sum2_int);
-			CALL(sum2(), index) >>= {sum2_int};
+			ASYS_VAR(int, int_sum_while);
+			CALL(sum_while(), index) >>= {int_sum_while};
+
+			ASYS_VAR(int, int_sum_for);
+			CALL(sum_for(), index) >>= {int_sum_for};
+
+			ASYS_VAR(int, int_sum_dowhile);
+			CALL(sum_dowhile(), index) >>= {int_sum_dowhile};
 
 			_CC{
+				sum_double = int_sum_while;
 				sum_short = static_cast<short>(sum_double);
-				std::cout << "index, sum2_int, sum_short = " << index << " " << sum2_int << " " << sum_short << std::endl;
-				index = index + 1;
-			}CC_;
-
-			ASYS_VAR(int, sum3_int);
-			CALL(sum3(), index) >>= {sum3_int};
-
-			_CC{
-				sum_short = static_cast<short>(sum_double);
-				std::cout << "index, sum3_int, sum_short = " << index << " " << sum3_int << " " << sum_short << std::endl;
+				std::cout << "index, int_sum_while, sum_short, int_sum_for, int_sum_dowhile = "
+					<< index << " "
+					<< int_sum_while << " "
+					<< sum_short << " "
+					<< int_sum_for << " "
+					<< int_sum_dowhile << " "
+					<< std::endl;
 				index = index + 1;
 			}CC_;
 		}END_WHILE;

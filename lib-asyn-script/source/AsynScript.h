@@ -46,16 +46,20 @@
 #define WHILE_CC(var) __this_function->While_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
-#define WHILE_EX(express) __this_function->While_ex(express)_;
+#define WHILE_EX(cond_expression) __this_function->While_ex(cond_expression)_;
 #define WHILE_NOT(var) __this_function->While_not(var)_;
 
 #define END_WHILE __this_function->End_while()_;
 #define CONTINUE __this_function->Continue()_;
 #define BREAK __this_function->Break()_;
 
-#define FOR_CC(init_expression, cond_expression, loop_expression) ASYS_VAR(bool, __asys_tmp_for_inited)\
+#define FOR_CC(init_expression, cond_expression, loop_expression) {ASYS_VAR(bool, __asys_tmp_for_inited);\
 	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
-#define END_FOR END_WHILE
+#define END_FOR END_WHILE}
+
+#define DOWHILE_CC(cond_expression) {ASYS_VAR(bool, __asys_tmp_dowhile_inited);\
+	WHILE_CC((__asys_tmp_dowhile_inited)? (cond_expression) : ((__asys_tmp_dowhile_inited = true),true))
+#define END_DOWHILE END_WHILE}
 
 #define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))_;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)_;
