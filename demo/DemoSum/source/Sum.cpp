@@ -49,7 +49,7 @@ asys::FunctionCode* sum_for(ASYS_P(int, n))
 		ASYS_VAR(int, sum);
 		ASYS_VAR(int, i);
 
-		FOR_CC(i = 0, i <= n, ++i.r()){
+		FOR_CC(i = 0, i <= n, ++i){
 			_CC{
 				sum = sum + i;
 			}CC_;

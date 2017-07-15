@@ -57,6 +57,30 @@ namespace asys
 			return *this;
 		}
 
+		// prefix ++
+		T& operator++ () const
+		{
+			return ++r();
+		}
+
+		// postfix ++
+		T operator++ (int) const
+		{
+			return r()++;
+		}
+
+		// prefix --
+		T& operator-- () const
+		{
+			return --r();
+		}
+
+		// postfix ++
+		T operator-- (int) const
+		{
+			return r()--;
+		}
+
 	private:
 		virtual AsysVariable* clone() const override
 		{
