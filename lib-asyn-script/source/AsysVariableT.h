@@ -127,6 +127,66 @@ namespace asys
 			return r() = var;
 		}
 
+		template<typename T1>
+		T& operator += (const T1& var) const
+		{
+			return r() += var;
+		}
+
+		template<typename T1>
+		T& operator -= (const T1& var) const
+		{
+			return r() -= var;
+		}
+
+		template<typename T1>
+		T& operator *= (const T1& var) const
+		{
+			return r() *= var;
+		}
+
+		template<typename T1>
+		T& operator /= (const T1& var) const
+		{
+			return r() /= var;
+		}
+
+		template<typename T1>
+		T& operator %= (const T1& var) const
+		{
+			return r() %= var;
+		}
+
+		template<typename T1>
+		T& operator &= (const T1& var) const
+		{
+			return r() &= var;
+		}
+
+		template<typename T1>
+		T& operator |= (const T1& var) const
+		{
+			return r() |= var;
+		}
+
+		template<typename T1>
+		T& operator ^= (const T1& var) const
+		{
+			return r() ^= var;
+		}
+
+		template<typename T1>
+		T& operator <<= (const T1& var) const
+		{
+			return r() <<= var;
+		}
+
+		template<typename T1>
+		T& operator >>= (const T1& var) const
+		{
+			return r() >>= var;
+		}
+
 	private:
 		virtual AsysVariableT* clone() const override
 		{
@@ -166,6 +226,18 @@ namespace asys
 		T*& operator = (const T1& var) const
 		{
 			return r() = var;
+		}
+
+		template<typename T1>
+		T*& operator += (const T1& var) const
+		{
+			return r() += var;
+		}
+
+		template<typename T1>
+		T*& operator -= (const T1& var) const
+		{
+			return r() -= var;
 		}
 
 	private:

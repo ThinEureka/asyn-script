@@ -49,7 +49,7 @@ asys::FunctionCode* print()
 			_CC{
 				std::cout << "s(" << n << ") = " 
 					<< result << std::endl;
-				n = n + 1;
+				++n;
 			}CC_;
 		}END_WHILE;
 	}END_FUN;

@@ -34,7 +34,7 @@ asys::FunctionCode* sum_while(ASYS_P(int, n))
 
 		WHILE_CC(i <= n){
 			_CC{
-				sum = sum + i;
+				sum += i;
 				++i;
 			}CC_;
 		}END_WHILE;
@@ -51,7 +51,7 @@ asys::FunctionCode* sum_for(ASYS_P(int, n))
 
 		FOR_CC(i = 0, i <= n, ++i){
 			_CC{
-				sum = sum + i;
+				sum += i;
 			}CC_;
 		}END_FOR;
 
@@ -67,8 +67,7 @@ asys::FunctionCode* sum_dowhile(ASYS_P(int, n))
 
 		DOWHILE_CC(i <= n){
 			_CC{
-				sum = sum + i;
-				++i;
+				sum += i++;
 			}CC_;
 		}END_DOWHILE;
 
@@ -92,24 +91,24 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 				std::cout << "index, sum_int, sum_double = " << index << " " << sum_int << " " << sum_double << std::endl;
 			}CC_;
 
-			ASYS_VAR(int, int_sum_cc);
-			CALL(sum_cc(), index) >>= {int_sum_cc};
+			ASYS_VAR(int, sum_cc_int);
+			CALL(sum_cc(), index) >>= {sum_cc_int};
 
-			ASYS_VAR(int, int_sum_for);
-			CALL(sum_for(), index) >>= {int_sum_for};
+			ASYS_VAR(int, sum_for_int);
+			CALL(sum_for(), index) >>= {sum_for_int};
 
-			ASYS_VAR(int, int_sum_dowhile);
-			CALL(sum_dowhile(), index) >>= {int_sum_dowhile};
+			ASYS_VAR(int, sum_dowhile_int);
+			CALL(sum_dowhile(), index) >>= {sum_dowhile_int};
 
 			_CC{
-				sum_double = int_sum_cc;
+				sum_double = sum_cc_int;
 				sum_short = static_cast<short>(sum_double);
 				std::cout << "index, int_sum_cc, sum_short, int_sum_for, int_sum_dowhile = "
 					<< index << " "
-					<< int_sum_cc << " "
+					<< sum_cc_int << " "
 					<< sum_short << " "
-					<< int_sum_for << " "
-					<< int_sum_dowhile << " "
+					<< sum_for_int << " "
+					<< sum_dowhile_int << " "
 					<< std::endl;
 				index++;
 			}CC_;
