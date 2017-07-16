@@ -57,10 +57,6 @@
 	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
 #define END_FOR END_WHILE}
 
-#define DOWHILE_CC(cond_expression) {ASYS_VAR(bool, __asys_tmp_dowhile_inited);\
-	WHILE_CC((__asys_tmp_dowhile_inited)? (cond_expression) : ((__asys_tmp_dowhile_inited = true),true))
-#define END_DOWHILE END_WHILE}
-
 #define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))_;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)_;
 
