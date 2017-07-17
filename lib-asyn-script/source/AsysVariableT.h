@@ -118,73 +118,73 @@ namespace asys
 		}
 
 		AsysVariableT(const char* name, int)
-			: AsysGeneralVariableT(name, 0)
+			: AsysGeneralVariableT<T>(name, 0)
 		{}
 
 		template<typename T1>
 		T& operator = (const T1& var) const
 		{
-			return r() = var;
+			return this->r() = var;
 		}
 
 		template<typename T1>
 		T& operator += (const T1& var) const
 		{
-			return r() += var;
+			return this->r() += var;
 		}
 
 		template<typename T1>
 		T& operator -= (const T1& var) const
 		{
-			return r() -= var;
+			return this->r() -= var;
 		}
 
 		template<typename T1>
 		T& operator *= (const T1& var) const
 		{
-			return r() *= var;
+			return this->r() *= var;
 		}
 
 		template<typename T1>
 		T& operator /= (const T1& var) const
 		{
-			return r() /= var;
+			return this->r() /= var;
 		}
 
 		template<typename T1>
 		T& operator %= (const T1& var) const
 		{
-			return r() %= var;
+			return this->r() %= var;
 		}
 
 		template<typename T1>
 		T& operator &= (const T1& var) const
 		{
-			return r() &= var;
+			return this->r() &= var;
 		}
 
 		template<typename T1>
 		T& operator |= (const T1& var) const
 		{
-			return r() |= var;
+			return this->r() |= var;
 		}
 
 		template<typename T1>
 		T& operator ^= (const T1& var) const
 		{
-			return r() ^= var;
+			return this->r() ^= var;
 		}
 
 		template<typename T1>
 		T& operator <<= (const T1& var) const
 		{
-			return r() <<= var;
+			return this->r() <<= var;
 		}
 
 		template<typename T1>
 		T& operator >>= (const T1& var) const
 		{
-			return r() >>= var;
+			return this->r() >>= var;
 		}
 
 	private:
@@ -207,37 +207,36 @@ namespace asys
 		}
 
 		AsysVariableT(const char* name, int)
-			: AsysGeneralVariableT(name, 0)
+			: AsysGeneralVariableT<T*>(name, 0)
 		{
-			m_pName = name;
 		}
 
 		T& operator *() const
 		{
-			return *r();
+			return *this->r();
 		}
 
 		T* operator ->() const
 		{
-			return r();
+			return this->r();
 		}
 
 		template<typename T1>
 		T*& operator = (const T1& var) const
 		{
-			return r() = var;
+			return this->r() = var;
 		}
 
 		template<typename T1>
 		T*& operator += (const T1& var) const
 		{
-			return r() += var;
+			return this->r() += var;
 		}
 
 		template<typename T1>
 		T*& operator -= (const T1& var) const
 		{
-			return r() -= var;
+			return this->r() -= var;
 		}
 
 	private:
