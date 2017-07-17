@@ -24,7 +24,9 @@ namespace asys
 		}
 
 		AsysGeneralVariableT(const char* name, int)
-		{}
+		{
+			this->m_pName = name;
+		}
 
 		operator T() const
 		{
