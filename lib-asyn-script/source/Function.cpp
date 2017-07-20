@@ -70,6 +70,20 @@ asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Machine*)>&
 	return instruction->breakPoint();
 }
 
+asys::BreakPoint& asys::FunctionCode::Elseif_ex(const std::function<bool(asys::Machine*)>& express)
+{
+	auto& ref = Else();
+
+	int ip = static_cast<int>(m_instructions.size());
+	auto instruction = new IfInstruction(express);
+	instruction->isElseIf = true;
+	m_instructions.push_back(instruction);
+	m_unmatchedIfIps.push_back(ip);
+
+	return ref;
+	
+}
+
 asys::BreakPoint& asys::FunctionCode::Else()
 {
 	assert(m_unmatchedIfIps.size() > 0);//  "Asynscript compile error, there is no unmatched if expression for this else-expression";
@@ -91,31 +105,46 @@ asys::BreakPoint& asys::FunctionCode::Else()
 
 asys::BreakPoint& asys::FunctionCode::End_if()
 {
-	assert(m_unmatchedIfIps.size() > 0);// "Asynscript compile error, there is no unmatched if expression for this endif-expression");
-
-	int unMatchedIfIp = m_unmatchedIfIps.back();
-	auto ifInstruction = static_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
-
-	assert(ifInstruction->endIfIp == INVALID_IP);// "Asynscript compile error, there is already an endif expression for if.");
-
-	int ip = static_cast<int>(m_instructions.size());
-	auto endIfInstruction = new EndIfInstruction();
-	m_instructions.push_back(endIfInstruction);
-
-	ifInstruction->endIfIp = ip;
-	endIfInstruction->ifIp = unMatchedIfIp;
-
-	int elseIp = ifInstruction->elseIp;
-	if (elseIp != INVALID_IP)
+	asys::BreakPoint* pBreakpoint{ nullptr };
+	IfInstruction* ifInstruction{ nullptr };
+	do
 	{
-		auto elseInstruction = static_cast<ElseInstruction*>(m_instructions[elseIp]);
-		elseInstruction->endIfIp = ip;
-		endIfInstruction->elseIp = elseIp;
-	}
+		assert(m_unmatchedIfIps.size() > 0);// "Asynscript compile error, there is no unmatched if expression for this endif-expression");
 
-	m_unmatchedIfIps.pop_back();
+		int unMatchedIfIp = m_unmatchedIfIps.back();
+		ifInstruction = static_cast<IfInstruction*>(m_instructions[unMatchedIfIp]);
 
-	return endIfInstruction->breakPoint();
+		assert(ifInstruction->endIfIp == INVALID_IP);// "Asynscript compile error, there is already an endif expression for if.");
+
+		int ip = static_cast<int>(m_instructions.size());
+		auto endIfInstruction = new EndIfInstruction();
+		if (!pBreakpoint)
+		{
+			pBreakpoint = &endIfInstruction->breakPoint();
+		}
+		else
+		{
+			endIfInstruction->breakPoint().setUsingLastCallback(true);
+		}
+		m_instructions.push_back(endIfInstruction);
+
+		ifInstruction->endIfIp = ip;
+		endIfInstruction->ifIp = unMatchedIfIp;
+
+		int elseIp = ifInstruction->elseIp;
+		if (elseIp != INVALID_IP)
+		{
+			auto elseInstruction = static_cast<ElseInstruction*>(m_instructions[elseIp]);
+			elseInstruction->endIfIp = ip;
+			endIfInstruction->elseIp = elseIp;
+		}
+
+		m_unmatchedIfIps.pop_back();
+
+	} while (ifInstruction->isElseIf);
+
+
+	return *pBreakpoint;
 }
 
 asys::BreakPoint& asys::FunctionCode::While_ex(const std::function<bool(Machine*)>& express)
@@ -220,7 +249,10 @@ void asys::FunctionCode::compile()
 		{
 			if (m_instructions[i]->breakPoint().lineNumber() == -1)
 			{
-				m_instructions[i]->breakPoint()(nullptr, pLastValidBreakPoint->fileName(), pLastValidBreakPoint->functionName(), pLastValidBreakPoint->lineNumber());
+				m_instructions[i]->breakPoint()((m_instructions[i]->breakPoint().isUsingLastCallback() ? pLastValidBreakPoint->callback(): nullptr),
+					pLastValidBreakPoint->fileName(),
+					pLastValidBreakPoint->functionName(),
+					pLastValidBreakPoint->lineNumber());
 			}
 			else
 			{

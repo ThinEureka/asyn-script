@@ -67,12 +67,16 @@ namespace asys
 
 		const std::function<void(Machine*, const BreakPoint&)>& callback() const { return m_callback; }
 
+		void setUsingLastCallback(bool isUsingLastCallback) { m_isUsingLastCallback = isUsingLastCallback; }
+		bool isUsingLastCallback() const{ return m_isUsingLastCallback; }
+
 	private:
 		Instruction* m_instruction{ nullptr };
 		const char* m_fileName{};
 		const char* m_functionName{};
 		int m_lineNumber{ -1 };
 		std::function<void(Machine*, const BreakPoint&)> m_callback;
+		bool m_isUsingLastCallback{ false };
 	};
 
 	class Instruction
@@ -141,6 +145,7 @@ namespace asys
 		std::function<bool(Machine*)> express;
 		int elseIp{ INVALID_IP };
 		int endIfIp{ INVALID_IP };
+		bool isElseIf{ false };
 	};
 
 	class ElseInstruction : public Instruction

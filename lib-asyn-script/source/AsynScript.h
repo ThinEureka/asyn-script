@@ -37,6 +37,11 @@
 #define IF_EX(...) __this_function->If_ex(__VA_ARGS__)_;
 #define IF_NOT(condition) __this_function->If_not(condition)_;
 
+#define ELSEIF(var) __this_function->Elseif(var)_;
+#define ELSEIF_NOT(var) __this_function->Elseif_not(var)_;
+//cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
+#define ELSEIF_CC(var) __this_function->Elseif_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
+
 #define ELSE __this_function->Else()_;
 #define END_IF __this_function->End_if()_;
 

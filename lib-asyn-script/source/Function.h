@@ -85,6 +85,26 @@ namespace asys
 			});
 		}
 
+		template<typename V>
+		BreakPoint& Elseif(const AsysVariableT<V>& var)
+		{
+			return Elseif_ex([=](asys::Machine* asys_this){
+				auto pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				return pCastValue->getNativeValue();
+			});
+		}
+
+		BreakPoint& Elseif_ex(const std::function<bool(asys::Machine*)>& express);
+
+		template<typename V>
+		BreakPoint& Elseif_not(const AsysVariableT<V>& var)
+		{
+			return Elseif_ex([=](asys::Machine* asys_this){
+				auto pCastValue = static_cast<AsysValueT<V>*>(asys_this->getAsysValue(var));
+				return !pCastValue->getNativeValue();
+			});
+		}
+
 		BreakPoint& Else();
 		BreakPoint& End_if();
 

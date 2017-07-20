@@ -61,6 +61,7 @@ asys::FunctionCode* sum_for(ASYS_P(int, n))
 asys::FunctionCode* print_sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
+
 		ASYS_VAR(int, index);
 		ASYS_VAR(int, sum_int);
 		ASYS_VAR(double, sum_double);
