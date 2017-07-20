@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3BF39BF5-24A3-4A83-8213-1DDAF90AE4C6}</ProjectGuid>
+    <ProjectGuid>{763B1743-8A10-416A-938E-1C5A758673EE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DemoHelloWorld</RootNamespace>
+    <RootNamespace>DemoIf</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,15 +78,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\HelloWorld.cpp" />
+    <ClCompile Include="source\If.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\lib-asyn-script\proj.win32\lib-asyn-script.vcxproj">
       <Project>{7ea8ee28-521d-4200-b631-ffc321321925}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\DemoIf\DemoIf.vcxproj.filters" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

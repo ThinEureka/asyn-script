@@ -70,7 +70,7 @@ asys::BreakPoint& asys::FunctionCode::If_ex(const std::function<bool(Machine*)>&
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::Elseif_ex(const std::function<bool(asys::Machine*)>& express)
+asys::BreakPoint& asys::FunctionCode::Else_if_ex(const std::function<bool(asys::Machine*)>& express)
 {
 	auto& ref = Else();
 
@@ -81,7 +81,6 @@ asys::BreakPoint& asys::FunctionCode::Elseif_ex(const std::function<bool(asys::M
 	m_unmatchedIfIps.push_back(ip);
 
 	return ref;
-	
 }
 
 asys::BreakPoint& asys::FunctionCode::Else()
@@ -107,8 +106,8 @@ asys::BreakPoint& asys::FunctionCode::End_if()
 {
 	asys::BreakPoint* pBreakpoint{ nullptr };
 	IfInstruction* ifInstruction{ nullptr };
-	do
-	{
+
+	do{
 		assert(m_unmatchedIfIps.size() > 0);// "Asynscript compile error, there is no unmatched if expression for this endif-expression");
 
 		int unMatchedIfIp = m_unmatchedIfIps.back();
@@ -142,7 +141,6 @@ asys::BreakPoint& asys::FunctionCode::End_if()
 		m_unmatchedIfIps.pop_back();
 
 	} while (ifInstruction->isElseIf);
-
 
 	return *pBreakpoint;
 }
