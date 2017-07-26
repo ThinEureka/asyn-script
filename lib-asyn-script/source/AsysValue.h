@@ -16,6 +16,8 @@ namespace asys
 	class AsysValue
 	{
 	public:
+		virtual ~AsysValue() {}
+
 		virtual bool toBool() const = 0;
 
 		virtual char toChar() const = 0;

@@ -26,7 +26,7 @@ namespace asys
 		//not meant to be used as base class.
 		~Stack()
 		{
-			delete m_pRawMem;
+			delete[] m_pRawMem;
 		}
 
 		Stack(const Stack& stack) = delete;

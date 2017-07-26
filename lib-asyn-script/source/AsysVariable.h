@@ -94,6 +94,7 @@ namespace asys
 	class VariableViewer{
 	public:
 		virtual const char* getName() const = 0;
+		virtual ~VariableViewer(){}
 	};
 
 	template<typename T>
