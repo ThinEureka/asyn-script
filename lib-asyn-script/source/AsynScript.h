@@ -24,7 +24,7 @@
 #define END_FUN __this_function->compile(); return __this_function;
 
 #define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
-#define CC_ })__
+#define CC_ })__;
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})__
