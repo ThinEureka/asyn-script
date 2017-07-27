@@ -24,48 +24,48 @@
 #define END_FUN __this_function->compile(); return __this_function;
 
 #define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
-#define CC_ })__;
+#define CC_ })___;
 
 //asys::FunctionCode::Call(outputs, inputs, code)
-#define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})__
+#define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})___
 
-#define IF(var) __this_function->If(var)__;
+#define IF(var) __this_function->If(var)___;
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
 #define IF_CC(var) __this_function->If_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::If_ex(const std::function<bool(Executable*)>& express)
-#define IF_EX(...) __this_function->If_ex(__VA_ARGS__)__;
-#define IF_NOT(condition) __this_function->If_not(condition)__;
+#define IF_EX(...) __this_function->If_ex(__VA_ARGS__)___;
+#define IF_NOT(condition) __this_function->If_not(condition)___;
 
-#define ELSE_IF(var) __this_function->Else_if(var)__;
-#define ELSE_IF_NOT(var) __this_function->Else_if_not(var)__;
+#define ELSE_IF(var) __this_function->Else_if(var)___;
+#define ELSE_IF_NOT(var) __this_function->Else_if_not(var)___;
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
 #define ELSE_IF_CC(var) __this_function->Else_if_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
 
-#define ELSE __this_function->Else()__;
-#define END_IF __this_function->End_if()__;
+#define ELSE __this_function->Else()___;
+#define END_IF __this_function->End_if()___;
 
-#define WHILE(var) __this_function->While(var)__;
+#define WHILE(var) __this_function->While(var)___;
 
 //cc means it's wrapped in a lamda expression, like a time capsule that the expression is evaluated at runtime to allow you writing c++ expression directly.
 #define WHILE_CC(var) __this_function->While_ex([=](asys::Machine* asys_this){ return var; })_d_no_callback;
 
 //asys::FunctionCode::While_ex(const std::function<bool(Executable*)>& express)
-#define WHILE_EX(cond_expression) __this_function->While_ex(cond_expression)__;
-#define WHILE_NOT(var) __this_function->While_not(var)__;
+#define WHILE_EX(cond_expression) __this_function->While_ex(cond_expression)___;
+#define WHILE_NOT(var) __this_function->While_not(var)___;
 
-#define END_WHILE __this_function->End_while()__;
-#define CONTINUE __this_function->Continue()__;
-#define BREAK __this_function->Break()__;
+#define END_WHILE __this_function->End_while()___;
+#define CONTINUE __this_function->Continue()___;
+#define BREAK __this_function->Break()___;
 
 #define FOR_CC(init_expression, cond_expression, loop_expression) {ASYS_VAR(bool, __asys_tmp_for_inited);\
 	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
 #define END_FOR END_WHILE}
 
-#define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))__;
-#define ASSIGN(var1, var2) __this_function->Assign(var1, var2)__;
+#define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))___;
+#define ASSIGN(var1, var2) __this_function->Assign(var1, var2)___;
 
-#define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)__;
+#define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)___;
 #define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
 #define ASYS_P(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(#name, 0)
 #define D_ASYS_P(type, name) asys::AsysVariableT<type> name

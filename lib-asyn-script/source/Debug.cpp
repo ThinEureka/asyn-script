@@ -82,7 +82,7 @@ void asys::DebugInfo::onBreakPoint(const BreakPoint& breakPoint)
 {
 	if (m_pCurBreakPoint != &breakPoint)
 	{
-		m_callStack.back()->updateBreakPoint(m_pMachine, m_pMachine->m_funRuntimes.size() - 1);
+		m_callStack.back()->updateBreakPoint(m_pMachine, static_cast<int>(m_pMachine->m_funRuntimes.size()) - 1);
 		m_pCurBreakPoint = &breakPoint;
 	}
 }

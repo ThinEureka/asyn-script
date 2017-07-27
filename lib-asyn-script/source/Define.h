@@ -33,10 +33,10 @@
 // append this macro to the instruction calls to set a break point for ease of debug in C++
 
 #if ASYS_BREAKPOINT == 1
-	#define __ ([](asys::Machine* asys_this, const asys::BreakPoint& breakPoint) {}, __FILE__, __FUNCTION__, __LINE__)
+	#define ___ ([](asys::Machine* asys_this, const asys::BreakPoint& breakPoint) {}, __FILE__, __FUNCTION__, __LINE__)
 	#define _d_no_callback (nullptr, __FILE__, __FUNCTION__, __LINE__)
 #else
-	#define __
+	#define ___
 	#define _d_no_callback
 #endif
 
