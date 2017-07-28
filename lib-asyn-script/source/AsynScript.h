@@ -58,9 +58,9 @@
 #define CONTINUE __this_function->Continue()___;
 #define BREAK __this_function->Break()___;
 
-#define FOR_CC(init_expression, cond_expression, loop_expression) {ASYS_VAR(bool, __asys_tmp_for_inited);\
-	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
-#define END_FOR END_WHILE}
+#define FOR_CC(init_expression, cond_expression, loop_expression) ASYS_VAR(bool, __asys_tmp_for_init_##__LINE__);\
+	WHILE_CC((__asys_tmp_for_init_##__LINE__)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_init_##__LINE__ = true),(cond_expression)))
+#define END_FOR END_WHILE
 
 #define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))___;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)___;
