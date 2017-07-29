@@ -30,7 +30,7 @@ asys::FunctionCode* helloWorld()
 			if (index < str.r().length())
 			{
 				std::cout << str.r()[index];
-				index = index + 1;
+				index++;
 				asys_redo;
 			}
 		}CC_;
