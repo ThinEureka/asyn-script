@@ -214,6 +214,14 @@ asys::BreakPoint& asys::FunctionCode::Return()
 	return instruction->breakPoint();
 }
 
+asys::BreakPoint& asys::FunctionCode::Return(const VariableList& vars)
+{
+	auto instruction = new ReturnInstruction(vars);
+	m_instructions.push_back(instruction);
+
+	return instruction->breakPoint();
+}
+
 void asys::FunctionCode::clear()
 {
 	for (auto instruction : m_instructions)
@@ -269,12 +277,4 @@ const asys::AsysVariable* asys::FunctionCode::getInputVariable(int index) const
 	}
 
 	return m_stackFrame.getVariableByIndex(index);
-}
-
-asys::BreakPoint& asys::FunctionCode::Return(int, const VariableList& vars)
-{
-	auto instruction = new ReturnInstruction(vars);
-	m_instructions.push_back(instruction);
-
-	return instruction->breakPoint();
 }

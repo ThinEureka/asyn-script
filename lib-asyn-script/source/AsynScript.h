@@ -78,7 +78,7 @@ namespace asys
 	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
 #define END_FOR END_WHILE}
 
-#define RETURN(...) __this_function->Return(0, {__VA_ARGS__})___;
+#define RETURN(...) __this_function->Return({__VA_ARGS__})___;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)___;
 
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)___;

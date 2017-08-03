@@ -133,7 +133,7 @@ namespace asys
 		BreakPoint& Break();
 
 		BreakPoint& Return();
-		BreakPoint& Return(int, const VariableList& vars);
+		BreakPoint& Return(const VariableList& vars);
 
 		template<typename V1, typename V2>
 		BreakPoint& Assign(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
