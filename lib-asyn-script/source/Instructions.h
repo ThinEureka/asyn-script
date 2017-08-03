@@ -109,13 +109,13 @@ namespace asys
 	class CallInstruction : public Instruction
 	{
 	public:
-		CallInstruction(const FunctionCode* code, const ValueList& inputs)
+		CallInstruction(const FunctionCode* code, const VariableList& inputs)
 			: Instruction(InstructionType::type_call)
 			, inputs(inputs)
 			, code(code)
 		{}
 
-		CallInstruction(const AsysVariable& codeVar, const ValueList& inputs)
+		CallInstruction(const AsysVariable& codeVar, const VariableList& inputs)
 			: Instruction(InstructionType::type_call)
 			, inputs(inputs)
 			, codeVar(codeVar)
@@ -131,7 +131,7 @@ namespace asys
 
 	public:
 		VariableList outputs;
-		ValueList inputs;
+		VariableList inputs;
 		const FunctionCode* code{};
 		AsysVariable codeVar;
 	};
@@ -208,9 +208,12 @@ namespace asys
 	class ReturnInstruction : public Instruction
 	{
 	public: 
-		ReturnInstruction(const ValueList& valueList) 
-			: Instruction(InstructionType::type_return),
-			valueList(valueList){}
+		ReturnInstruction(const VariableList& varList)
+			: Instruction(InstructionType::type_return)
+			, valueList(varList)
+		{
+
+		}
 
 		ReturnInstruction() : Instruction(InstructionType::type_return){}
 

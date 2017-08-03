@@ -62,8 +62,8 @@ namespace asys
 			//do nothing.
 		}
 
-		BreakPoint& Call(const AsysVariable& code, const ValueList& inputs);
-		BreakPoint& Call(FunctionCode* code, const ValueList& inputs);
+		BreakPoint& Call(const AsysVariable& code, const VariableList& inputs);
+		BreakPoint& Call(FunctionCode* code, const VariableList& inputs);
 
 		template<typename V>
 		BreakPoint& If(const AsysVariableT<V>& var)
@@ -133,7 +133,7 @@ namespace asys
 		BreakPoint& Break();
 
 		BreakPoint& Return();
-		BreakPoint& Return(const ValueList& vars);
+		BreakPoint& Return(int, const VariableList& vars);
 
 		template<typename V1, typename V2>
 		BreakPoint& Assign(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)

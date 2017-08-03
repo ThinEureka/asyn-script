@@ -57,8 +57,7 @@ private:
 					access_token = "6534B029C4FA65";
 				}
 			}CC_;
-
-			RETURN(true, user_id, access_token);
+			RETURN(CC(bool, true), user_id, access_token);
 		}END_FUN;
 	}
 
@@ -87,8 +86,7 @@ private:
 					session_id = "123456";
 				}
 			}CC_;
-
-			RETURN(true, session_id, "127.0.0.1:3697");
+			RETURN(CC(bool, true), session_id, CC(std::string, "127.0.0.1:3697"));
 		}END_FUN;
 	}
 
@@ -118,7 +116,7 @@ private:
 				}
 			}CC_;
 
-			RETURN(true, player_info);
+			RETURN(CC(bool, true), player_info);
 		}END_FUN;
 	}
 

@@ -124,8 +124,15 @@ namespace asys
 			setupInputs(valueList);
 		}
 
+		void pushFunctionRuntime(const FunctionCode* code, const VariableList& varList)
+		{
+			pushFunctionRuntime(code);
+			setupInputs(varList);
+		}
+
 		void pushFunctionRuntime(const FunctionCode* code);
 		void setupInputs(const ValueList& valueList);
+		void setupInputs(const VariableList& varList);
 
 		void processNullInstruction()
 		{

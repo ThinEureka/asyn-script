@@ -15,6 +15,20 @@
 #include "Machine.h"
 #include "Instructions.h"
 
+namespace asys
+{
+	template<typename T>
+	AsysVariableT<T> tmpVar(FunctionCode* f, const std::function<T()>&callback, const char* fileName, const char* funcName, int line)
+	{
+		AsysVariableT<T> tmp("__asys_tmp_var", 0);
+		f->Declare(tmp)(nullptr, fileName, funcName, line);
+		f->Do(-1, [=](asys::Machine* asys_this){
+			tmp.sr(asys_this) = callback();
+		})(nullptr, fileName, funcName, line);
+		return tmp;
+	}
+}
+
 //key words
 #define BEGIN_FUN(...) auto& __this_function = m_asynFunctions[__FUNCTION__]; \
 					if (__this_function) return __this_function; \
@@ -25,6 +39,8 @@
 
 #define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
 #define CC_ })___;
+
+#define CC(T, express) asys::tmpVar<T>(__this_function, [=](){ return (express);}, __FILE__, __FUNCTION__, __LINE__)
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})___
@@ -62,7 +78,7 @@
 	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
 #define END_FOR END_WHILE}
 
-#define RETURN(...) __this_function->Return(asys::ValueList(__VA_ARGS__))___;
+#define RETURN(...) __this_function->Return(0, {__VA_ARGS__})___;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)___;
 
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)___;

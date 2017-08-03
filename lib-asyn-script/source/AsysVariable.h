@@ -22,6 +22,8 @@ namespace asys
 	class Debugger;
 	class DebugInfo;
 	class CallInfo;
+	class VariableList;
+	class ValueList;
 
 	class Const
 	{
@@ -197,17 +199,19 @@ namespace asys
 		friend class Debugger;
 		friend class DebugInfo;
 		friend class CallInfo;
+		friend class VariableList;
+		friend class ValueList;
 	};
 
 	class VariableList
 	{
 	public:
-		VariableList(std::initializer_list<AsysVariable> varList)
+		template<typename... Args>
+		VariableList(const Args&... args)
 		{
-			m_variables.insert(m_variables.begin(), varList.begin(), varList.end());
+			m_variables.resize(sizeof...(Args));
+			init(0, args...);
 		}
-
-		VariableList(){}
 
 		size_t getLength() const
 		{
@@ -223,6 +227,16 @@ namespace asys
 
 			return &m_variables[index];
 		}
+
+	private:
+		template<typename... Args>
+		void init(int index, const AsysVariable& variable, const Args&... values)
+		{
+			m_variables[index].shallowCopy(variable);
+			init(index + 1, values...);
+		}
+
+		void init(int){}
 
 	private:
 		std::vector<AsysVariable> m_variables;
@@ -248,6 +262,16 @@ namespace asys
 		{
 			m_values.resize(sizeof...(Args));
 			init(0, args...);
+		}
+
+		ValueList(const VariableList& vars)
+		{
+			m_values.resize(vars.getLength());
+			for (size_t i = 0; i < m_values.size(); ++i)
+			{
+				m_values[i].isConst = false;
+				m_values[i].asysVarible.shallowCopy(*vars.getAsysVariable(i));
+			}
 		}
 
 		size_t getLength() const

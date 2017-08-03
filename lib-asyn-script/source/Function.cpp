@@ -44,7 +44,7 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 	});
 }
 
-asys::BreakPoint& asys::FunctionCode::Call(const AsysVariable& code, const ValueList& inputs)
+asys::BreakPoint& asys::FunctionCode::Call(const AsysVariable& code, const VariableList& inputs)
 {
 	auto instruction = new CallInstruction(code, inputs);
 	m_instructions.push_back(instruction);
@@ -52,7 +52,7 @@ asys::BreakPoint& asys::FunctionCode::Call(const AsysVariable& code, const Value
 	return instruction->breakPoint();
 }
 
-asys::BreakPoint& asys::FunctionCode::Call(FunctionCode* code, const ValueList& inputs)
+asys::BreakPoint& asys::FunctionCode::Call(FunctionCode* code, const VariableList& inputs)
 {
 	auto instruction = new CallInstruction(code, inputs);
 	m_instructions.push_back(instruction);
@@ -271,7 +271,7 @@ const asys::AsysVariable* asys::FunctionCode::getInputVariable(int index) const
 	return m_stackFrame.getVariableByIndex(index);
 }
 
-asys::BreakPoint& asys::FunctionCode::Return(const ValueList& vars)
+asys::BreakPoint& asys::FunctionCode::Return(int, const VariableList& vars)
 {
 	auto instruction = new ReturnInstruction(vars);
 	m_instructions.push_back(instruction);

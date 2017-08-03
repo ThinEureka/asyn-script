@@ -461,6 +461,32 @@ void asys::Machine::setupInputs(const ValueList& valueList)
 	}
 }
 
+void asys::Machine::setupInputs(const VariableList& varList)
+{
+	auto pFunction = m_pCurFunRuntime->m_pFunction;
+	for (int i = 0; i < pFunction->getNumInputs(); ++i)
+	{
+		auto pInputVar = pFunction->getInputVariable(i);
+		constructValue(m_pCurFunRuntime, *pInputVar);
+
+		auto var = varList.getAsysVariable(i);
+		if (var)
+		{
+			auto pInputValue = getAsysValue(m_pCurFunRuntime, *pInputVar);
+			if (m_funRuntimes.size() >= 2)
+			{
+				auto caller = &m_funRuntimes[m_funRuntimes.size() - 2];
+				auto pRealArguemntValue = getAsysValue(caller, *var);
+				pInputValue->assign(*pRealArguemntValue);
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+	}
+}
+
 void asys::Machine::popFunctionRuntime()
 {
 	m_pCurFunRuntime->destruct(this);
