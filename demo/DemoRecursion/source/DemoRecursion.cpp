@@ -30,9 +30,7 @@ asys::FunctionCode* sum(ASYS_P(int, n))
 		CALL(sum(), n_minus_one)
 			>>= {sub_result};
 
-		_CC{
-			asys_return(n + sub_result);
-		}CC_;
+		RETURN(CC(int, n + sub_result));
 	}END_FUN;
 }
 
