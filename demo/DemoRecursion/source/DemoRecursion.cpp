@@ -38,7 +38,7 @@ asys::FunctionCode* print()
 {
 	BEGIN_FUN(){
 		ASYS_VAR(int, n);
-		ASSIGN(n, 0);
+		ASSIGN(n, CC(int, 0));
 
 		WHILE_CC(true){
 			ASYS_VAR(int, result);

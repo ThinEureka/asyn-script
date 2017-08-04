@@ -18,9 +18,9 @@
 namespace asys
 {
 	template<typename T>
-	AsysVariableT<T> tmpVar(FunctionCode* f, const std::function<T()>&callback, const char* fileName, const char* funcName, int line)
+	AsysVariableT<T> tmpVar(FunctionCode* f, const std::function<T()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
 	{
-		AsysVariableT<T> tmp("__asys_tmp_var", 0);
+		AsysVariableT<T> tmp(varName, 0);
 		f->Declare(tmp)(nullptr, fileName, funcName, line);
 		f->Do(-1, [=](asys::Machine* asys_this){
 			tmp.sr(asys_this) = callback();
@@ -40,7 +40,6 @@ namespace asys
 #define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
 #define CC_ })___;
 
-#define CC(T, express) asys::tmpVar<T>(__this_function, [=](){ return (express);}, __FILE__, __FUNCTION__, __LINE__)
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})___
@@ -74,11 +73,12 @@ namespace asys
 #define CONTINUE __this_function->Continue()___;
 #define BREAK __this_function->Break()___;
 
-#define FOR_CC(init_expression, cond_expression, loop_expression) {ASYS_VAR(bool, __asys_tmp_for_inited);\
-	WHILE_CC((__asys_tmp_for_inited)? ((loop_expression),(cond_expression)) : ((init_expression),(__asys_tmp_for_inited = true),(cond_expression)))
-#define END_FOR END_WHILE}
+#define FOR_CC(init_expression, cond_expression, loop_expression) asys::AsysVariableT<bool> __C__LINE__(__asys_tmp_for_init_line_)("__asys_tmp_for_init_line_" __S__LINE__, 0); \
+	__this_function->Declare(__C__LINE__(__asys_tmp_for_init_line_))___;\
+	WHILE_CC(__C__LINE__(__asys_tmp_for_init_line_)? ((loop_expression),(cond_expression)) : ((init_expression),(__C__LINE__(__asys_tmp_for_init_line_) = true),(cond_expression)))
+#define END_FOR END_WHILE
 
-#define RETURN(...) __this_function->Return({__VA_ARGS__})___;
+#define RETURN(...) __this_function->Return(asys::VariableList(__VA_ARGS__))___;
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)___;
 
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)___;

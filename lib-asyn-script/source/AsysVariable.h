@@ -200,7 +200,6 @@ namespace asys
 		friend class DebugInfo;
 		friend class CallInfo;
 		friend class VariableList;
-		friend class ValueList;
 	};
 
 	class VariableList
@@ -264,7 +263,7 @@ namespace asys
 			init(0, args...);
 		}
 
-		ValueList(const VariableList& vars)
+		explicit ValueList(const VariableList& vars)
 		{
 			m_values.resize(vars.getLength());
 			for (size_t i = 0; i < m_values.size(); ++i)

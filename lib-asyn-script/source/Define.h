@@ -40,6 +40,14 @@
 	#define _d_no_callback
 #endif
 
+#define __S(x) #x
+#define __S_(x) __S(x)
+#define __S__LINE__ __S_(__LINE__)
+
+#define __C(v, x) v##x
+#define __C_(v, x) __C(v, x)
+#define __C__LINE__(v) __C_(v, __LINE__)
+
 namespace asys
 {
 	enum class CodeFlow

@@ -19,6 +19,7 @@ namespace asys
 	class VariableViewer;
 	class DebugInfo;
 	class CallInfo;
+	class Machine;
 
 	class Debugger
 	{

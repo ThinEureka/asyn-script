@@ -35,7 +35,7 @@ private:
 	{
 		BEGIN_FUN(device_id){
 			ASYS_VAR(int, index);
-			ASSIGN(index, 0);
+			ASSIGN(index, CC(int, 0));
 
 			ASYS_VAR(std::string, user_id);
 			ASYS_VAR(std::string, access_token);
@@ -66,7 +66,7 @@ private:
 	{
 		BEGIN_FUN(user_id, access_token){
 			ASYS_VAR(int, index);
-			ASSIGN(index, 0);
+			ASSIGN(index, CC(int, 0));
 
 			ASYS_VAR(std::string, session_id);
 			_CC{
@@ -96,7 +96,7 @@ private:
 		BEGIN_FUN(user_id, session_id, gameserver_ip){
 
 			ASYS_VAR(int, index);
-			ASSIGN(index, 0);
+			ASSIGN(index, CC(int, 0));
 
 			ASYS_VAR(std::string, player_info);
 			_CC{
