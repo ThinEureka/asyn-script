@@ -40,6 +40,7 @@ namespace asys
 #define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
 #define CC_ })___;
 
+#define CC(T, express) asys::tmpVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_cc_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})___
