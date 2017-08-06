@@ -91,8 +91,6 @@ namespace asys
 		AsysValue* m_pAsysValue{ nullptr };
 	};
 
-	class Executable;
-
 	class VariableViewer{
 	public:
 		virtual const char* getName() const = 0;
@@ -119,6 +117,13 @@ namespace asys
 		const char* m_varName{};
 	};
 
+	enum  class VariableType
+	{
+		normal,
+		right,
+		output,
+	};
+
 	class AsysVariable
 	{
 	public:
@@ -128,8 +133,8 @@ namespace asys
 			shallowCopy(var);
 		}
 
-		bool isRightValue() const { return m_isRightValue; }
-		void setIsRightValue(bool isRightValue) { m_isRightValue = isRightValue; }
+		VariableType getVariableType() const { return m_variableType; }
+		void setVaribaleType(VariableType variableType) { m_variableType = variableType; }
 
 	protected:
 		virtual AsysVariable* clone() const
@@ -144,7 +149,7 @@ namespace asys
 		{
 			m_memoryOffset = var.m_memoryOffset;
 			m_pName = var.m_pName;
-			m_isRightValue = var.m_isRightValue;
+			m_variableType = var.m_variableType;
 		}
 
 		void deepCopy(const AsysVariable& var)
@@ -194,7 +199,7 @@ namespace asys
 	protected:
 		size_t m_memoryOffset{};
 		const char* m_pName{};
-		bool m_isRightValue{};
+		VariableType m_variableType{ VariableType::normal };
 
 	private:
 		friend class StackFrame;

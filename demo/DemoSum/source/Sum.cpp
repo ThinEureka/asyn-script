@@ -68,7 +68,6 @@ asys::FunctionCode* print_sum(ASYS_P(int, n))
 		ASYS_VAR(short, sum_short);
 
 		WHILE_CC(index <= n){
-			CALL(sum_while(), CC(int, index)) >>= {sum_int};
 
 			_CC{
 				sum_double = sum_int;

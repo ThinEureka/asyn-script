@@ -16,18 +16,15 @@ asys_reg_funs;
 asys::FunctionCode* sum(ASYS_P(int, n))
 {
 	BEGIN_FUN(n){
-		ASYS_VAR(int, n_minus_one);
 		_CC{
 			if (n <= 0)
 			{
 				asys_return(0);
 			}
-
-			n_minus_one = n - 1;
 		}CC_;
 
 		ASYS_VAR(int, sub_result);
-		CALL(sum(), n_minus_one)
+		CALL(sum(), CC(int, n -1))
 			>>= {sub_result};
 
 		RETURN(CC(int, n + sub_result));

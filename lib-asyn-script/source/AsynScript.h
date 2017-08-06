@@ -21,11 +21,23 @@ namespace asys
 	AsysVariableT<T> tmpRightVar(FunctionCode* f, const std::function<T()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
 	{
 		AsysVariableT<T> tmp(varName, 0);
-		tmp.setIsRightValue(true);
+		tmp.setVaribaleType(VariableType::right);
 		f->Declare(tmp)(nullptr, fileName, funcName, line);
-		f->Do(-1, [=](asys::Machine* asys_this){
+		f->Do(UNDEFINED_LINE, [=](asys::Machine* asys_this){
 			tmp.sr(asys_this) = callback();
 		})(nullptr, fileName, funcName, line);
+		return tmp;
+	}
+
+	template<typename T>
+	AsysVariableT<T> tmpOutputVar(FunctionCode* f, const std::function<T&()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
+	{
+		AsysVariableT<T> tmp(varName, 0);
+		tmp.setVaribaleType(VariableType::output);
+		f->Declare(tmp)(nullptr, fileName, funcName, line);
+		f->Do(UNDEFINED_LINE, [=](asys::Machine* asys_this){
+			callback() = tmp.sr(asys_this);
+		})(nullptr, fileName, funcName, PENDING_OUTPUT_LINE);
 		return tmp;
 	}
 }
@@ -42,15 +54,14 @@ namespace asys
 #define CC_ })___;
 
 //The variable returned by CC is a "right value", which can not be used to accept function 
-//return values or used as in left operand of assign operation. This language currently
-//doesn't plan to distinguish left or right values as C++, so that the users themselves
-//have the responsibility not to use CC in the output segment of the CALL statement.The 
-//author's argument is that this language should remain as simple as possible for
-//C++ programmers to explore the source code. A compromise is that the verification of the 
-//"left-value-ness" is done at asyn-script compilation time, so that the C++ compiler
-//doesn't complain if you make this mistake, instead the error will be detected during 
-//asyn-script compilation time just as other script syntax errors.
-#define CC(T, express) asys::tmpRightVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_cc_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
+//return values or used as in left operand of assign operation. If you want to output 
+//return values to C++ variables, use OUT_CC instead. Otherwise the error will be reported
+//when compiling asyn-script.
+#define CC(T, express) asys::tmpRightVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_right_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
+
+//Can only be used to output return values directly into C++ left values, can not be used as 
+//arguments to function calls or in an ASSIGN statement. 
+#define OUT_CC(T, express) asys::tmpOutputVar<T>(__this_function, [=]()->T&{ return (express);}, "__asys_tmp_output_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})___

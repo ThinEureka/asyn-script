@@ -12,6 +12,7 @@
 #include <assert.h>
 #include "Debug.h"
 #include "Machine.h"
+#include <algorithm>
 
 asys::BreakPoint& asys::FunctionCode::Do(const std::function<void(Machine*)>& express)
 {
@@ -46,16 +47,28 @@ asys::BreakPoint& asys::FunctionCode::Declare(AsysVariable& var)
 
 asys::BreakPoint& asys::FunctionCode::Call(const AsysVariable& code, const VariableList& inputs)
 {
-	auto instruction = new CallInstruction(code, inputs);
+	auto instruction = new CallInstruction(code, inputs, this);
 	m_instructions.push_back(instruction);
+
+	//output variables are not accepted.
+	for (size_t index = 0; index < inputs.getLength(); ++index)
+	{
+		assert(inputs.getAsysVariable(index)->getVariableType() != VariableType::output);
+	}
 
 	return instruction->breakPoint();
 }
 
 asys::BreakPoint& asys::FunctionCode::Call(FunctionCode* code, const VariableList& inputs)
 {
-	auto instruction = new CallInstruction(code, inputs);
+	auto instruction = new CallInstruction(code, inputs, this);
 	m_instructions.push_back(instruction);
+
+	//output variables are not accepted.
+	for (size_t index = 0; index < inputs.getLength(); ++index)
+	{
+		assert(inputs.getAsysVariable(index)->getVariableType() != VariableType::output);
+	}
 
 	return instruction->breakPoint();
 }
@@ -277,4 +290,20 @@ const asys::AsysVariable* asys::FunctionCode::getInputVariable(int index) const
 	}
 
 	return m_stackFrame.getVariableByIndex(index);
+}
+
+void asys::FunctionCode::movePendingOutputInstructions(int numOutputVariable, int realLineNumber)
+{
+	int index = static_cast<int>(m_instructions.size()) - 2;
+	while (numOutputVariable > 0 && index >= 0)
+	{
+		auto instruction = m_instructions[index];
+		if (instruction->breakPoint().lineNumber() == PENDING_OUTPUT_LINE)
+		{
+			instruction->breakPoint().setLineNumber(realLineNumber);
+			*std::remove(m_instructions.begin(), m_instructions.end(), instruction) = instruction;
+			--numOutputVariable;
+		}
+		--index;
+	}
 }

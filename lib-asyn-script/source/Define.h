@@ -61,4 +61,7 @@ namespace asys
 
 	const int INVALID_IP = -1;
 	const int THREAD_ID_MAIN = 0;
+
+	const int UNDEFINED_LINE = -1;
+	const int PENDING_OUTPUT_LINE = -2;
 }
