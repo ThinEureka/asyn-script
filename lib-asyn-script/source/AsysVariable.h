@@ -128,6 +128,9 @@ namespace asys
 			shallowCopy(var);
 		}
 
+		bool isRightValue() const { return m_isRightValue; }
+		void setIsRightValue(bool isRightValue) { m_isRightValue = isRightValue; }
+
 	protected:
 		virtual AsysVariable* clone() const
 		{
@@ -141,6 +144,7 @@ namespace asys
 		{
 			m_memoryOffset = var.m_memoryOffset;
 			m_pName = var.m_pName;
+			m_isRightValue = var.m_isRightValue;
 		}
 
 		void deepCopy(const AsysVariable& var)
@@ -190,6 +194,7 @@ namespace asys
 	protected:
 		size_t m_memoryOffset{};
 		const char* m_pName{};
+		bool m_isRightValue{};
 
 	private:
 		friend class StackFrame;

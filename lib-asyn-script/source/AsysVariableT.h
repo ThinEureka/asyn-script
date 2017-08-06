@@ -250,4 +250,10 @@ namespace asys
 			return newVar;
 		}
 	};
+
+	template<typename T>
+	class AsysLeftVariableT : public AsysValueT<T>
+	{
+
+	};
 }

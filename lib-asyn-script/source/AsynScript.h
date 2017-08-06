@@ -18,9 +18,10 @@
 namespace asys
 {
 	template<typename T>
-	AsysVariableT<T> tmpVar(FunctionCode* f, const std::function<T()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
+	AsysVariableT<T> tmpRightVar(FunctionCode* f, const std::function<T()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
 	{
 		AsysVariableT<T> tmp(varName, 0);
+		tmp.setIsRightValue(true);
 		f->Declare(tmp)(nullptr, fileName, funcName, line);
 		f->Do(-1, [=](asys::Machine* asys_this){
 			tmp.sr(asys_this) = callback();
@@ -40,7 +41,16 @@ namespace asys
 #define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
 #define CC_ })___;
 
-#define CC(T, express) asys::tmpVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_cc_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
+//The variable returned by CC is a "right value", which can not be used to accept function 
+//return values or used as in left operand of assign operation. This language currently
+//doesn't plan to distinguish left or right values as C++, so that the users themselves
+//have the responsibility not to use CC in the output segment of the CALL statement.The 
+//author's argument is that this language should remain as simple as possible for
+//C++ programmers to explore the source code. A compromise is that the verification of the 
+//"left-value-ness" is done at asyn-script compilation time, so that the C++ compiler
+//doesn't complain if you make this mistake, instead the error will be detected during 
+//asyn-script compilation time just as other script syntax errors.
+#define CC(T, express) asys::tmpRightVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_cc_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
 
 //asys::FunctionCode::Call(outputs, inputs, code)
 #define CALL(fun, ...)  __this_function->Call(fun, {__VA_ARGS__})___

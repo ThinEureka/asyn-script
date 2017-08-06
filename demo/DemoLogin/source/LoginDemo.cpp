@@ -96,7 +96,6 @@ private:
 		BEGIN_FUN(user_id, session_id, gameserver_ip){
 
 			ASYS_VAR(int, index);
-			ASSIGN(index, CC(int, 0));
 
 			ASYS_VAR(std::string, player_info);
 			_CC{
