@@ -37,7 +37,7 @@ namespace asys
 		T& r() const
 		{
 			auto pAsysValue = getAsysValueFromCurMainThreadMachine();
-			auto asysValue = dynamic_cast<AsysValueT<T>*>(pAsysValue);
+			auto asysValue = static_cast<AsysValueT<T>*>(pAsysValue);
 
 			return asysValue->getNativeValueReference();
 		}
@@ -46,7 +46,7 @@ namespace asys
 		T& sr(Machine* machine) const
 		{
 			auto pAsysValue = getAsysValue(machine);
-			auto pCastValue = dynamic_cast<AsysValueT<T>*>(pAsysValue);
+			auto pCastValue = static_cast<AsysValueT<T>*>(pAsysValue);
 			return pCastValue->getNativeValueReference();
 		}
 
