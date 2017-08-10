@@ -18,7 +18,7 @@
 namespace asys
 {
 	template<typename T>
-	AsysVariableT<T> tmpRightVar(FunctionCode* f, const std::function<T()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
+	AsysVariableT<T> tmpInputVar(FunctionCode* f, const std::function<T()>&callback, const char* varName, const char* fileName, const char* funcName, int line)
 	{
 		AsysVariableT<T> tmp(varName, 0);
 		tmp.setVaribaleType(VariableType::input);
@@ -57,7 +57,7 @@ namespace asys
 //return values or used as in left operand of assign operation. If you want to output 
 //return values to C++ variables, use OUT_CC instead. Otherwise the error will be reported
 //when compiling asyn-script.
-#define CC(T, express) asys::tmpRightVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_right_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
+#define CC(T, express) asys::tmpInputVar<T>(__this_function, [=](){ return (express);}, "__asys_tmp_right_line_" __S__LINE__, __FILE__, __FUNCTION__, __LINE__)
 
 //Can only be used to output return values directly into C++ left values, can not be used as 
 //arguments to function calls or in an ASSIGN statement. It returns an output variable.
