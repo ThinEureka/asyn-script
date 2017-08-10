@@ -120,7 +120,7 @@ namespace asys
 	enum  class VariableType
 	{
 		normal,
-		right,
+		input,
 		output,
 	};
 

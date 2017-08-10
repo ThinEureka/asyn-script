@@ -145,7 +145,7 @@ namespace asys
 		BreakPoint& Assign(const AsysVariableT<V1>& var1, const AsysVariableT<V2>& var2)
 		{
 			//do not use CC or OUT_CC in the left side of ASSIGN statements, only normal variables are accepted here.
-			assert(var1.getVariableType() != VariableType::right);
+			assert(var1.getVariableType() != VariableType::input);
 			assert(var1.getVariableType() != VariableType::output);
 			assert(var2.getVariableType() != VariableType::output);
 

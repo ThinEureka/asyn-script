@@ -73,8 +73,8 @@ private:
 				if (index < 5)
 				{
 					std::cout << "login-server login... "
-						<< "$user_id=" << user_id.r() << std::endl
-						<< "$access_token=" << access_token.r() << std::endl;
+						<< "user_id=" << user_id.r() << std::endl
+						<< "access_token=" << access_token.r() << std::endl;
 					index++;
 					asys_redo;
 				}
@@ -104,7 +104,7 @@ private:
 				{
 					std::cout << "game-server login... " << "$user_id=" 
 						<< user_id.r() << std::endl
-						<< "$session_id=" << session_id.r() << std::endl;
+						<< "session_id=" << session_id.r() << std::endl;
 					index++;
 					asys_redo;
 				}
