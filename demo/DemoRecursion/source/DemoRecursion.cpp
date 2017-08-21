@@ -13,7 +13,7 @@
 
 asys_reg_funs;
 
-asys::FunctionCode* sum(ASYS_P(int, n))
+asys::FunctionCode* sum(ASYS_P(long long, n))
 {
 	BEGIN_FUN(n){
 		_CC{
@@ -23,21 +23,21 @@ asys::FunctionCode* sum(ASYS_P(int, n))
 			}
 		}CC_;
 
-		ASYS_VAR(int, sub_result);
-		CALL(sum(), CC(int, n -1))
+		ASYS_VAR(long long, sub_result);
+		CALL(sum(), CC(long long, n - 1))
 			>>= {sub_result};
 
-		RETURN(CC(int, n + sub_result));
+		RETURN(CC(long long, n + sub_result));
 	}END_FUN;
 }
 
 asys::FunctionCode* print()
 {
 	BEGIN_FUN(){
-		ASYS_VAR(int, n);
+		ASYS_VAR(long long, n);
 
 		WHILE_CC(true){
-			ASYS_VAR(int, result);
+			ASYS_VAR(long long, result);
 			CALL(sum(), n) >>= {result};
 
 			_CC{
