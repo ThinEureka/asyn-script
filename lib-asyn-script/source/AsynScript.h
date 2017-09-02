@@ -50,7 +50,14 @@ namespace asys
 
 #define END_FUN __this_function->compile(); return __this_function;
 
-#define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){
+//prevent beginners using __this_function inside _CC{}CC_ blocks.
+#if ASYS_DEBUG == 1
+	#define BLOCK_THIS_FUNCTION  char __this_function{}; __this_function;
+#else
+	#define BLOCK_THIS_FUNCTION 
+#endif
+
+#define _CC __this_function->Do(__LINE__, [=](asys::Machine* asys_this){ BLOCK_THIS_FUNCTION
 #define CC_ })___;
 
 //The variable returned by CC is an input variable, which can not be used to accept function 
