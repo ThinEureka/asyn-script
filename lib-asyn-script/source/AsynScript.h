@@ -111,7 +111,7 @@ namespace asys
 #define ASSIGN(var1, var2) __this_function->Assign(var1, var2)___;
 
 #define ASYS_VAR_F(type, name, f) asys::AsysVariableT<type> name(#name, 0); f->Declare(name)___;
-#define ASYS_VAR(type, name) ASYS_VAR_F(type, name, __this_function);
+#define ASYS_VAR(type, name) ASYS_VAR_F(COMPACT(type), name, __this_function);
 #define ASYS_P(type, name) asys::AsysVariableT<type> name = asys::AsysVariableT<type>(#name, 0)
 #define D_ASYS_P(type, name) asys::AsysVariableT<type> name
 
@@ -133,3 +133,5 @@ namespace asys
 //used to register asyn functions.
 #define asys_reg_funs asys::FunctionMap m_asynFunctions;
 #define asys_reg_funs_static_impl(class_name) asys::FunctionMap class_name::m_asynFunctions;
+
+#define COMPACT(...) __VA_ARGS__

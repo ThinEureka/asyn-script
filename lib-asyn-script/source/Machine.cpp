@@ -189,6 +189,7 @@ void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
 	if (m_codeFlow == CodeFlow::break_
 		|| m_codeFlow == CodeFlow::continue_)
 	{
+		int numOfUnmatchedEndWhile = 0;
 		auto curIp = m_pCurFunRuntime->m_curIp;
 		auto& instructions = m_pCurFunRuntime->m_pFunction->m_instructions;
 		for (int ip = curIp - 1; ip >= 0; ip--)
@@ -197,17 +198,28 @@ void asys::Machine::processDoInstruction(const DoInstruction* doInstruction)
 			if (instruction->instructionType() ==
 				InstructionType::type_while)
 			{
-				auto whileInstruction = static_cast<WhileInstruction*>(instruction);
-				if (m_codeFlow == CodeFlow::continue_)
+				if (numOfUnmatchedEndWhile == 0)
 				{
-					m_pCurFunRuntime->m_curIp = ip;
+					auto whileInstruction = static_cast<WhileInstruction*>(instruction);
+					if (m_codeFlow == CodeFlow::continue_)
+					{
+						m_pCurFunRuntime->m_curIp = ip;
+					}
+					else
+					{
+						m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
+					}
+					m_codeFlow = CodeFlow::next_;
+					return;
 				}
 				else
 				{
-					m_pCurFunRuntime->m_curIp = whileInstruction->endWhileIp + 1;
+					--numOfUnmatchedEndWhile;
 				}
-				m_codeFlow = CodeFlow::next_;
-				return;
+			}
+			else if (instruction->instructionType() == InstructionType::type_endwhile)
+			{
+				++numOfUnmatchedEndWhile;
 			}
 		}
 	}
