@@ -7,7 +7,7 @@ faq: https://github.com/ThinEureka/asyn-script/wiki/FAQ
 
 AsynScriptAssist: https://github.com/ThinEureka/AsynScriptAssist
 
-Login demo: The following code demonstrates how to use asyn-script to write asynchronous behaviors in a synchronous way. The following codes are executed in the same thread but without blocking it when the login progress takes long time to finish. It achieved multiple code-flow without multiple threading, which you might notice could be achieved by co-rountine as well. This solution however is quite different from that of co-routine, and gains its own unique features and advantages because of the introduction of a virtual mahcine. Full demo: https://github.com/ThinEureka/asyn-script/tree/master/demo/DemoLogin
+Login demo: The following code demonstrates how to use asyn-script to write asynchronous behaviors in a synchronous way. The following code is executed in the same thread but without blocking it when the login progress takes long time to finish. It achieves multiple code-flow without multi-threading, which you might notice could be achieved by co-rountine as well. This solution however is quite different from that of co-routine, and gains its own unique features and advantages because of the introduction of a virtual mahcine. Full demo: https://github.com/ThinEureka/asyn-script/tree/master/demo/DemoLogin
 
     asys::FunctionCode* login(ASYS_P(std::string, device_id))
 	{
